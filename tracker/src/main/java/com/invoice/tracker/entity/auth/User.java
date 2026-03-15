@@ -1,6 +1,8 @@
-package com.invoice.tracker.entity;
+package com.invoice.tracker.entity.auth;
 
 import java.util.UUID;
+
+import com.invoice.tracker.entity.AuditableEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

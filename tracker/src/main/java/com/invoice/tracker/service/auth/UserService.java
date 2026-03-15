@@ -1,11 +1,11 @@
-package com.invoice.tracker.service;
+package com.invoice.tracker.service.auth;
 
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import com.invoice.tracker.entity.User;
-import com.invoice.tracker.repository.UserRepository;
+import com.invoice.tracker.entity.auth.User;
+import com.invoice.tracker.repository.auth.UserRepository;
 import com.invoice.tracker.security.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.invoice.tracker.dto;
+package com.invoice.tracker.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

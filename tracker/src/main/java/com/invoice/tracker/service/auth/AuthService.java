@@ -1,4 +1,4 @@
-package com.invoice.tracker.service;
+package com.invoice.tracker.service.auth;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -6,17 +6,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.invoice.tracker.dto.AuthResponse;
-import com.invoice.tracker.dto.LoginRequest;
-import com.invoice.tracker.dto.RefreshTokenRequest;
-import com.invoice.tracker.dto.RegisterRequest;
-import com.invoice.tracker.entity.RefreshToken;
-import com.invoice.tracker.entity.Role;
-import com.invoice.tracker.entity.Shop;
-import com.invoice.tracker.entity.User;
-import com.invoice.tracker.repository.RefreshTokenRepository;
-import com.invoice.tracker.repository.ShopRepository;
-import com.invoice.tracker.repository.UserRepository;
+import com.invoice.tracker.dto.auth.AuthResponse;
+import com.invoice.tracker.dto.auth.LoginRequest;
+import com.invoice.tracker.dto.auth.RefreshTokenRequest;
+import com.invoice.tracker.dto.auth.RegisterRequest;
+import com.invoice.tracker.entity.auth.RefreshToken;
+import com.invoice.tracker.entity.auth.Role;
+import com.invoice.tracker.entity.auth.Shop;
+import com.invoice.tracker.entity.auth.User;
+import com.invoice.tracker.repository.auth.RefreshTokenRepository;
+import com.invoice.tracker.repository.auth.ShopRepository;
+import com.invoice.tracker.repository.auth.UserRepository;
 import com.invoice.tracker.security.JwtUtil;
 
 import lombok.RequiredArgsConstructor;

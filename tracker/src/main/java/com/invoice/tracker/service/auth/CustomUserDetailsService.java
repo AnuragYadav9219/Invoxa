@@ -1,12 +1,12 @@
-package com.invoice.tracker.service;
+package com.invoice.tracker.service.auth;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.invoice.tracker.entity.User;
-import com.invoice.tracker.repository.UserRepository;
+import com.invoice.tracker.entity.auth.User;
+import com.invoice.tracker.repository.auth.UserRepository;
 import com.invoice.tracker.security.UserPrincipal;
 
 import lombok.RequiredArgsConstructor;

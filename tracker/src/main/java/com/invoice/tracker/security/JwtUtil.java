@@ -62,9 +62,9 @@ public class JwtUtil {
     }
 
     // extract shopId to secure API to protect from others access
-    public UUID extractShopId(String token) {
-        return UUID.fromString(
-            extractClaim(token, claims -> claims.get("shopId", String.class))
-        );
-    }
+    // public UUID extractShopId(String token) {
+    //     return UUID.fromString(
+    //         extractClaim(token, claims -> claims.get("shopId", String.class))
+    //     );
+    // }
 }

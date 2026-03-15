@@ -1,11 +1,11 @@
-package com.invoice.tracker.repository;
+package com.invoice.tracker.repository.auth;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.invoice.tracker.entity.User;
+import com.invoice.tracker.entity.auth.User;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
 

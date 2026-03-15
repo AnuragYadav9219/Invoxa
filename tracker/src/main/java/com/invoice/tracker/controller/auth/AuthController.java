@@ -1,4 +1,4 @@
-package com.invoice.tracker.controller;
+package com.invoice.tracker.controller.auth;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -8,13 +8,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.invoice.tracker.dto.AuthResponse;
-import com.invoice.tracker.dto.LoginRequest;
-import com.invoice.tracker.dto.RefreshTokenRequest;
-import com.invoice.tracker.dto.RegisterRequest;
-import com.invoice.tracker.entity.User;
-import com.invoice.tracker.repository.UserRepository;
-import com.invoice.tracker.service.AuthService;
+import com.invoice.tracker.dto.auth.AuthResponse;
+import com.invoice.tracker.dto.auth.LoginRequest;
+import com.invoice.tracker.dto.auth.RefreshTokenRequest;
+import com.invoice.tracker.dto.auth.RegisterRequest;
+import com.invoice.tracker.entity.auth.User;
+import com.invoice.tracker.repository.auth.UserRepository;
+import com.invoice.tracker.service.auth.AuthService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

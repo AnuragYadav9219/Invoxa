@@ -1,8 +1,14 @@
-package com.invoice.tracker.entity;
+package com.invoice.tracker.entity.invoice;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
+import com.invoice.tracker.entity.AuditableEntity;
+import com.invoice.tracker.entity.auth.Shop;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,7 +28,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Invoice {
+public class Invoice extends AuditableEntity {
     
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -32,7 +38,14 @@ public class Invoice {
 
     private String customerName;
 
+    private String customerPhone;
+
     private Double amount;
+
+    private LocalDate dueDate;
+
+    @Enumerated(EnumType.STRING)
+    private InvoiceStatus status;
 
     @ManyToOne
     @JoinColumn(name = "shop_id")

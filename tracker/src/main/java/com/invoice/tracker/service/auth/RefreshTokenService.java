@@ -1,4 +1,4 @@
-package com.invoice.tracker.service;
+package com.invoice.tracker.service.auth;
 
 import java.time.Instant;
 import java.util.List;
@@ -7,9 +7,9 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import com.invoice.tracker.config.JwtConfig;
-import com.invoice.tracker.entity.RefreshToken;
-import com.invoice.tracker.entity.User;
-import com.invoice.tracker.repository.RefreshTokenRepository;
+import com.invoice.tracker.entity.auth.RefreshToken;
+import com.invoice.tracker.entity.auth.User;
+import com.invoice.tracker.repository.auth.RefreshTokenRepository;
 
 import lombok.RequiredArgsConstructor;
 

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.invoice.tracker.security.JwtUtil;
-import com.invoice.tracker.service.CustomUserDetailsService;
+import com.invoice.tracker.service.auth.CustomUserDetailsService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
