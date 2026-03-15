@@ -1,11 +1,8 @@
 package com.invoice.tracker.entity;
 
-import java.time.Instant;
 import java.util.UUID;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -19,29 +16,25 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "refresh_token")
+@Table(name = "invoices")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class RefreshToken extends BaseEntity {
-
+public class Invoice {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false, unique = true)
-    private String token;
+    private String invoiceNumber;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    private String customerName;
 
-    @Column(nullable = false)
-    private Instant expiryDate;
+    private Double amount;
 
-    private boolean revoked;
-
-    private String replacedByToken;
+    @ManyToOne
+    @JoinColumn(name = "shop_id")
+    private Shop shop;
 }

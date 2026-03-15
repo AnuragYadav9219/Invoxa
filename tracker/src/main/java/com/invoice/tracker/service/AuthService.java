@@ -2,16 +2,19 @@ package com.invoice.tracker.service;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.invoice.tracker.dto.AuthResponse;
 import com.invoice.tracker.dto.LoginRequest;
+import com.invoice.tracker.dto.RefreshTokenRequest;
 import com.invoice.tracker.dto.RegisterRequest;
+import com.invoice.tracker.entity.RefreshToken;
 import com.invoice.tracker.entity.Role;
 import com.invoice.tracker.entity.Shop;
 import com.invoice.tracker.entity.User;
+import com.invoice.tracker.repository.RefreshTokenRepository;
 import com.invoice.tracker.repository.ShopRepository;
 import com.invoice.tracker.repository.UserRepository;
 import com.invoice.tracker.security.JwtUtil;
@@ -25,6 +28,8 @@ public class AuthService {
         private final UserRepository userRepository;
         private final ShopRepository shopRepository;
         private final PasswordEncoder passwordEncoder;
+        private final RefreshTokenService refreshTokenService;
+        private final RefreshTokenRepository refreshTokenRepository;
         private final AuthenticationManager authenticationManager;
         private final JwtUtil jwtUtil;
 
@@ -57,19 +62,24 @@ public class AuthService {
                 String accessToken = jwtUtil.generateToken(
                                 user.getId(),
                                 shop.getId(),
-                                user.getRole().name());
+                                user.getRole().name(),
+                                user.getEmail());
+
+                // Create Refresh token after deleting previous one
+                refreshTokenService.revokeUserTokens(user);
+                RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
                 return new AuthResponse(
                                 "User registered successfully!",
                                 accessToken,
-                                "refresh-token-placeholder");
+                                refreshToken.getToken());
         }
 
         // Logic to login the user
         public AuthResponse login(LoginRequest request) {
 
                 // Authenticate user using Spring Security
-                Authentication authentication = authenticationManager.authenticate(
+                authenticationManager.authenticate(
                                 new UsernamePasswordAuthenticationToken(
                                                 request.getEmail(),
                                                 request.getPassword()));
@@ -81,11 +91,72 @@ public class AuthService {
                 String accessToken = jwtUtil.generateToken(
                                 user.getId(),
                                 user.getShop().getId(),
-                                user.getRole().name());
+                                user.getRole().name(),
+                                user.getEmail());
+
+                refreshTokenService.revokeUserTokens(user);
+                RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
                 return new AuthResponse(
                                 "Login successful",
                                 accessToken,
-                                "refresh-token-placeholder");
+                                refreshToken.getToken());
+        }
+
+        // Logic to refresh the token
+        @Transactional
+        public AuthResponse refreshToken(RefreshTokenRequest request) {
+
+                RefreshToken refreshToken = refreshTokenRepository
+                                .findByToken(request.getRefreshToken())
+                                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+
+                // verify token
+                refreshTokenService.verifyExpiration(refreshToken);
+
+                User user = refreshToken.getUser();
+
+                // Generate new refresh token
+                RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user);
+
+                // Revoke old token
+                refreshToken.setRevoked(true);
+                refreshToken.setReplacedByToken(newRefreshToken.getToken());
+
+                refreshTokenRepository.save(refreshToken);
+
+                String accessToken = jwtUtil.generateToken(
+                                user.getId(),
+                                user.getShop().getId(),
+                                user.getRole().name(),
+                                user.getEmail());
+
+                return new AuthResponse(
+                                "Token Refreshed Successfully",
+                                accessToken,
+                                newRefreshToken.getToken());
+        }
+
+        // Logic for logout
+        @Transactional
+        public void logout(RefreshTokenRequest request) {
+
+                RefreshToken refreshToken = refreshTokenRepository
+                                .findByToken(request.getRefreshToken())
+                                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+
+                refreshToken.setRevoked(true);
+
+                refreshTokenRepository.save(refreshToken);
+        }
+
+        // Logout from all devices logic
+        @Transactional
+        public void logoutAll(String email) {
+
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new RuntimeException("User not found"));
+                
+                refreshTokenService.revokeUserTokens(user);
         }
 }
