@@ -44,6 +44,8 @@ public class RefreshToken extends BaseEntity {
     private Instant expiryDate;
 
     private boolean revoked;
+    private boolean expired;
 
-    private String replacedByToken;
+    private String deviceId;
+    private String deviceName;
 }

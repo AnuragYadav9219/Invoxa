@@ -1,19 +1,21 @@
 package com.invoice.tracker.entity.invoice;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
-import com.invoice.tracker.entity.AuditableEntity;
-import com.invoice.tracker.entity.auth.Shop;
+import com.invoice.tracker.entity.BaseEntity;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,26 +30,29 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Invoice extends AuditableEntity {
+public class Invoice extends BaseEntity {
     
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(unique = true)
     private String invoiceNumber;
+    
+    @Column(nullable = false)
+    private UUID shopId;    // tenantId
 
     private String customerName;
 
     private String customerPhone;
 
-    private Double amount;
-
-    private LocalDate dueDate;
+    private BigDecimal totalAmount;
 
     @Enumerated(EnumType.STRING)
     private InvoiceStatus status;
+    
+    private LocalDate dueDate;
 
-    @ManyToOne
-    @JoinColumn(name = "shop_id")
-    private Shop shop;
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
+    private List<InvoiceItem> items;
 }

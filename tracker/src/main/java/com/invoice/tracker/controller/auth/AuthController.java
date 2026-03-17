@@ -1,21 +1,28 @@
 package com.invoice.tracker.controller.auth;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.invoice.tracker.common.response.ApiResponse;
+import com.invoice.tracker.common.response.ResponseBuilder;
 import com.invoice.tracker.dto.auth.AuthResponse;
 import com.invoice.tracker.dto.auth.LoginRequest;
-import com.invoice.tracker.dto.auth.RefreshTokenRequest;
 import com.invoice.tracker.dto.auth.RegisterRequest;
-import com.invoice.tracker.entity.auth.User;
-import com.invoice.tracker.repository.auth.UserRepository;
+import com.invoice.tracker.dto.auth.UserResponse;
+import com.invoice.tracker.security.UserPrincipal;
 import com.invoice.tracker.service.auth.AuthService;
+import com.invoice.tracker.util.CookieUtil;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -24,53 +31,133 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final AuthService authService;
-    private final UserRepository userRepository;
+        private final AuthService authService;
+        private final CookieUtil cookieUtil;
 
-    // Register a user
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        AuthResponse response = authService.register(request);
-        return ResponseEntity.status(201).body(response);
-    }
+        // ================= REGISTER =================
+        @PostMapping("/register")
+        public ResponseEntity<ApiResponse<AuthResponse>> register(
+                        @Valid @RequestBody RegisterRequest request,
+                        HttpServletResponse response) {
 
-    // Login a user
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        AuthResponse response = authService.login(request);
-        return ResponseEntity.ok(response);
-    }
+                AuthResponse authResponse = authService.register(request);
 
-    // RefreshToken API
-    @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
-        return ResponseEntity.ok(authService.refreshToken(request));
-    }
+                cookieUtil.addRefreshTokenCookie(
+                                response,
+                                authResponse.getRefreshToken(),
+                                7 * 24 * 60 * 60);
 
-    // Get current logged-in-user
-    @GetMapping("/me")
-    public ResponseEntity<User> getCurrentUser(Authentication authentication) {
+                return ResponseBuilder.success(authResponse, "User registered successfully", HttpStatus.CREATED);
+        }
 
-        User user = userRepository
-                .findByEmail(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        // ================= LOGIN =================
+        @PostMapping("/login")
+        public ResponseEntity<ApiResponse<AuthResponse>> login(
+                        @Valid @RequestBody LoginRequest request,
+                        HttpServletResponse response) {
 
-        return ResponseEntity.ok(user);
-    }
+                AuthResponse authResponse = authService.login(request);
 
-    // Logout a user
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout(@RequestBody RefreshTokenRequest request) {
-        authService.logout(request);
-        return ResponseEntity.ok("Logged out successfully");
-    }
+                // Set refresh token in cookie
+                cookieUtil.addRefreshTokenCookie(
+                                response,
+                                authResponse.getRefreshToken(),
+                                7 * 24 * 60 * 60);
 
-    // Logout from all devices
-    @PostMapping("/logout-all")
-    public ResponseEntity<String> logoutAll(Authentication authentication) {
+                return ResponseBuilder.success(authResponse, "Login successful");
+        }
 
-        authService.logoutAll(authentication.getName());
+        // ================= REFRESH =================
+        @PostMapping("/refresh")
+        public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(
+                        HttpServletRequest request,
+                        HttpServletResponse response) {
 
-        return ResponseEntity.ok("Logged out from all devices");
-    }
+                // extract R.T. from cookie
+                String refreshToken = cookieUtil.getRefreshToken(request);
+
+                if (refreshToken == null) {
+                        return ResponseBuilder.error("Refresh token missing", HttpStatus.UNAUTHORIZED);
+                }
+
+                AuthResponse authResponse = authService.refreshToken(refreshToken);
+
+                // Rotate cookie
+                cookieUtil.addRefreshTokenCookie(
+                                response,
+                                authResponse.getRefreshToken(),
+                                7 * 24 * 60 * 60);
+
+                return ResponseBuilder.success(authResponse, "Token refreshed successful");
+        }
+
+        // ================= GET CURRENT USER =================
+        @GetMapping("/me")
+        public ResponseEntity<ApiResponse<UserResponse>> getCurrentUser(
+                        @AuthenticationPrincipal UserPrincipal userPrincipal) {
+
+                if (userPrincipal == null) {
+                        return ResponseBuilder.error("User not authenticated", HttpStatus.UNAUTHORIZED);
+                }
+
+                UserResponse userResponse = UserResponse.builder()
+                                .id(userPrincipal.getUserId())
+                                .email(userPrincipal.getUsername())
+                                .role(userPrincipal.getRole())
+                                .shopId(userPrincipal.getShopId())
+                                .build();
+
+                return ResponseBuilder.success(userResponse, "User fetched successfully");
+        }
+
+        // ================= LOGOUT =================
+        @PostMapping("/logout")
+        public ResponseEntity<ApiResponse<Void>> logout(
+                        HttpServletRequest request,
+                        HttpServletResponse response,
+                        Authentication authentication) {
+
+                // Extract refresh token from cookie
+                String refreshToken = cookieUtil.getRefreshToken(request);
+
+                if (authentication == null || refreshToken == null) {
+                        return ResponseBuilder.error("User not authenticated", HttpStatus.UNAUTHORIZED);
+                }
+
+                authService.logout(refreshToken, authentication.getName());
+
+                // Clear cookie
+                cookieUtil.clearRefreshTokenCookie(response);
+
+                return ResponseBuilder.success(null, "Logged out successfully");
+        }
+
+        // ================= LOGOUT ALL =================
+        @PostMapping("/logout-all")
+        public ResponseEntity<ApiResponse<Void>> logoutAll(
+                        HttpServletResponse response,
+                        Authentication authentication) {
+
+                if (authentication == null) {
+                        return ResponseBuilder.error("User not authenticated", HttpStatus.UNAUTHORIZED);
+                }
+
+                authService.logoutAll(authentication.getName());
+
+                // Clear cookie
+                cookieUtil.clearRefreshTokenCookie(response);
+
+                return ResponseBuilder.success(null, "Logged out from all devices");
+        }
+
+        // ================= LOGOUT SPECIFIC DEVICE =================
+        @PostMapping("/logout-device")
+        public ResponseEntity<ApiResponse<Void>> logoutDevice(
+                        @RequestParam String deviceId,
+                        Authentication authentication) {
+
+                authService.logoutDevice(authentication.getName(), deviceId);
+
+                return ResponseBuilder.success(null, "Device logged out successfully");
+        }
 }

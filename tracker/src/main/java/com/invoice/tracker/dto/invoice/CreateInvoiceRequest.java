@@ -1,19 +1,20 @@
 package com.invoice.tracker.dto.invoice;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class InvoiceRequest {
+public class CreateInvoiceRequest {
     
-    private String customername;
+    private String customerName;
 
     private String customerPhone;
 
-    private Double amount;
-
     private LocalDate dueDate;
+
+    private List<InvoiceItemRequest> items;
 }

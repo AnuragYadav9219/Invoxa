@@ -25,4 +25,7 @@ public class RegisterRequest {
     private String phone;
 
     private String address;
+
+    private String deviceId;
+    private String deviceName;
 }

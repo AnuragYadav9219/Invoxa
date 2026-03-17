@@ -1,5 +1,7 @@
 package com.invoice.tracker.service.auth;
 
+import java.util.UUID;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -8,14 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.invoice.tracker.dto.auth.AuthResponse;
 import com.invoice.tracker.dto.auth.LoginRequest;
-import com.invoice.tracker.dto.auth.RefreshTokenRequest;
 import com.invoice.tracker.dto.auth.RegisterRequest;
 import com.invoice.tracker.entity.auth.RefreshToken;
 import com.invoice.tracker.entity.auth.Role;
 import com.invoice.tracker.entity.auth.Shop;
 import com.invoice.tracker.entity.auth.User;
-import com.invoice.tracker.repository.auth.RefreshTokenRepository;
-import com.invoice.tracker.repository.auth.ShopRepository;
 import com.invoice.tracker.repository.auth.UserRepository;
 import com.invoice.tracker.security.JwtUtil;
 
@@ -26,14 +25,13 @@ import lombok.RequiredArgsConstructor;
 public class AuthService {
 
         private final UserRepository userRepository;
-        private final ShopRepository shopRepository;
+        private final com.invoice.tracker.repository.shop.ShopRepository shopRepository;
         private final PasswordEncoder passwordEncoder;
         private final RefreshTokenService refreshTokenService;
-        private final RefreshTokenRepository refreshTokenRepository;
         private final AuthenticationManager authenticationManager;
         private final JwtUtil jwtUtil;
 
-        // Logic to register an user
+        // ================= REGISTER =================
         public AuthResponse register(RegisterRequest request) {
 
                 if (userRepository.existsByEmail(request.getEmail())) {
@@ -63,11 +61,22 @@ public class AuthService {
                                 user.getId(),
                                 shop.getId(),
                                 user.getRole().name(),
-                                user.getEmail());
+                                user.getEmail(),
+                                user.getTokenVersion());
 
-                // Create Refresh token after deleting previous one
-                refreshTokenService.revokeUserTokens(user);
-                RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+                String deviceId = (request.getDeviceId() != null && !request.getDeviceId().isBlank())
+                                ? request.getDeviceId()
+                                : UUID.randomUUID().toString();
+
+                String deviceName = (request.getDeviceName() != null && !request.getDeviceName().isBlank())
+                                ? request.getDeviceName()
+                                : "Unknown Device";
+
+                // Device-aware refresh token
+                RefreshToken refreshToken = refreshTokenService.createRefreshToken(
+                                user,
+                                deviceId,
+                                deviceName);
 
                 return new AuthResponse(
                                 "User registered successfully!",
@@ -75,7 +84,7 @@ public class AuthService {
                                 refreshToken.getToken());
         }
 
-        // Logic to login the user
+        // ================= LOGIN =================
         public AuthResponse login(LoginRequest request) {
 
                 // Authenticate user using Spring Security
@@ -92,10 +101,22 @@ public class AuthService {
                                 user.getId(),
                                 user.getShop().getId(),
                                 user.getRole().name(),
-                                user.getEmail());
+                                user.getEmail(),
+                                user.getTokenVersion());
 
-                refreshTokenService.revokeUserTokens(user);
-                RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+                String deviceId = (request.getDeviceId() != null && !request.getDeviceId().isBlank())
+                                ? request.getDeviceId()
+                                : UUID.randomUUID().toString();
+
+                String deviceName = (request.getDeviceName() != null && !request.getDeviceName().isBlank())
+                                ? request.getDeviceName()
+                                : "Unknown Device";
+
+                // Create refresh token (NO revoke all -> multi-device supported)
+                RefreshToken refreshToken = refreshTokenService.createRefreshToken(
+                                user,
+                                deviceId,
+                                deviceName);
 
                 return new AuthResponse(
                                 "Login successful",
@@ -103,60 +124,68 @@ public class AuthService {
                                 refreshToken.getToken());
         }
 
-        // Logic to refresh the token
+        // ================= REFRESH TOKEN (ROTATION) =================
         @Transactional
-        public AuthResponse refreshToken(RefreshTokenRequest request) {
-
-                RefreshToken refreshToken = refreshTokenRepository
-                                .findByToken(request.getRefreshToken())
-                                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+        public AuthResponse refreshToken(String refreshTokenValue) {
 
                 // verify token
-                refreshTokenService.verifyExpiration(refreshToken);
+                RefreshToken oldToken = refreshTokenService.verifyToken(refreshTokenValue);
 
-                User user = refreshToken.getUser();
+                User user = oldToken.getUser();
 
-                // Generate new refresh token
-                RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user);
+                // Rotate token
+                RefreshToken newToken = refreshTokenService.rotateToken(oldToken);
 
-                // Revoke old token
-                refreshToken.setRevoked(true);
-                refreshToken.setReplacedByToken(newRefreshToken.getToken());
-
-                refreshTokenRepository.save(refreshToken);
-
+                // New Access Token
                 String accessToken = jwtUtil.generateToken(
                                 user.getId(),
                                 user.getShop().getId(),
                                 user.getRole().name(),
-                                user.getEmail());
+                                user.getEmail(),
+                                user.getTokenVersion());
 
                 return new AuthResponse(
                                 "Token Refreshed Successfully",
                                 accessToken,
-                                newRefreshToken.getToken());
+                                newToken.getToken());
         }
 
-        // Logic for logout
+        // ================= LOGOUT (CURRENT DEVICE) =================
         @Transactional
-        public void logout(RefreshTokenRequest request) {
+        public void logout(String refreshTokenValue, String email) {
 
-                RefreshToken refreshToken = refreshTokenRepository
-                                .findByToken(request.getRefreshToken())
-                                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+                // Revoke this token
+                refreshTokenService.revokeToken(refreshTokenValue);
 
-                refreshToken.setRevoked(true);
+                // Invalidate access tokens
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new RuntimeException("User not found"));
 
-                refreshTokenRepository.save(refreshToken);
+                user.setTokenVersion(user.getTokenVersion() + 1);
         }
 
-        // Logout from all devices logic
+        // ================= LOGOUT ALL DEVICES =================
         @Transactional
         public void logoutAll(String email) {
 
                 User user = userRepository.findByEmail(email)
                                 .orElseThrow(() -> new RuntimeException("User not found"));
-                
+
+                // Revoke all refresh tokens
                 refreshTokenService.revokeUserTokens(user);
+
+                // Invalidate all access tokens
+                user.setTokenVersion(user.getTokenVersion() + 1);
+        }
+
+        // ================= LOGOUT SPECIFIC DEVICE =================
+        @Transactional
+        public void logoutDevice(String email, String deviceId) {
+
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new RuntimeException("User not found"));
+
+                // Revoke only that device
+                refreshTokenService.revokeDevice(user, deviceId);
         }
 }

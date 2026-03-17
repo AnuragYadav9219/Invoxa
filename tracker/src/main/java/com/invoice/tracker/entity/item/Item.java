@@ -1,14 +1,11 @@
-package com.invoice.tracker.entity.auth;
+package com.invoice.tracker.entity.item;
 
 import java.util.UUID;
 
 import com.invoice.tracker.entity.AuditableEntity;
+import com.invoice.tracker.entity.auth.Shop;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,13 +19,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "users")
+@Table(name = "items")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class User extends AuditableEntity {
+public class Item extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -36,19 +33,9 @@ public class User extends AuditableEntity {
 
     private String name;
 
-    @Column(unique = true)
-    private String email;
+    private Double price;
 
-    private String password;
-
-    @Enumerated(EnumType.STRING)
-    private Role role;
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "shop_id")
     private Shop shop;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer tokenVersion = 0;
 }
