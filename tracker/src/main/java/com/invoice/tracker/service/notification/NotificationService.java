@@ -17,7 +17,7 @@ public interface NotificationService {
 
     void sendOverdueAlert(Invoice invoice);
 
-    void saveNotification(Invoice invoice, String message, String recipient);
+    void saveNotification(Invoice invoice, String message, String recipient, String type, boolean sent);
 
     List<NotificationResponse> getAllNotifications();
 }

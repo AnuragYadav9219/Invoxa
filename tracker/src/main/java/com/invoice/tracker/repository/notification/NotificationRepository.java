@@ -10,4 +10,6 @@ import com.invoice.tracker.entity.notification.Notification;
 public interface NotificationRepository extends JpaRepository<Notification, UUID>  {
     
     List<Notification> findByInvoice_ShopIdOrderBySentAtDesc(UUID shopId);
+
+    List<Notification> findBySentFalseAndRetryCountLessThan(int maxRetry);
 }

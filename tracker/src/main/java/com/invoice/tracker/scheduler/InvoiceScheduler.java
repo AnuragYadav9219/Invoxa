@@ -1,4 +1,4 @@
-package com.invoice.tracker.util;
+package com.invoice.tracker.scheduler;
 
 import java.time.LocalDate;
 import java.util.List;

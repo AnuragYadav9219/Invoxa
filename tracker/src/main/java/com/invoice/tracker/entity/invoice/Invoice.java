@@ -44,6 +44,7 @@ public class Invoice extends BaseEntity {
     private UUID shopId;    // tenantId
 
     private String customerName;
+    private String customerEmail;
     private String customerPhone;
 
     private BigDecimal totalAmount;

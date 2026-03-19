@@ -38,6 +38,8 @@ public class Notification {
     private String message;
 
     private boolean sent;
+    private int retryCount;
+    private LocalDateTime lastTriedAt;
 
     private LocalDateTime sentAt;
 
