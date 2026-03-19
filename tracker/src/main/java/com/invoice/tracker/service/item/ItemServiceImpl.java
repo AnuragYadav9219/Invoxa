@@ -11,8 +11,10 @@ import com.invoice.tracker.dto.item.CreateItemRequest;
 import com.invoice.tracker.dto.item.ItemResponse;
 import com.invoice.tracker.entity.auth.Shop;
 import com.invoice.tracker.entity.item.Item;
+import com.invoice.tracker.helper.item.ItemHelper;
+import com.invoice.tracker.helper.shop.ShopHelper;
+import com.invoice.tracker.mapper.ItemMapper;
 import com.invoice.tracker.repository.item.ItemRepository;
-import com.invoice.tracker.repository.shop.ShopRepository;
 import com.invoice.tracker.security.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
@@ -22,26 +24,16 @@ import lombok.RequiredArgsConstructor;
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
-    private final ShopRepository shopRepository;
-
-    // Mapper
-    private ItemResponse mapToResponse(Item item) {
-        return ItemResponse.builder()
-                .id(item.getId())
-                .name(item.getName())
-                .price(item.getPrice())
-                .build();
-    }
+    private final ItemHelper itemHelper;
+    private final ShopHelper shopHelper;
+    private final ItemMapper itemMapper;
 
     // Create item
     @Override
     @Transactional
     public ItemResponse createItem(CreateItemRequest request) {
 
-        UUID shopId = SecurityUtils.getCurrentUserShopId();
-
-        Shop shop = shopRepository.findById(shopId)
-                .orElseThrow(() -> new RuntimeException("Shop not found"));
+        Shop shop = shopHelper.getCurrentShopOrThrow();
 
         Item item = Item.builder()
                 .name(request.getName())
@@ -51,20 +43,16 @@ public class ItemServiceImpl implements ItemService {
 
         itemRepository.save(item);
 
-        return mapToResponse(item);
+        return itemMapper.toResponse(item);
     }
 
     // Get single item
     @Override
     public ItemResponse getItem(UUID itemId) {
 
-        UUID shopId = SecurityUtils.getCurrentUserShopId();
+        Item item = itemHelper.getItemOrThrow(itemId);
 
-        Item item = itemRepository
-                .findByIdAndShopId(itemId, shopId)
-                .orElseThrow(() -> new RuntimeException("Item not found"));
-
-        return mapToResponse(item);
+        return itemMapper.toResponse(item);
     }
 
     // Get all items of shop
@@ -75,7 +63,7 @@ public class ItemServiceImpl implements ItemService {
 
         return itemRepository.findByShopId(shopId)
                 .stream()
-                .map(this::mapToResponse)
+                .map(itemMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
@@ -83,29 +71,21 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemResponse updateItem(UUID itemId, CreateItemRequest request) {
 
-        UUID shopId = SecurityUtils.getCurrentUserShopId();
-
-        Item item = itemRepository
-                .findByIdAndShopId(itemId, shopId)
-                .orElseThrow(() -> new RuntimeException("Item not found"));
+        Item item = itemHelper.getItemOrThrow(itemId);
 
         item.setName(request.getName());
         item.setPrice(request.getPrice());
 
         itemRepository.save(item);
 
-        return mapToResponse(item);
+        return itemMapper.toResponse(item);
     }
 
     // Delete item
     @Override
     public void deleteItem(UUID itemId) {
 
-        UUID shopId = SecurityUtils.getCurrentUserShopId();
-
-        Item item = itemRepository
-                .findByIdAndShopId(itemId, shopId)
-                .orElseThrow(() -> new RuntimeException("Item not found"));
+        Item item = itemHelper.getItemOrThrow(itemId);
 
         itemRepository.delete(item);
     }

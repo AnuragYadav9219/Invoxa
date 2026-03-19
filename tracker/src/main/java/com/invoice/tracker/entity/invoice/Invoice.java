@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.invoice.tracker.entity.BaseEntity;
+import com.invoice.tracker.entity.payment.Payment;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -43,10 +44,11 @@ public class Invoice extends BaseEntity {
     private UUID shopId;    // tenantId
 
     private String customerName;
-
     private String customerPhone;
 
     private BigDecimal totalAmount;
+    private BigDecimal paidAmount;
+    private BigDecimal remainingAmount;
 
     @Enumerated(EnumType.STRING)
     private InvoiceStatus status;
@@ -55,4 +57,7 @@ public class Invoice extends BaseEntity {
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
     private List<InvoiceItem> items;
+
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
+    private List<Payment> payments;
 }

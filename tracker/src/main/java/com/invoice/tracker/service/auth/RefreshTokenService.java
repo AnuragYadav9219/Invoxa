@@ -7,6 +7,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.invoice.tracker.common.exception.BadRequestException;
+import com.invoice.tracker.common.exception.ResourceNotFoundException;
 import com.invoice.tracker.config.JwtConfig;
 import com.invoice.tracker.entity.auth.RefreshToken;
 import com.invoice.tracker.entity.auth.User;
@@ -21,7 +23,7 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtConfig jwtConfig;
 
-    // Create Refresh Token
+     // ========================= CREATE TOKEN =========================
     public RefreshToken createRefreshToken(User user, String deviceId, String deviceName) {
 
         RefreshToken refreshToken = RefreshToken.builder()
@@ -37,7 +39,7 @@ public class RefreshTokenService {
         return refreshTokenRepository.save(refreshToken);
     }
 
-    // Verify token
+     // ===================== VERIFY TOKEN =====================
     @Transactional
     public RefreshToken verifyToken(String tokenValue) {
 
@@ -46,27 +48,27 @@ public class RefreshTokenService {
         }
 
         RefreshToken token = refreshTokenRepository.findByToken(tokenValue)
-                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid refresh token"));
 
         // Expiry check
         if (token.getExpiryDate().isBefore(Instant.now())) {
             token.setExpired(true);
             token.setRevoked(true);
             refreshTokenRepository.save(token);
-            throw new RuntimeException("Refresh token expired");
+            throw new BadRequestException("Refresh token expired");
         }
 
         // Reuse attack detection
         if (token.isRevoked()) {
             // Possible token theft -> revoke ALL tokens
             revokeUserTokens(token.getUser());
-            throw new RuntimeException("Refresh token reuse detected. All sessions revoked.");
+            throw new BadRequestException("Refresh token reuse detected. All sessions revoked.");
         }
 
         return token;
     }
 
-    // Rotate token
+     // ====================== ROTATE ========================
     @Transactional
     public RefreshToken rotateToken(RefreshToken oldToken) {
 
@@ -89,31 +91,40 @@ public class RefreshTokenService {
         return refreshTokenRepository.save(newToken);
     }
 
-    // Revoke all tokens
+    // ========================== REVOKE ALL ==========================
     @Transactional
     public void revokeUserTokens(User user) {
         refreshTokenRepository.revokeAllByUser(user);
     }
 
-    // Revoke single token
+    // ========================== REVOKE SINGLE ==========================
     @Transactional
     public void revokeToken(String tokenValue) {
 
+        if (tokenValue == null || tokenValue.isBlank()) {
+            throw new BadRequestException("Refresh token missing");
+        }
+
         RefreshToken token = refreshTokenRepository.findByToken(tokenValue)
-                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid refresh token"));
 
         token.setRevoked(true);
         token.setExpired(true);
         refreshTokenRepository.save(token);
     }
 
-    // Revoke specific device
+     // =========================== REVOKE DEVICE ===========================
     @Transactional
     public void revokeDevice(User user, String deviceId) {
+
+        if (deviceId == null || deviceId.isBlank()) {
+            throw new BadRequestException("Device ID is required");
+        }
+
         refreshTokenRepository.revokeByUserAndDeviceId(user, deviceId);
     }
 
-    // Get active devices
+    // =========================== ACTIVE DEVICES ===========================
     public List<RefreshToken> getActiveTokens(User user) {
         return refreshTokenRepository.findByUserAndRevokedFalse(user);
     }

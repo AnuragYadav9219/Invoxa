@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.invoice.tracker.common.exception.ResourceNotFoundException;
 import com.invoice.tracker.entity.auth.User;
 import com.invoice.tracker.repository.auth.UserRepository;
 import com.invoice.tracker.security.SecurityUtils;
@@ -21,7 +22,7 @@ public class UserService {
         String email = SecurityUtils.getCurrentUserEmail();
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         return user.getShop().getId();
     }

@@ -14,7 +14,5 @@ public interface InvoiceService {
 
     InvoiceResponse getInvoice(UUID invoiceId);
 
-    InvoiceResponse markAsPaid(UUID invoiceId);
-
     void deleteInvoice(UUID invoiceId);
 }

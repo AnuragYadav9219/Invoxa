@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,7 +27,7 @@ public class InvoiceController {
 
     private final InvoiceService invoiceService;
 
-    // Create Invoice
+    // ============================ CREATE INVOICE =========================
     @PostMapping
     public ResponseEntity<ApiResponse<InvoiceResponse>> createInvoice(@RequestBody CreateInvoiceRequest request) {
 
@@ -45,7 +44,7 @@ public class InvoiceController {
                 .body(response);
     }
 
-    // Get All Invoices
+    // ============================ GET ALL INVOICE =========================
     @GetMapping
     public ResponseEntity<ApiResponse<List<InvoiceResponse>>> getInvoices() {
 
@@ -60,7 +59,7 @@ public class InvoiceController {
         return ResponseEntity.ok(response);
     }
 
-    // Get Single Invoice
+    // ============================ GET SINGLE INVOICE =========================
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<InvoiceResponse>> getInvoice(@PathVariable UUID id) {
 
@@ -75,22 +74,7 @@ public class InvoiceController {
         return ResponseEntity.ok(response);
     }
 
-    // Mark Invoice Paid
-    @PatchMapping("/{id}/pay")
-    public ResponseEntity<ApiResponse<InvoiceResponse>> markAsPaid(@PathVariable UUID id) {
-
-        InvoiceResponse invoice = invoiceService.markAsPaid(id);
-
-        ApiResponse<InvoiceResponse> response = ApiResponse.<InvoiceResponse>builder()
-                .success(true)
-                .message("Invoice marked as paid")
-                .data(invoice)
-                .build();
-
-        return ResponseEntity.ok(response);
-    }
-
-    // Delete Invoice
+    // ============================ DELETE INVOICE =========================
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteInvoice(@PathVariable UUID id) {
 

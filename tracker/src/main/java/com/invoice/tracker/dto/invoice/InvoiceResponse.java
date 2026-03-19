@@ -1,5 +1,6 @@
 package com.invoice.tracker.dto.invoice;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -18,7 +19,9 @@ public class InvoiceResponse {
     private String customerName;
     private String customerPhone;
 
-    private Double totalAmount;
+    private BigDecimal totalAmount;
+    private BigDecimal paidAmount;
+    private BigDecimal remainingAmount;
     private String status;
     private LocalDate dueDate;
 

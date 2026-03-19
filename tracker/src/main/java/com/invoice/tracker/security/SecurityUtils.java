@@ -11,12 +11,15 @@ public class SecurityUtils {
 
     // Get current user
     public static User getCurrentUser() {
-        
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new RuntimeException("User not authenticated");
+        }
 
-        return principal.getUser();
+        return ((UserPrincipal) authentication.getPrincipal()).getUser();
     }
 
     // Current user id

@@ -10,14 +10,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.invoice.tracker.dto.invoice.InvoiceItemRequest;
 import com.invoice.tracker.dto.invoice.InvoiceResponse;
+import com.invoice.tracker.common.exception.BadRequestException;
 import com.invoice.tracker.dto.invoice.CreateInvoiceRequest;
 import com.invoice.tracker.entity.invoice.Invoice;
 import com.invoice.tracker.entity.invoice.InvoiceItem;
 import com.invoice.tracker.entity.invoice.InvoiceStatus;
 import com.invoice.tracker.entity.item.Item;
+import com.invoice.tracker.helper.invoice.InvoiceHelper;
+import com.invoice.tracker.helper.item.ItemHelper;
 import com.invoice.tracker.mapper.InvoiceMapper;
 import com.invoice.tracker.repository.invoice.InvoiceRepository;
-import com.invoice.tracker.repository.item.ItemRepository;
 import com.invoice.tracker.security.SecurityUtils;
 import com.invoice.tracker.util.InvoiceNumberGenerator;
 
@@ -28,8 +30,9 @@ import lombok.RequiredArgsConstructor;
 public class InvoiceServiceImpl implements InvoiceService {
 
         private final InvoiceRepository invoiceRepository;
-        private final ItemRepository itemRepository;
         private final InvoiceMapper invoiceMapper;
+        private final InvoiceHelper invoiceHelper;
+        private final ItemHelper itemHelper;
         private final InvoiceNumberGenerator invoiceNumberGenerator;
 
         @Override
@@ -39,7 +42,11 @@ public class InvoiceServiceImpl implements InvoiceService {
                 UUID shopId = SecurityUtils.getCurrentUserShopId();
 
                 if (request.getItems() == null || request.getItems().isEmpty()) {
-                        throw new RuntimeException("Invoice must contain at least one item");
+                        throw new BadRequestException("Invoice must contain at least one item");
+                }
+
+                if (request.getCustomerName() == null || request.getCustomerName().isBlank()) {
+                        throw new BadRequestException("Customer name is required");
                 }
 
                 List<InvoiceItem> invoiceItems = new ArrayList<>();
@@ -47,8 +54,11 @@ public class InvoiceServiceImpl implements InvoiceService {
 
                 for (InvoiceItemRequest itemRequest : request.getItems()) {
 
-                        Item item = itemRepository.findByIdAndShopId(itemRequest.getItemId(), shopId)
-                                        .orElseThrow(() -> new RuntimeException("Item not found"));
+                        if (itemRequest.getQuantity() <= 0) {
+                                throw new BadRequestException("Quantity must be greater than zero");
+                        }
+
+                        Item item = itemHelper.getItemOrThrow(itemRequest.getItemId());
 
                         BigDecimal price = BigDecimal.valueOf(item.getPrice());
                         BigDecimal quantity = BigDecimal.valueOf(itemRequest.getQuantity());
@@ -76,6 +86,8 @@ public class InvoiceServiceImpl implements InvoiceService {
                                 .customerPhone(request.getCustomerPhone())
                                 .status(InvoiceStatus.PENDING)
                                 .totalAmount(totalAmount)
+                                .paidAmount(BigDecimal.ZERO)
+                                .remainingAmount(totalAmount)
                                 .dueDate(request.getDueDate())
                                 .build();
 
@@ -103,41 +115,16 @@ public class InvoiceServiceImpl implements InvoiceService {
         @Override
         public InvoiceResponse getInvoice(UUID invoiceId) {
 
-                UUID shopId = SecurityUtils.getCurrentUserShopId();
-
-                Invoice invoice = invoiceRepository
-                                .findByIdAndShopId(invoiceId, shopId)
-                                .orElseThrow(() -> new RuntimeException("Invoice not found"));
+                Invoice invoice = invoiceHelper.getInvoiceOrThrow(invoiceId);
 
                 return invoiceMapper.toResponse(invoice);
-        }
-
-        // Mark invoice as paid
-        @Override
-        public InvoiceResponse markAsPaid(UUID invoiceId) {
-
-                UUID shopId = SecurityUtils.getCurrentUserShopId();
-
-                Invoice invoice = invoiceRepository
-                                .findByIdAndShopId(invoiceId, shopId)
-                                .orElseThrow(() -> new RuntimeException("Invoice not found"));
-
-                invoice.setStatus(InvoiceStatus.PAID);
-
-                Invoice updated = invoiceRepository.save(invoice);
-
-                return invoiceMapper.toResponse(updated);
         }
 
         // Delete invoice
         @Override
         public void deleteInvoice(UUID invoiceId) {
 
-                UUID shopId = SecurityUtils.getCurrentUserShopId();
-
-                Invoice invoice = invoiceRepository
-                                .findByIdAndShopId(invoiceId, shopId)
-                                .orElseThrow(() -> new RuntimeException("Invoice not found"));
+                Invoice invoice = invoiceHelper.getInvoiceOrThrow(invoiceId);
 
                 invoiceRepository.delete(invoice);
         }
