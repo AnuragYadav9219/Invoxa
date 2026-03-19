@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import com.invoice.tracker.entity.invoice.Invoice;
 import com.invoice.tracker.entity.invoice.InvoiceItem;
 import com.invoice.tracker.entity.invoice.InvoiceStatus;
 import com.invoice.tracker.entity.item.Item;
+import com.invoice.tracker.event.invoice.InvoiceCreatedEvent;
 import com.invoice.tracker.helper.invoice.InvoiceHelper;
 import com.invoice.tracker.helper.item.ItemHelper;
 import com.invoice.tracker.mapper.InvoiceMapper;
@@ -34,6 +36,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         private final InvoiceHelper invoiceHelper;
         private final ItemHelper itemHelper;
         private final InvoiceNumberGenerator invoiceNumberGenerator;
+        private final ApplicationEventPublisher eventPublisher;
 
         @Override
         @Transactional
@@ -95,6 +98,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 invoice.setItems(invoiceItems);
 
                 Invoice savedInvoice = invoiceRepository.save(invoice);
+                eventPublisher.publishEvent(new InvoiceCreatedEvent(savedInvoice));
 
                 return invoiceMapper.toResponse(savedInvoice);
         }

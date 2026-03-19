@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,8 @@ import com.invoice.tracker.entity.invoice.Invoice;
 import com.invoice.tracker.entity.invoice.InvoiceStatus;
 import com.invoice.tracker.entity.payment.Payment;
 import com.invoice.tracker.entity.payment.PaymentMethod;
+import com.invoice.tracker.event.invoice.InvoiceFullyPaidEvent;
+import com.invoice.tracker.event.invoice.PartialPaymentEvent;
 import com.invoice.tracker.helper.invoice.InvoiceHelper;
 import com.invoice.tracker.mapper.InvoiceMapper;
 import com.invoice.tracker.mapper.PaymentMapper;
@@ -33,6 +36,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final InvoiceHelper invoiceHelper;
     private final PaymentMapper paymentMapper;
     private final InvoiceMapper invoiceMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     // ====================== ADD PAYMENT ========================
     @Override
@@ -160,10 +164,27 @@ public class PaymentServiceImpl implements PaymentService {
         invoice.setPaidAmount(newPaid);
         invoice.setRemainingAmount(remaining);
 
+        InvoiceStatus oldStatus = invoice.getStatus();
+
         if (remaining.compareTo(BigDecimal.ZERO) == 0) {
             invoice.setStatus(InvoiceStatus.PAID);
         } else {
             invoice.setStatus(InvoiceStatus.PARTIALLY_PAID);
+        }
+
+        publishPaymentEvent(invoice, oldStatus);
+    }
+
+    private void publishPaymentEvent(Invoice invoice, InvoiceStatus oldStatus) {
+
+        if (oldStatus == invoice.getStatus()) {
+            return;
+        }
+
+        if (invoice.getStatus() == InvoiceStatus.PAID) {
+            eventPublisher.publishEvent(new InvoiceFullyPaidEvent(invoice));
+        } else if (invoice.getStatus() == InvoiceStatus.PARTIALLY_PAID) {
+            eventPublisher.publishEvent(new PartialPaymentEvent(invoice));
         }
     }
 }
