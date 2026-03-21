@@ -5,12 +5,10 @@ import java.util.UUID;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.invoice.tracker.entity.auth.User;
-
 public class SecurityUtils {
 
     // Get current user
-    public static User getCurrentUser() {
+    public static UserPrincipal getPrincipal() {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -19,21 +17,26 @@ public class SecurityUtils {
             throw new RuntimeException("User not authenticated");
         }
 
-        return ((UserPrincipal) authentication.getPrincipal()).getUser();
+        return (UserPrincipal) authentication.getPrincipal();
     }
 
     // Current user id
     public static UUID getCurrentUserId() {
-        return getCurrentUser().getId();
+        return getPrincipal().getUserId();
     }
 
     // Current ShopId
     public static UUID getCurrentUserShopId() {
-        return getCurrentUser().getShop().getId();
+        return getPrincipal().getShopId();
     }
 
     // Get current user email
     public static String getCurrentUserEmail() {
-        return getCurrentUser().getEmail();
+        return getPrincipal().getUsername();
+    }
+
+    // Current role
+    public static String getCurrentUserRole() {
+        return getPrincipal().getRole();
     }
 }

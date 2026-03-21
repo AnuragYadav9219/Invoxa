@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<body style="margin:0;background:#f4f6f8;font-family:Arial;">
+
+    <table width="100%">
+        <tr>
+            <td align="center">
+
+                <table width="500" style="background:#fff;margin:30px auto;padding:30px;border-radius:12px;">
+
+                    <tr>
+                        <td style="font-size:20px;font-weight:bold;color:#dc2626;">
+                            Invoice Overdue
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td height="15"></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            Hi [[${invoice.customerName}]],<br>
+                            Your payment is overdue.
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td height="20"></td>
+                    </tr>
+
+                    <tr>
+                        <td style="background:#fee2e2;padding:15px;border-radius:10px;">
+                            <b>Invoice:</b> [[${invoice.invoiceNumber}]]<br>
+                            <b>Outstanding:</b> ₹[[${invoice.remainingAmount}]]
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td height="20"></td>
+                    </tr>
+
+                    <tr>
+                        <td align="center">
+                            <a href="[[${payLink}]]"
+                                style="background:#dc2626;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;">
+                                Pay Now
+                            </a>
+                        </td>
+                    </tr>
+
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
+</body>
+
+</html>

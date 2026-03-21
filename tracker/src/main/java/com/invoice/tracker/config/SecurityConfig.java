@@ -34,10 +34,8 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
-
         return provider;
     }
 
@@ -53,16 +51,14 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(
-                                "/api/auth/**",
-                                "/api/items/**",
-                                "/api/invoices/**",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/v3/api-docs/**")
+                                "/v3/api-docs/**",
+                                "/actuator/**",
+                                "/pay/**")
                         .permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

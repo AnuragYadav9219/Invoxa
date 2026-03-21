@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<body style="margin:0;background:#f4f6f8;font-family:Arial;">
+
+    <table width="100%">
+        <tr>
+            <td align="center">
+
+                <table width="500" style="background:#fff;margin:30px auto;padding:30px;border-radius:12px;">
+
+                    <tr>
+                        <td style="font-size:20px;font-weight:bold;">Payment Reminder</td>
+                    </tr>
+
+                    <tr>
+                        <td height="15"></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            Hi [[${invoice.customerName}]],<br>
+                            Your invoice is due soon.
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td height="20"></td>
+                    </tr>
+
+                    <tr>
+                        <td style="background:#fff7ed;padding:15px;border-radius:10px;">
+                            <b>Invoice:</b> [[${invoice.invoiceNumber}]]<br>
+                            <b>Amount:</b> ₹[[${invoice.totalAmount}]]<br>
+                            <b>Due:</b> [[${invoice.dueDate}]]
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td height="20"></td>
+                    </tr>
+
+                    <tr>
+                        <td align="center">
+                            <a href="[[${payLink}]]"
+                                style="background:#f59e0b;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;">
+                                Pay Now
+                            </a>
+                        </td>
+                    </tr>
+
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
+</body>
+
+</html>

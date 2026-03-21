@@ -1,7 +1,6 @@
 # ===============================
 # Spring Boot / Java
 # ===============================
-
 target/
 build/
 *.class
@@ -9,24 +8,26 @@ build/
 *.war
 *.ear
 
+# ===============================
 # Logs
-
+# ===============================
 logs/
 *.log
 
 # ===============================
-# Application Secrets
+# Application Secrets (IMPORTANT)
 # ===============================
+src/main/resources/application.properties
+src/main/resources/application.yml
+src/main/resources/application-dev.properties
+src/main/resources/application-prod.properties
 
-application.properties
-application.yml
-application-dev.properties
-application-prod.properties
+# Allow example config (SAFE)
+!src/main/resources/application-example.yml
 
 # ===============================
 # Maven
 # ===============================
-
 .mvn/
 mvnw
 mvnw.cmd
@@ -34,10 +35,11 @@ mvnw.cmd
 # ===============================
 # Node / Frontend
 # ===============================
-
 node_modules/
 dist/
 build/
+
+# Environment files
 .env
 .env.local
 .env.development.local
@@ -49,16 +51,13 @@ build/
 # ===============================
 
 # IntelliJ
-
 .idea/
 *.iml
 
 # VS Code
-
 .vscode/
 
 # Eclipse
-
 .project
 .classpath
 .settings/
@@ -66,14 +65,12 @@ build/
 # ===============================
 # OS Files
 # ===============================
-
 .DS_Store
 Thumbs.db
 
 # ===============================
 # Temporary Files
 # ===============================
-
 *.tmp
 *.swp
 *.bak

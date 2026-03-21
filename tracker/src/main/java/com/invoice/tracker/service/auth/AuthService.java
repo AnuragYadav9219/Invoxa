@@ -1,5 +1,7 @@
 package com.invoice.tracker.service.auth;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,6 +12,7 @@ import com.invoice.tracker.common.exception.BadRequestException;
 import com.invoice.tracker.common.exception.ResourceNotFoundException;
 import com.invoice.tracker.dto.auth.AuthResponse;
 import com.invoice.tracker.dto.auth.LoginRequest;
+import com.invoice.tracker.dto.auth.OtpRequest;
 import com.invoice.tracker.dto.auth.RegisterRequest;
 import com.invoice.tracker.entity.auth.RefreshToken;
 import com.invoice.tracker.entity.auth.Role;
@@ -26,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthService {
 
+        private final OtpService otpService;
         private final UserRepository userRepository;
         private final ShopRepository shopRepository;
         private final PasswordEncoder passwordEncoder;
@@ -33,6 +37,8 @@ public class AuthService {
         private final AuthenticationManager authenticationManager;
         private final JwtUtil jwtUtil;
         private final DeviceHelper deviceHelper;
+
+        private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
         // ================= REGISTER =================
         @Transactional
@@ -69,6 +75,10 @@ public class AuthService {
 
                 userRepository.save(user);
 
+                log.info("New user registered | email={} | role={}",
+                                user.getEmail(),
+                                user.getRole());
+
                 String accessToken = jwtUtil.generateToken(
                                 user.getId(),
                                 shop.getId(),
@@ -101,13 +111,62 @@ public class AuthService {
                                                         request.getEmail(),
                                                         request.getPassword()));
                 } catch (Exception e) {
+                        log.warn("Login failed | email={}", request.getEmail());
                         throw new BadRequestException("Invalid email or password");
                 }
 
                 User user = userRepository.findByEmail(request.getEmail())
                                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
+                String deviceId = deviceHelper.getDeviceId(request.getDeviceId());
+                String deviceName = deviceHelper.getDeviceName(request.getDeviceName());
+
+                log.info("User logged in | email={} | role={} | deviceName={}",
+                                user.getEmail(),
+                                user.getRole(),
+                                deviceName);
+
                 // Generate JWT access token
+                String accessToken = jwtUtil.generateToken(
+                                user.getId(),
+                                user.getShop().getId(),
+                                user.getRole().name(),
+                                user.getEmail(),
+                                user.getTokenVersion());
+
+                // Create refresh token (NO revoke all -> multi-device supported)
+                RefreshToken refreshToken = refreshTokenService.createRefreshToken(
+                                user,
+                                deviceId,
+                                deviceName);
+
+                return new AuthResponse(
+                                "Login successful",
+                                accessToken,
+                                refreshToken.getToken());
+        }
+
+        // =================== VERIFY OTP LOGIN ==========================
+        public AuthResponse verifyOtpLoginOrRegister(OtpRequest request) {
+
+                otpService.verifyOtp(request.getEmail(), request.getOtp());
+
+                User user = userRepository.findByEmail(request.getEmail())
+                                .orElseGet(() -> {
+                                        Shop shop = shopRepository.save(
+                                                        Shop.builder()
+                                                                        .shopName("New Shop")
+                                                                        .ownerName(request.getEmail())
+                                                                        .build());
+
+                                        return userRepository.save(
+                                                        User.builder()
+                                                                        .email(request.getEmail())
+                                                                        .role(Role.OWNER)
+                                                                        .shop(shop)
+                                                                        .build());
+                                });
+
                 String accessToken = jwtUtil.generateToken(
                                 user.getId(),
                                 user.getShop().getId(),
@@ -118,14 +177,13 @@ public class AuthService {
                 String deviceId = deviceHelper.getDeviceId(request.getDeviceId());
                 String deviceName = deviceHelper.getDeviceName(request.getDeviceName());
 
-                // Create refresh token (NO revoke all -> multi-device supported)
                 RefreshToken refreshToken = refreshTokenService.createRefreshToken(
                                 user,
                                 deviceId,
                                 deviceName);
 
                 return new AuthResponse(
-                                "Login successful",
+                                "OTP Login Successful",
                                 accessToken,
                                 refreshToken.getToken());
         }
@@ -169,6 +227,7 @@ public class AuthService {
 
                 user.setTokenVersion(user.getTokenVersion() + 1);
                 userRepository.save(user);
+                log.info("User logged out | email={}", email);
         }
 
         // ================= LOGOUT ALL DEVICES =================

@@ -14,6 +14,8 @@ public class CreateInvoiceRequest {
 
     private String customerPhone;
 
+    private String customerEmail;
+
     private LocalDate dueDate;
 
     private List<InvoiceItemRequest> items;

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,6 +29,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     // ======================== ADD PAYMENT ===========================
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse<PaymentResponse>> addPayment(@RequestBody CreatePaymentRequest request) {
 
@@ -37,6 +39,7 @@ public class PaymentController {
     }
 
     // ======================== MARK AS PAID ===========================
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/invoice/{invoiceId}/mark-paid")
     public ResponseEntity<ApiResponse<InvoiceResponse>> markInvoiceAsPaid(
             @PathVariable UUID invoiceId) {
@@ -47,6 +50,7 @@ public class PaymentController {
     }
 
     // ======================== GET PAYMENTS HISTORY ===========================
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
     @GetMapping("/invoice/{invoiceId}")
     public ResponseEntity<ApiResponse<List<PaymentResponse>>> getPaymentsByInvoice(@PathVariable UUID invoiceId) {
 

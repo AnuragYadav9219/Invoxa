@@ -1,11 +1,18 @@
 package com.invoice.tracker.service.invoice;
 
+import com.invoice.tracker.service.pdf.PdfService;
+import com.invoice.tracker.specification.InvoiceSpecification;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +20,7 @@ import com.invoice.tracker.dto.invoice.InvoiceItemRequest;
 import com.invoice.tracker.dto.invoice.InvoiceResponse;
 import com.invoice.tracker.common.exception.BadRequestException;
 import com.invoice.tracker.dto.invoice.CreateInvoiceRequest;
+import com.invoice.tracker.dto.invoice.InvoiceFilterRequest;
 import com.invoice.tracker.entity.invoice.Invoice;
 import com.invoice.tracker.entity.invoice.InvoiceItem;
 import com.invoice.tracker.entity.invoice.InvoiceStatus;
@@ -31,6 +39,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class InvoiceServiceImpl implements InvoiceService {
 
+        private final PdfService pdfService;
         private final InvoiceRepository invoiceRepository;
         private final InvoiceMapper invoiceMapper;
         private final InvoiceHelper invoiceHelper;
@@ -38,6 +47,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         private final InvoiceNumberGenerator invoiceNumberGenerator;
         private final ApplicationEventPublisher eventPublisher;
 
+        // ====================== CREATE INVOICE =========================
         @Override
         @Transactional
         public InvoiceResponse createInvoice(CreateInvoiceRequest request) {
@@ -87,6 +97,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                                 .shopId(shopId)
                                 .customerName(request.getCustomerName())
                                 .customerPhone(request.getCustomerPhone())
+                                .customerEmail(request.getCustomerEmail())
                                 .status(InvoiceStatus.PENDING)
                                 .totalAmount(totalAmount)
                                 .paidAmount(BigDecimal.ZERO)
@@ -98,24 +109,25 @@ public class InvoiceServiceImpl implements InvoiceService {
                 invoice.setItems(invoiceItems);
 
                 Invoice savedInvoice = invoiceRepository.save(invoice);
+
                 eventPublisher.publishEvent(new InvoiceCreatedEvent(savedInvoice));
 
                 return invoiceMapper.toResponse(savedInvoice);
         }
 
-        // Get all Invoices for current shop
+        // ====================== GET ALL INVOICES =========================
         @Override
-        public List<InvoiceResponse> getInvoices() {
+        public Page<InvoiceResponse> getInvoices(int page, int size) {
 
                 UUID shopId = SecurityUtils.getCurrentUserShopId();
 
-                return invoiceRepository.findByShopId(shopId)
-                                .stream()
-                                .map(invoiceMapper::toResponse)
-                                .toList();
+                Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+                return invoiceRepository.findByShopId(shopId, pageable)
+                                .map(invoiceMapper::toResponse);
         }
 
-        // Get single invoice
+        // ======================== GET SINGLE INVOICE =========================
         @Override
         public InvoiceResponse getInvoice(UUID invoiceId) {
 
@@ -124,12 +136,33 @@ public class InvoiceServiceImpl implements InvoiceService {
                 return invoiceMapper.toResponse(invoice);
         }
 
-        // Delete invoice
+        // ====================== DELETE INVOICE =========================
         @Override
         public void deleteInvoice(UUID invoiceId) {
 
                 Invoice invoice = invoiceHelper.getInvoiceOrThrow(invoiceId);
 
                 invoiceRepository.delete(invoice);
+        }
+
+        // ====================== PDF GENERATION =========================
+        public byte[] getInvoicePdf(UUID invoiceId, UUID shopId) {
+
+                Invoice invoice = invoiceHelper.getInvoiceOrThrow(invoiceId);
+
+                return pdfService.generateInvoicePdf(invoice);
+        }
+
+        // ======================== FILTER =========================
+        @Override
+        public Page<InvoiceResponse> filterInvoices(InvoiceFilterRequest filter, int page, int size) {
+
+                UUID shopId = SecurityUtils.getCurrentUserShopId();
+
+                Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+                return invoiceRepository.findAll(
+                                InvoiceSpecification.filterInvoices(filter, shopId),
+                                pageable).map(invoiceMapper::toResponse);
         }
 }

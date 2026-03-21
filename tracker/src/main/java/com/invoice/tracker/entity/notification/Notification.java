@@ -6,6 +6,8 @@ import java.util.UUID;
 import com.invoice.tracker.entity.invoice.Invoice;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -40,6 +42,9 @@ public class Notification {
     private boolean sent;
     private int retryCount;
     private LocalDateTime lastTriedAt;
+
+    @Enumerated(EnumType.STRING)
+    private NotificationStatus status;
 
     private LocalDateTime sentAt;
 

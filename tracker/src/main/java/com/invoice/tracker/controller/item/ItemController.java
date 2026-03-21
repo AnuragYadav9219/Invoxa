@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,7 +29,8 @@ public class ItemController {
 
         private final ItemService itemService;
 
-        // Create item controller
+        // ===================== CREATE ITEMS =========================
+        @PreAuthorize("hasRole('ADMIN')")
         @PostMapping
         public ResponseEntity<ApiResponse<ItemResponse>> createItem(@RequestBody CreateItemRequest request) {
 
@@ -45,7 +47,8 @@ public class ItemController {
                                 .body(response);
         }
 
-        // Get all items of a shop
+        // ===================== GET ALL ITEMS =========================
+        @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
         @GetMapping
         public ResponseEntity<ApiResponse<List<ItemResponse>>> getItems() {
 
@@ -60,7 +63,8 @@ public class ItemController {
                 return ResponseEntity.ok(response);
         }
 
-        // Get item
+        // ===================== GET AN ITEM =========================
+        @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
         @GetMapping("/{id}")
         public ResponseEntity<ApiResponse<ItemResponse>> getItem(@PathVariable UUID id) {
 
@@ -75,7 +79,8 @@ public class ItemController {
                 return ResponseEntity.ok(response);
         }
 
-        // Update and item
+        // ===================== UPDATE AN ITEM =========================
+        @PreAuthorize("hasRole('ADMIN')")
         @PutMapping("/{id}")
         public ResponseEntity<ApiResponse<ItemResponse>> updateItem(
                         @PathVariable UUID id,
@@ -92,7 +97,8 @@ public class ItemController {
                 return ResponseEntity.ok(response);
         }
 
-        // Delete an item
+        // ===================== DELETE AN ITEM =========================
+        @PreAuthorize("hasRole('ADMIN')")
         @DeleteMapping("/{id}")
         public ResponseEntity<ApiResponse<Void>> deleteItem(@PathVariable UUID id) {
 

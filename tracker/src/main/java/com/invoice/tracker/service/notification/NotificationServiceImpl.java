@@ -3,6 +3,7 @@ package com.invoice.tracker.service.notification;
 import com.invoice.tracker.repository.notification.NotificationRepository;
 import com.invoice.tracker.security.SecurityUtils;
 import com.invoice.tracker.service.notification.channel.EmailService;
+import com.invoice.tracker.service.pdf.PdfService;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -13,11 +14,14 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import com.invoice.tracker.dto.notification.NotificationResponse;
 import com.invoice.tracker.entity.invoice.Invoice;
 import com.invoice.tracker.entity.notification.Notification;
+import com.invoice.tracker.entity.notification.NotificationStatus;
+import com.invoice.tracker.mapper.NotificationMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,6 +31,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final EmailService emailService;
+    private final PdfService pdfService;
+    private final NotificationMapper notificationMapper;
 
     private static final Logger log = LoggerFactory.getLogger(NotificationServiceImpl.class);
 
@@ -35,12 +41,18 @@ public class NotificationServiceImpl implements NotificationService {
     @Async
     public void sendInvoiceCreatedNotification(Invoice invoice) {
 
+        validateAccess(invoice);
+
         if (!isValidRecipient(invoice))
             return;
 
         String message = buildInvoiceCreatedMessage(invoice);
 
-        boolean sent = sendEmailSafely(() -> emailService.sendInvoiceCreated(invoice), invoice);
+        byte[] pdf = pdfService.generateInvoicePdf(invoice);
+
+        boolean sent = sendEmailSafely(() -> {
+            emailService.sendInvoiceCreated(invoice, pdf);
+        }, invoice);
 
         saveNotification(invoice, message, getRecipient(invoice), "EMAIL", sent);
     }
@@ -49,6 +61,8 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Async
     public void sendPartialPaymentNotification(Invoice invoice) {
+
+        validateAccess(invoice);
 
         if (!isValidRecipient(invoice))
             return;
@@ -65,6 +79,8 @@ public class NotificationServiceImpl implements NotificationService {
     @Async
     public void sendInvoiceFullyPaidNotification(Invoice invoice) {
 
+        validateAccess(invoice);
+
         if (!isValidRecipient(invoice))
             return;
 
@@ -79,6 +95,8 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Async
     public void sendDueReminder(Invoice invoice) {
+
+        validateAccess(invoice);
 
         if (!isValidRecipient(invoice))
             return;
@@ -95,6 +113,8 @@ public class NotificationServiceImpl implements NotificationService {
     @Async
     public void sendOverdueAlert(Invoice invoice) {
 
+        validateAccess(invoice);
+
         if (!isValidRecipient(invoice))
             return;
 
@@ -109,36 +129,61 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void saveNotification(Invoice invoice, String message, String recipient, String type, boolean sent) {
 
+        NotificationStatus status = sent
+                ? NotificationStatus.SENT
+                : NotificationStatus.FAILED;
+
         Notification notification = Notification.builder()
                 .invoice(invoice)
                 .message(message)
                 .recipient(recipient)
                 .type(type)
-                .sent(sent) 
+                .sent(sent)
+                .status(status)
                 .retryCount(sent ? 0 : 1)
                 .lastTriedAt(LocalDateTime.now())
-                .sentAt(LocalDateTime.now())
+                .sentAt(sent ? LocalDateTime.now() : null)
                 .build();
 
         notificationRepository.save(notification);
     }
 
-    // ================== ALL NOTIFICATIONS ==========================
+    // ================== FETCH NOTIFICATIONS LOGICS ==========================
+
     @Override
     public List<NotificationResponse> getAllNotifications() {
 
         UUID shopId = SecurityUtils.getCurrentUserShopId();
 
-        return notificationRepository.findByInvoice_ShopIdOrderBySentAtDesc(shopId)
-                .stream()
-                .map(n -> NotificationResponse.builder()
-                        .id(n.getId())
-                        .message(n.getMessage())
-                        .type(n.getType())
-                        .sent(n.isSent())
-                        .sentAt(n.getSentAt())
-                        .build())
-                .toList();
+        return notificationMapper.map(
+                notificationRepository.findByInvoice_ShopIdOrderBySentAtDesc(shopId));
+    }
+
+    @Override
+    public List<NotificationResponse> getFailedNotifications() {
+
+        UUID shopId = SecurityUtils.getCurrentUserShopId();
+
+        return notificationMapper.map(notificationRepository
+                .findByStatusAndInvoice_ShopIdOrderBySentAtDesc(NotificationStatus.FAILED, shopId));
+    }
+
+    @Override
+    public List<NotificationResponse> getRetryingNotifications() {
+
+        UUID shopId = SecurityUtils.getCurrentUserShopId();
+
+        return notificationMapper.map(notificationRepository
+                .findByStatusAndInvoice_ShopIdOrderBySentAtDesc(NotificationStatus.RETRYING, shopId));
+    }
+
+    @Override
+    public List<NotificationResponse> getSentNotifications() {
+
+        UUID shopId = SecurityUtils.getCurrentUserShopId();
+
+        return notificationMapper.map(notificationRepository
+                .findByStatusAndInvoice_ShopIdOrderBySentAtDesc(NotificationStatus.SENT, shopId));
     }
 
     // ================== COMMON EMAIL HANDLER ==========================
@@ -199,11 +244,25 @@ public class NotificationServiceImpl implements NotificationService {
         return invoice.getCustomerEmail() != null && !invoice.getCustomerEmail().isBlank();
     }
 
+    private void validateAccess(Invoice invoice) {
+
+        UUID shopId = SecurityUtils.getCurrentUserShopId();
+
+        if (!invoice.getShopId().equals(shopId)) {
+            throw new AccessDeniedException("Unauthorized access");
+        }
+    }
+
     private String getRecipient(Invoice invoice) {
         return invoice.getCustomerEmail();
     }
 
     private String formatAmount(BigDecimal amount) {
+
+        if (amount == null) {
+            return "0.00";
+        }
+
         return amount.setScale(2, RoundingMode.HALF_UP).toString();
     }
 

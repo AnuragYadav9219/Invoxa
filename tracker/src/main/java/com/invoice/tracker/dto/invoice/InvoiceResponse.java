@@ -18,6 +18,7 @@ public class InvoiceResponse {
 
     private String customerName;
     private String customerPhone;
+    private String customerEmail;
 
     private BigDecimal totalAmount;
     private BigDecimal paidAmount;

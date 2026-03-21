@@ -20,8 +20,7 @@ public class UserPrincipal implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(
-            new SimpleGrantedAuthority("ROLE_" + user.getRole().name())
-        );
+                new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
     }
 
     @Override
@@ -34,16 +33,12 @@ public class UserPrincipal implements UserDetails {
         return user.getEmail();
     }
 
-    public User getUser() {
-        return user;
-    }
-
     public UUID getUserId() {
         return user.getId();
     }
 
     public UUID getShopId() {
-        return user.getShop().getId();
+        return user.getShop() != null ? user.getShop().getId() : null;
     }
 
     public String getRole() {
@@ -56,12 +51,12 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true; 
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; 
+        return true;
     }
 
     @Override
