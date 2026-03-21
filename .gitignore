@@ -1,54 +1,76 @@
-# ===============================
-# Spring Boot / Java
-# ===============================
-target/
-build/
-*.class
-*.jar
-*.war
-*.ear
+# =====================================================
+# ROOT LEVEL (General)
+# =====================================================
 
-# ===============================
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Temporary Files
+*.tmp
+*.swp
+*.bak
+
 # Logs
-# ===============================
 logs/
 *.log
 
-# ===============================
-# Application Secrets (IMPORTANT)
-# ===============================
-src/main/resources/application.properties
-src/main/resources/application.yml
-src/main/resources/application-dev.properties
-src/main/resources/application-prod.properties
 
-# Allow example config (SAFE)
-!src/main/resources/application-example.yml
+# =====================================================
+# BACKEND (Spring Boot - tracker/)
+# =====================================================
 
-# ===============================
-# Maven
-# ===============================
-.mvn/
-mvnw
-mvnw.cmd
+# Build folders
+tracker/target/
+tracker/build/
 
-# ===============================
-# Node / Frontend
-# ===============================
-node_modules/
-dist/
-build/
+# Compiled files
+tracker/*.class
+tracker/*.jar
+tracker/*.war
+tracker/*.ear
 
-# Environment files
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Maven Wrapper (optional ignore)
+tracker/.mvn/
+tracker/mvnw
+tracker/mvnw.cmd
 
 # ===============================
-# IDE Files
+# Application Secrets 
 # ===============================
+
+tracker/src/main/resources/application.properties
+tracker/src/main/resources/application.yml
+tracker/src/main/resources/application-dev.properties
+tracker/src/main/resources/application-prod.properties
+
+# Allow safe example config
+!tracker/src/main/resources/application-example.yml
+!tracker/src/main/resources/application-example.properties
+
+
+# =====================================================
+# FRONTEND (React - frontend/)
+# =====================================================
+
+# Node modules
+frontend/node_modules/
+
+# Build output
+frontend/build/
+frontend/dist/
+
+# Environment variables (VERY IMPORTANT )
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+
+# =====================================================
+# IDE FILES
+# =====================================================
 
 # IntelliJ
 .idea/
@@ -62,15 +84,12 @@ build/
 .classpath
 .settings/
 
-# ===============================
-# OS Files
-# ===============================
-.DS_Store
-Thumbs.db
 
-# ===============================
-# Temporary Files
-# ===============================
-*.tmp
-*.swp
-*.bak
+
+# Coverage reports
+coverage/
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
