@@ -1,5 +1,5 @@
 # =====================================================
-# ROOT LEVEL (General)
+# ROOT LEVEL
 # =====================================================
 
 # OS Files
@@ -14,6 +14,14 @@ Thumbs.db
 # Logs
 logs/
 *.log
+
+# Coverage
+coverage/
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 
 # =====================================================
@@ -35,16 +43,13 @@ tracker/.mvn/
 tracker/mvnw
 tracker/mvnw.cmd
 
-# ===============================
-# Application Secrets 
-# ===============================
-
+# Application Secrets
 tracker/src/main/resources/application.properties
 tracker/src/main/resources/application.yml
 tracker/src/main/resources/application-dev.properties
 tracker/src/main/resources/application-prod.properties
 
-# Allow safe example config
+# Allow example config
 !tracker/src/main/resources/application-example.yml
 !tracker/src/main/resources/application-example.properties
 
@@ -57,15 +62,19 @@ tracker/src/main/resources/application-prod.properties
 frontend/node_modules/
 
 # Build output
-frontend/build/
 frontend/dist/
+frontend/build/
 
-# Environment variables (VERY IMPORTANT )
+# Vite cache
+frontend/.vite/
+
+# Environment variables (VERY IMPORTANT)
 frontend/.env
-frontend/.env.local
-frontend/.env.development.local
-frontend/.env.test.local
-frontend/.env.production.local
+frontend/.env.*
+!frontend/.env.example
+
+# Optional logs
+frontend/*.log
 
 
 # =====================================================
@@ -83,13 +92,3 @@ frontend/.env.production.local
 .project
 .classpath
 .settings/
-
-
-
-# Coverage reports
-coverage/
-
-# Debug logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
