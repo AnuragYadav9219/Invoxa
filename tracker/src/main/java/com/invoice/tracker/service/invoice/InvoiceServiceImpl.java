@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.invoice.tracker.dto.invoice.InvoiceItemRequest;
 import com.invoice.tracker.dto.invoice.InvoiceResponse;
 import com.invoice.tracker.common.exception.BadRequestException;
+import com.invoice.tracker.dto.common.PageResponse;
 import com.invoice.tracker.dto.invoice.CreateInvoiceRequest;
 import com.invoice.tracker.dto.invoice.InvoiceFilterRequest;
 import com.invoice.tracker.entity.invoice.Invoice;
@@ -62,6 +63,10 @@ public class InvoiceServiceImpl implements InvoiceService {
                         throw new BadRequestException("Customer name is required");
                 }
 
+                if (request.getCustomerEmail() == null || request.getCustomerEmail().isBlank()) {
+                        throw new BadRequestException("Customer email is required");
+                }
+
                 List<InvoiceItem> invoiceItems = new ArrayList<>();
                 BigDecimal totalAmount = BigDecimal.ZERO;
 
@@ -77,7 +82,6 @@ public class InvoiceServiceImpl implements InvoiceService {
                         BigDecimal quantity = BigDecimal.valueOf(itemRequest.getQuantity());
 
                         BigDecimal itemTotal = price.multiply(quantity);
-
                         totalAmount = totalAmount.add(itemTotal);
 
                         InvoiceItem invoiceItem = InvoiceItem.builder()
@@ -108,23 +112,32 @@ public class InvoiceServiceImpl implements InvoiceService {
                 invoiceItems.forEach(i -> i.setInvoice(invoice));
                 invoice.setItems(invoiceItems);
 
-                Invoice savedInvoice = invoiceRepository.save(invoice);
+                Invoice savedInvoice = invoiceRepository.saveAndFlush(invoice);
 
-                eventPublisher.publishEvent(new InvoiceCreatedEvent(savedInvoice));
+                eventPublisher.publishEvent(new InvoiceCreatedEvent(savedInvoice.getId(), shopId));
 
                 return invoiceMapper.toResponse(savedInvoice);
         }
 
         // ====================== GET ALL INVOICES =========================
         @Override
-        public Page<InvoiceResponse> getInvoices(int page, int size) {
+        public PageResponse<InvoiceResponse> getInvoices(int page, int size) {
 
                 UUID shopId = SecurityUtils.getCurrentUserShopId();
 
                 Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-                return invoiceRepository.findByShopId(shopId, pageable)
+                Page<InvoiceResponse> pageData = invoiceRepository
+                                .findByShopId(shopId, pageable)
                                 .map(invoiceMapper::toResponse);
+
+                return new PageResponse<>(
+                                pageData.getContent(),
+                                pageData.getNumber(),
+                                pageData.getSize(),
+                                pageData.getTotalElements(),
+                                pageData.getTotalPages(),
+                                pageData.isLast());
         }
 
         // ======================== GET SINGLE INVOICE =========================
@@ -155,14 +168,31 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         // ======================== FILTER =========================
         @Override
-        public Page<InvoiceResponse> filterInvoices(InvoiceFilterRequest filter, int page, int size) {
+        public PageResponse<InvoiceResponse> filterInvoices(InvoiceFilterRequest filter, int page, int size) {
 
                 UUID shopId = SecurityUtils.getCurrentUserShopId();
 
-                Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+                String sort = filter.getSort() != null ? filter.getSort() : "createdAt,desc";
 
-                return invoiceRepository.findAll(
+                String[] parts = sort.split(",");
+                String field = parts[0];
+                String direction = parts[1];
+
+                Pageable pageable = PageRequest.of(
+                                page,
+                                size,
+                                Sort.by(Sort.Direction.fromString(direction), field));
+
+                Page<InvoiceResponse> pageData = invoiceRepository.findAll(
                                 InvoiceSpecification.filterInvoices(filter, shopId),
                                 pageable).map(invoiceMapper::toResponse);
+
+                return new PageResponse<>(
+                                pageData.getContent(),
+                                pageData.getNumber(),
+                                pageData.getSize(),
+                                pageData.getTotalElements(),
+                                pageData.getTotalPages(),
+                                pageData.isLast());
         }
 }

@@ -17,6 +17,7 @@ public class InvoiceMapper {
                 .shopId(invoice.getShopId())
                 .customerName(invoice.getCustomerName())
                 .customerPhone(invoice.getCustomerPhone())
+                .customerEmail(invoice.getCustomerEmail())
                 .totalAmount(invoice.getTotalAmount())
                 .paidAmount(invoice.getPaidAmount())
                 .remainingAmount(invoice.getRemainingAmount())

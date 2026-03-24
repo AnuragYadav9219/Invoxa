@@ -2,7 +2,6 @@ package com.invoice.tracker.controller.invoice;
 
 import java.util.UUID;
 
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.invoice.tracker.common.response.ApiResponse;
+import com.invoice.tracker.dto.common.PageResponse;
 import com.invoice.tracker.dto.invoice.CreateInvoiceRequest;
 import com.invoice.tracker.dto.invoice.InvoiceFilterRequest;
 import com.invoice.tracker.dto.invoice.InvoiceResponse;
@@ -32,7 +32,7 @@ public class InvoiceController {
         private final InvoiceService invoiceService;
 
         // ============================ CREATE INVOICE =========================
-        @PreAuthorize("hasRole('ADMIN')")
+        @PreAuthorize("hasRole('OWNER')")
         @PostMapping
         public ResponseEntity<ApiResponse<InvoiceResponse>> createInvoice(@RequestBody CreateInvoiceRequest request) {
 
@@ -50,15 +50,15 @@ public class InvoiceController {
         }
 
         // ============================ GET INVOICES =========================
-        @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+        
         @GetMapping
-        public ResponseEntity<ApiResponse<Page<InvoiceResponse>>> getInvoices(
+        public ResponseEntity<ApiResponse<PageResponse<InvoiceResponse>>> getInvoices(
                         @RequestParam(defaultValue = "0") int page,
                         @RequestParam(defaultValue = "10") int size) {
 
-                Page<InvoiceResponse> invoices = invoiceService.getInvoices(page, size);
+                PageResponse<InvoiceResponse> invoices = invoiceService.getInvoices(page, size);
 
-                ApiResponse<Page<InvoiceResponse>> response = ApiResponse.<Page<InvoiceResponse>>builder()
+                ApiResponse<PageResponse<InvoiceResponse>> response = ApiResponse.<PageResponse<InvoiceResponse>>builder()
                                 .success(true)
                                 .message("Invoices fetched successfully")
                                 .data(invoices)
@@ -68,7 +68,7 @@ public class InvoiceController {
         }
 
         // ============================ GET SINGLE INVOICE =========================
-        @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+        @PreAuthorize("hasAnyRole('OWNER','STAFF')")
         @GetMapping("/{id}")
         public ResponseEntity<ApiResponse<InvoiceResponse>> getInvoice(@PathVariable UUID id) {
 
@@ -84,7 +84,7 @@ public class InvoiceController {
         }
 
         // ============================ DELETE INVOICE =========================
-        @PreAuthorize("hasRole('ADMIN')")
+        @PreAuthorize("hasRole('OWNER')")
         @DeleteMapping("/{id}")
         public ResponseEntity<ApiResponse<Void>> deleteInvoice(@PathVariable UUID id) {
 
@@ -100,7 +100,7 @@ public class InvoiceController {
         }
 
         // ==================== VIEW + DOWNLOAD INVOICE ====================
-        @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+        @PreAuthorize("hasAnyRole('OWNER','STAFF')")
         @GetMapping("/{invoiceId}/pdf")
         public ResponseEntity<byte[]> downloadInvoicePdf(
                         @PathVariable UUID invoiceId,
@@ -118,16 +118,16 @@ public class InvoiceController {
         }
 
         // ========================== FILTER ========================
-        @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+        @PreAuthorize("hasAnyRole('OWNER','STAFF')")
         @PostMapping("/filter")
-        public ResponseEntity<ApiResponse<Page<InvoiceResponse>>> filterInvoices(
+        public ResponseEntity<ApiResponse<PageResponse<InvoiceResponse>>> filterInvoices(
                         @RequestBody InvoiceFilterRequest request,
                         @RequestParam(defaultValue = "0") int page,
                         @RequestParam(defaultValue = "10") int size) {
 
-                Page<InvoiceResponse> invoices = invoiceService.filterInvoices(request, page, size);
+                PageResponse<InvoiceResponse> invoices = invoiceService.filterInvoices(request, page, size);
 
-                ApiResponse<Page<InvoiceResponse>> response = ApiResponse.<Page<InvoiceResponse>>builder()
+                ApiResponse<PageResponse<InvoiceResponse>> response = ApiResponse.<PageResponse<InvoiceResponse>>builder()
                                 .success(true)
                                 .message("Filtered invoices fetched successfully")
                                 .data(invoices)

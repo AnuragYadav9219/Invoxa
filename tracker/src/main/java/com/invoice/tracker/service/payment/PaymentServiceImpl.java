@@ -24,6 +24,7 @@ import com.invoice.tracker.mapper.InvoiceMapper;
 import com.invoice.tracker.mapper.PaymentMapper;
 import com.invoice.tracker.repository.invoice.InvoiceRepository;
 import com.invoice.tracker.repository.payment.PaymentRepository;
+import com.invoice.tracker.security.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -181,10 +182,12 @@ public class PaymentServiceImpl implements PaymentService {
             return;
         }
 
+        UUID shopId = SecurityUtils.getCurrentUserShopId();
+
         if (invoice.getStatus() == InvoiceStatus.PAID) {
-            eventPublisher.publishEvent(new InvoiceFullyPaidEvent(invoice));
+            eventPublisher.publishEvent(new InvoiceFullyPaidEvent(invoice.getId(), shopId));
         } else if (invoice.getStatus() == InvoiceStatus.PARTIALLY_PAID) {
-            eventPublisher.publishEvent(new PartialPaymentEvent(invoice));
+            eventPublisher.publishEvent(new PartialPaymentEvent(invoice.getId(), shopId));
         }
     }
 }

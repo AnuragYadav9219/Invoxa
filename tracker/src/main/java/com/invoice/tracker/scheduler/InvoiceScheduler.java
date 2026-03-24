@@ -2,6 +2,7 @@ package com.invoice.tracker.scheduler;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,6 +14,7 @@ import com.invoice.tracker.entity.invoice.InvoiceStatus;
 import com.invoice.tracker.event.invoice.DueReminderEvent;
 import com.invoice.tracker.event.invoice.InvoiceOverDueEvent;
 import com.invoice.tracker.repository.invoice.InvoiceRepository;
+import com.invoice.tracker.security.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +48,9 @@ public class InvoiceScheduler {
 
                 invoice.setStatus(InvoiceStatus.OVERDUE);
 
-                eventPublisher.publishEvent(new InvoiceOverDueEvent(invoice));
+                UUID shopId = SecurityUtils.getCurrentUserShopId();
+
+                eventPublisher.publishEvent(new InvoiceOverDueEvent(invoice.getId(), shopId));
 
                 updatedCount++;
             }
@@ -69,7 +73,9 @@ public class InvoiceScheduler {
                     && invoice.getDueDate().isEqual(today.plusDays(1))
                     && invoice.getStatus() != InvoiceStatus.PAID) {
 
-                eventPublisher.publishEvent(new DueReminderEvent(invoice));
+                UUID shopId = SecurityUtils.getCurrentUserShopId();
+
+                eventPublisher.publishEvent(new DueReminderEvent(invoice.getId(), shopId));
             }
         }
     }

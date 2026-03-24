@@ -39,9 +39,11 @@ public class NotificationServiceImpl implements NotificationService {
     // =================== INVOICE CREATED =======================
     @Override
     @Async
-    public void sendInvoiceCreatedNotification(Invoice invoice) {
+    public void sendInvoiceCreatedNotification(Invoice invoice, UUID shopId) {
 
-        validateAccess(invoice);
+        if (!invoice.getShopId().equals(shopId)) {
+            throw new AccessDeniedException("Unauthorized access");
+        }
 
         if (!isValidRecipient(invoice))
             return;
@@ -60,9 +62,11 @@ public class NotificationServiceImpl implements NotificationService {
     // ===================== PARTIAL PAYMENT ======================
     @Override
     @Async
-    public void sendPartialPaymentNotification(Invoice invoice) {
+    public void sendPartialPaymentNotification(Invoice invoice, UUID shopId) {
 
-        validateAccess(invoice);
+        if (!invoice.getShopId().equals(shopId)) {
+            throw new AccessDeniedException("Unauthorized access");
+        }
 
         if (!isValidRecipient(invoice))
             return;
@@ -77,9 +81,11 @@ public class NotificationServiceImpl implements NotificationService {
     // =========================== FULL PAYMENT ===============================
     @Override
     @Async
-    public void sendInvoiceFullyPaidNotification(Invoice invoice) {
+    public void sendInvoiceFullyPaidNotification(Invoice invoice, UUID shopId) {
 
-        validateAccess(invoice);
+        if (!invoice.getShopId().equals(shopId)) {
+            throw new AccessDeniedException("Unauthorized access");
+        }
 
         if (!isValidRecipient(invoice))
             return;
@@ -94,9 +100,11 @@ public class NotificationServiceImpl implements NotificationService {
     // ======================= DUE REMINDER ============================
     @Override
     @Async
-    public void sendDueReminder(Invoice invoice) {
+    public void sendDueReminder(Invoice invoice, UUID shopId) {
 
-        validateAccess(invoice);
+        if (!invoice.getShopId().equals(shopId)) {
+            throw new AccessDeniedException("Unauthorized access");
+        }
 
         if (!isValidRecipient(invoice))
             return;
@@ -111,9 +119,11 @@ public class NotificationServiceImpl implements NotificationService {
     // ======================= OVERDUE ALERT ============================
     @Override
     @Async
-    public void sendOverdueAlert(Invoice invoice) {
+    public void sendOverdueAlert(Invoice invoice, UUID shopId) {
 
-        validateAccess(invoice);
+        if (!invoice.getShopId().equals(shopId)) {
+            throw new AccessDeniedException("Unauthorized access");
+        }
 
         if (!isValidRecipient(invoice))
             return;
@@ -242,15 +252,6 @@ public class NotificationServiceImpl implements NotificationService {
 
     private boolean isValidRecipient(Invoice invoice) {
         return invoice.getCustomerEmail() != null && !invoice.getCustomerEmail().isBlank();
-    }
-
-    private void validateAccess(Invoice invoice) {
-
-        UUID shopId = SecurityUtils.getCurrentUserShopId();
-
-        if (!invoice.getShopId().equals(shopId)) {
-            throw new AccessDeniedException("Unauthorized access");
-        }
     }
 
     private String getRecipient(Invoice invoice) {

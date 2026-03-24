@@ -1,6 +1,6 @@
 package com.invoice.tracker.event.invoice;
 
-import com.invoice.tracker.entity.invoice.Invoice;
+import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,6 +8,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class InvoiceCreatedEvent {
-    
-    private final Invoice invoice;
+    private final UUID invoiceId;
+    private final UUID shopId;
 }

@@ -19,7 +19,7 @@ public class DashboardController {
 
     private final DashboardService dashboardService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('OWNER')")
     @GetMapping
     public ResponseEntity<ApiResponse<DashboardResponse>> getDashboard() {
 

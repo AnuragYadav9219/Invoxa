@@ -30,7 +30,7 @@ public class ItemController {
         private final ItemService itemService;
 
         // ===================== CREATE ITEMS =========================
-        @PreAuthorize("hasRole('ADMIN')")
+        @PreAuthorize("hasRole('OWNER')")
         @PostMapping
         public ResponseEntity<ApiResponse<ItemResponse>> createItem(@RequestBody CreateItemRequest request) {
 
@@ -48,7 +48,7 @@ public class ItemController {
         }
 
         // ===================== GET ALL ITEMS =========================
-        @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+        @PreAuthorize("hasAnyRole('OWNER', 'STAFF')")
         @GetMapping
         public ResponseEntity<ApiResponse<List<ItemResponse>>> getItems() {
 
@@ -64,7 +64,7 @@ public class ItemController {
         }
 
         // ===================== GET AN ITEM =========================
-        @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+        @PreAuthorize("hasAnyRole('OWNER','STAFF')")
         @GetMapping("/{id}")
         public ResponseEntity<ApiResponse<ItemResponse>> getItem(@PathVariable UUID id) {
 
@@ -80,7 +80,7 @@ public class ItemController {
         }
 
         // ===================== UPDATE AN ITEM =========================
-        @PreAuthorize("hasRole('ADMIN')")
+        @PreAuthorize("hasRole('OWNER')")
         @PutMapping("/{id}")
         public ResponseEntity<ApiResponse<ItemResponse>> updateItem(
                         @PathVariable UUID id,
@@ -98,7 +98,7 @@ public class ItemController {
         }
 
         // ===================== DELETE AN ITEM =========================
-        @PreAuthorize("hasRole('ADMIN')")
+        @PreAuthorize("hasRole('OWNER')")
         @DeleteMapping("/{id}")
         public ResponseEntity<ApiResponse<Void>> deleteItem(@PathVariable UUID id) {
 

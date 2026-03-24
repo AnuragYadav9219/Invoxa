@@ -1,31 +1,40 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
-import { loginUser } from "@/features/auth/authSlice";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLoginMutation } from "@/features/auth/authApi";
+import { tokenService } from "@/utils/tokenService";
 
 export default function Login() {
-    const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const { loading, token, error } = useSelector((state) => state.auth);
+    const [login, { isLoading, error, isSuccess }] = useLoginMutation();
 
     const [form, setForm] = useState({
         email: "",
-        password: ""
+        password: "",
     });
 
-    const handleLogin = () => {
-        dispatch(loginUser(form));
+    /* ================= LOGIN HANDLER ================= */
+    const handleLogin = async () => {
+        try {
+            await login(form).unwrap();
+
+            // token already saved in authApi (onQueryStarted)
+            navigate("/dashboard");
+        } catch (err) {
+            console.log(err);
+        }
     };
 
+    /* ================= AUTO REDIRECT IF LOGGED IN ================= */
     useEffect(() => {
+        const token = tokenService.getToken();
         if (token) {
             navigate("/dashboard");
         }
-    }, [token]);
+    }, []);
 
     return (
         <div className="flex items-center justify-center h-screen">
@@ -35,6 +44,7 @@ export default function Login() {
 
                     <Input
                         placeholder="Email"
+                        value={form.email}
                         onChange={(e) =>
                             setForm({ ...form, email: e.target.value })
                         }
@@ -43,21 +53,25 @@ export default function Login() {
                     <Input
                         type="password"
                         placeholder="Password"
+                        value={form.password}
                         onChange={(e) =>
                             setForm({ ...form, password: e.target.value })
                         }
                     />
 
+                    {/* ERROR */}
                     {error && (
-                        <p className="text-red-500 text-sm">{error}</p>
+                        <p className="text-red-500 text-sm">
+                            {error?.data?.message || "Login failed"}
+                        </p>
                     )}
 
                     <Button
                         className="w-full"
                         onClick={handleLogin}
-                        disabled={loading}
+                        disabled={isLoading || !form.email || !form.password}
                     >
-                        {loading ? "Logging in..." : "Login"}
+                        {isLoading ? "Logging in..." : "Login"}
                     </Button>
                 </CardContent>
             </Card>

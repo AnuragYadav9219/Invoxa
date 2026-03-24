@@ -29,7 +29,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     // ======================== ADD PAYMENT ===========================
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('OWNER')")
     @PostMapping
     public ResponseEntity<ApiResponse<PaymentResponse>> addPayment(@RequestBody CreatePaymentRequest request) {
 
@@ -39,7 +39,7 @@ public class PaymentController {
     }
 
     // ======================== MARK AS PAID ===========================
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('OWNER')")
     @PostMapping("/invoice/{invoiceId}/mark-paid")
     public ResponseEntity<ApiResponse<InvoiceResponse>> markInvoiceAsPaid(
             @PathVariable UUID invoiceId) {
@@ -50,7 +50,7 @@ public class PaymentController {
     }
 
     // ======================== GET PAYMENTS HISTORY ===========================
-    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+    @PreAuthorize("hasAnyRole('OWNER','STAFF')")
     @GetMapping("/invoice/{invoiceId}")
     public ResponseEntity<ApiResponse<List<PaymentResponse>>> getPaymentsByInvoice(@PathVariable UUID invoiceId) {
 

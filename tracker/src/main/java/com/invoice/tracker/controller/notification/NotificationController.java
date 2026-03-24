@@ -21,28 +21,28 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     // ================ GET ALL ===================
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('OWNER')")
     @GetMapping
     public List<NotificationResponse> getNotifications() {
         return notificationService.getAllNotifications();
     }
 
     // ================ GET FAILED ===================
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('OWNER')")
     @GetMapping("/failed")
     public ResponseEntity<List<NotificationResponse>> getFailedNotifications() {
         return ResponseEntity.ok(notificationService.getFailedNotifications());
     }
 
     // ================ GET RETRYING ===================
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('OWNER')")
     @GetMapping("/retrying")
     public ResponseEntity<List<NotificationResponse>> getRetryingNotifications() {
         return ResponseEntity.ok(notificationService.getRetryingNotifications());
     }
 
     // ================ GET SENT ===================
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('OWNER')")
     @GetMapping("/sent")
     public ResponseEntity<List<NotificationResponse>> getSentNotifications() {
         return ResponseEntity.ok(notificationService.getSentNotifications());

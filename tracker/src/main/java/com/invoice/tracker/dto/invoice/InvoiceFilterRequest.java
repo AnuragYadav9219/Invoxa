@@ -17,4 +17,6 @@ public class InvoiceFilterRequest {
 
     private LocalDate fromDate;
     private LocalDate toDate;
+    
+    private String sort;
 }
