@@ -1,5 +1,6 @@
 package com.invoice.tracker.controller.invoice;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -50,7 +51,7 @@ public class InvoiceController {
         }
 
         // ============================ GET INVOICES =========================
-        
+
         @GetMapping
         public ResponseEntity<ApiResponse<PageResponse<InvoiceResponse>>> getInvoices(
                         @RequestParam(defaultValue = "0") int page,
@@ -58,7 +59,8 @@ public class InvoiceController {
 
                 PageResponse<InvoiceResponse> invoices = invoiceService.getInvoices(page, size);
 
-                ApiResponse<PageResponse<InvoiceResponse>> response = ApiResponse.<PageResponse<InvoiceResponse>>builder()
+                ApiResponse<PageResponse<InvoiceResponse>> response = ApiResponse
+                                .<PageResponse<InvoiceResponse>>builder()
                                 .success(true)
                                 .message("Invoices fetched successfully")
                                 .data(invoices)
@@ -117,6 +119,23 @@ public class InvoiceController {
                                 .body(pdf);
         }
 
+        // ========================= RECENT INVOICE DATA ====================
+        @GetMapping("/recent")
+        @PreAuthorize("hasRole('OWNER')")
+        public ResponseEntity<ApiResponse<List<InvoiceResponse>>> getRecentInvoices(
+                        @RequestParam(defaultValue = "5") int limit) {
+
+                List<InvoiceResponse> invoices = invoiceService.getRecentInvoices(limit);
+
+                ApiResponse<List<InvoiceResponse>> response = ApiResponse.<List<InvoiceResponse>>builder()
+                                .success(true)
+                                .message("Recent invoices fetched successfully")
+                                .data(invoices)
+                                .build();
+
+                return ResponseEntity.ok(response);
+        }
+
         // ========================== FILTER ========================
         @PreAuthorize("hasAnyRole('OWNER','STAFF')")
         @PostMapping("/filter")
@@ -127,7 +146,8 @@ public class InvoiceController {
 
                 PageResponse<InvoiceResponse> invoices = invoiceService.filterInvoices(request, page, size);
 
-                ApiResponse<PageResponse<InvoiceResponse>> response = ApiResponse.<PageResponse<InvoiceResponse>>builder()
+                ApiResponse<PageResponse<InvoiceResponse>> response = ApiResponse
+                                .<PageResponse<InvoiceResponse>>builder()
                                 .success(true)
                                 .message("Filtered invoices fetched successfully")
                                 .data(invoices)

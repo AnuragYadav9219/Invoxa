@@ -1,5 +1,4 @@
 import { useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
 import {
     User,
     Mail,
@@ -8,35 +7,31 @@ import {
     FileText,
     BadgeIndianRupee,
 } from "lucide-react";
-
-/* Currency Formatter */
-const formatCurrency = (amount) =>
-    amount != null
-        ? Math.round(amount).toLocaleString("en-IN", {
-              style: "currency",
-              currency: "INR",
-              maximumFractionDigits: 0,
-          })
-        : "—";
-
-/* Date Formatter */
-function formatDate(date) {
-    if (!date) return "—";
-
-    return new Date(date).toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-    });
-}
+import { useGetInvoiceByIdQuery } from "@/features/invoice/invoiceApi";
+import PageLoader from "@/components/loaders/PageLoader";
+import { useSelector } from "react-redux";
+import { formatCurrency, formatDate } from "@/utils/formatters";
+import { useGetShopQuery } from "@/features/shop/shopApi";
 
 export default function InvoiceDetails() {
     const { id } = useParams();
-    const { invoices } = useSelector((state) => state.invoice);
 
-    const invoice = invoices.find((inv) => inv.id === id);
+    const { data, isLoading, error } = useGetInvoiceByIdQuery(id);
 
-    if (!invoice) {
+    const user = useSelector((state) => state.auth.user);
+
+    const { data: shopData } = useGetShopQuery(user?.shopId, {
+        skip: !user?.shopId,
+    });
+
+    const shop = shopData?.data;
+    const invoice = data?.data;
+
+    if (isLoading) {
+        return <PageLoader />
+    }
+
+    if (error || !invoice) {
         return (
             <div className="p-10 text-center text-gray-500">
                 Invoice not found
@@ -55,13 +50,13 @@ export default function InvoiceDetails() {
                     <div>
                         <h2 className="text-lg font-bold flex items-center gap-2">
                             <FileText size={18} />
-                            Your Shop Name {invoice.shopId.shopName}
+                            {user?.shopName || "N/A"}
                         </h2>
                         <p className="text-xs text-gray-500">
-                            Address Line, City
+                            {shop?.address || "Address not available"}
                         </p>
                         <p className="text-xs text-gray-500">
-                            Phone: +91 XXXXX XXXXX
+                            Phone: {shop?.phone || "N/A"}
                         </p>
                     </div>
 
@@ -70,12 +65,12 @@ export default function InvoiceDetails() {
                             INVOICE
                         </h1>
                         <p className="text-xs text-gray-500">
-                            #{invoice.invoiceNumber}
+                            #{invoice?.invoiceNumber}
                         </p>
 
                         <div className="flex items-center justify-end gap-1 text-xs text-gray-500">
                             <Calendar size={12} />
-                            {formatDate(invoice.dueDate)}
+                            {formatDate(invoice?.dueDate)}
                         </div>
                     </div>
                 </div>
@@ -89,17 +84,17 @@ export default function InvoiceDetails() {
 
                         <div className="flex items-center gap-2">
                             <User size={14} />
-                            <span>{invoice.customerName}</span>
+                            <span>{invoice?.customerName}</span>
                         </div>
 
                         <div className="flex items-center gap-2 text-gray-500 text-xs">
                             <Mail size={12} />
-                            {invoice.customerEmail || "No Email"}
+                            {invoice?.customerEmail || "No Email"}
                         </div>
 
                         <div className="flex items-center gap-2 text-gray-500 text-xs">
                             <Phone size={12} />
-                            {invoice.customerPhone || "No Phone"}
+                            {invoice?.customerPhone || "No Phone"}
                         </div>
                     </div>
 
@@ -107,7 +102,7 @@ export default function InvoiceDetails() {
                     <div className="text-right">
                         <p className="font-semibold text-sm mb-1">Status</p>
                         <span className="px-3 py-1 text-xs rounded-full bg-gray-100">
-                            {invoice.status}
+                            {invoice?.status}
                         </span>
                     </div>
                 </div>
@@ -126,7 +121,7 @@ export default function InvoiceDetails() {
                         </thead>
 
                         <tbody>
-                            {invoice.items?.map((item, i) => (
+                            {invoice?.items?.map((item, i) => (
                                 <tr
                                     key={i}
                                     className="border-b hover:bg-gray-50 transition"
@@ -161,17 +156,17 @@ export default function InvoiceDetails() {
                                 <BadgeIndianRupee size={14} />
                                 Total
                             </span>
-                            <span>{formatCurrency(invoice.totalAmount)}</span>
+                            <span>{formatCurrency(invoice?.totalAmount)}</span>
                         </div>
 
                         <div className="flex justify-between text-green-600">
                             <span>Paid</span>
-                            <span>{formatCurrency(invoice.paidAmount)}</span>
+                            <span>{formatCurrency(invoice?.paidAmount)}</span>
                         </div>
 
                         <div className="flex justify-between font-bold text-red-600 border-t pt-2">
                             <span>Balance Due</span>
-                            <span>{formatCurrency(invoice.remainingAmount)}</span>
+                            <span>{formatCurrency(invoice?.remainingAmount)}</span>
                         </div>
                     </div>
                 </div>
@@ -179,7 +174,7 @@ export default function InvoiceDetails() {
                 {/* ===== FOOTER ===== */}
                 <div className="mt-10 flex justify-between items-end text-xs">
                     <div className="text-gray-500">
-                        Thank you for your business 
+                        Thank you for your business
                     </div>
 
                     <div className="text-right">

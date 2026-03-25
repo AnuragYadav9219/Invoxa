@@ -4,12 +4,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLoginMutation } from "@/features/auth/authApi";
-import { tokenService } from "@/utils/tokenService";
+import { useAuth } from "@/hooks/authHooks";
 
 export default function Login() {
     const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
 
-    const [login, { isLoading, error, isSuccess }] = useLoginMutation();
+    const [login, { isLoading, error }] = useLoginMutation();
 
     const [form, setForm] = useState({
         email: "",
@@ -21,20 +22,19 @@ export default function Login() {
         try {
             await login(form).unwrap();
 
-            // token already saved in authApi (onQueryStarted)
             navigate("/dashboard");
+
         } catch (err) {
             console.log(err);
         }
     };
 
-    /* ================= AUTO REDIRECT IF LOGGED IN ================= */
+    /* ================= AUTO REDIRECT ================= */
     useEffect(() => {
-        const token = tokenService.getToken();
-        if (token) {
+        if (isAuthenticated) {
             navigate("/dashboard");
         }
-    }, []);
+    }, [isAuthenticated]);
 
     return (
         <div className="flex items-center justify-center h-screen">

@@ -1,13 +1,18 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Login from "./pages/Login";
-import PrivateRoute from "./routes/PrivateRoute";
-import Dashboard from "./pages/Dashboard";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import ProtectedRoute from "./routes/ProtectedRoute";
 import Layout from "./components/layout/Layout";
-import InvoiceDetails from "./pages/InvoiceDetails";
-import Invoices from "./pages/Invoices";
+import Dashboard from "./pages/Dashboard";
+import Invoices from "./features/invoice/pages/Invoices";
+import InvoiceDetails from "./features/invoice/pages/InvoiceDetails";
+import RoleRoute from "./routes/RoleRoute";
+import AdminPage from "./features/admin/AdminPage";
 import { Toaster } from "sonner";
+import { useAutoLogout } from "./hooks/useAutoLogout";
+import Login from "./pages/Login";
 
 export default function App() {
+  useAutoLogout();
+
   return (
     <>
       <BrowserRouter>
@@ -17,34 +22,49 @@ export default function App() {
           <Route
             path="/dashboard"
             element={
-              <PrivateRoute>
+              <ProtectedRoute>
                 <Layout>
                   <Dashboard />
                 </Layout>
-              </PrivateRoute>
-            } />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/invoices"
             element={
-              <PrivateRoute>
+              <ProtectedRoute>
                 <Layout>
                   <Invoices />
                 </Layout>
-              </PrivateRoute>
-            } />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/invoices/:id"
             element={
-              <PrivateRoute>
+              <ProtectedRoute>
                 <Layout>
                   <InvoiceDetails />
                 </Layout>
-              </PrivateRoute>
-            } />
-        </Routes>
+              </ProtectedRoute>
+            }
+          />
 
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <RoleRoute allowedRoles={["OWNER"]}>
+                  <Layout>
+                    <AdminPage />
+                  </Layout>
+                </RoleRoute>
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
       </BrowserRouter>
 
       <Toaster position="top-right" richColors />

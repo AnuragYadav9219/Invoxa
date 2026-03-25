@@ -18,7 +18,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { tokenService } from "@/utils/tokenService";
+import { tokenService } from "@/services/tokenService";
 
 export default function Navbar({ isOpen, setIsOpen }) {
     const [showSearch, setShowSearch] = useState(false);
@@ -27,7 +27,7 @@ export default function Navbar({ isOpen, setIsOpen }) {
     /* ================= LOGOUT ================= */
     const handleLogout = () => {
         tokenService.clear();        // remove token + user
-        navigate("/login");          // redirect
+        navigate("/login");          
     };
 
     const user = tokenService.getUser();
@@ -77,17 +77,23 @@ export default function Navbar({ isOpen, setIsOpen }) {
 
                             <DropdownMenuSeparator />
 
-                            <DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="cursor-pointer"
+                            >
                                 <UserIcon size={16} className="mr-2" />
                                 Profile
                             </DropdownMenuItem>
 
-                            <DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="cursor-pointer"
+                            >
                                 <CreditCardIcon size={16} className="mr-2" />
                                 Billing
                             </DropdownMenuItem>
 
-                            <DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="cursor-pointer"
+                            >
                                 <SettingsIcon size={16} className="mr-2" />
                                 Settings
                             </DropdownMenuItem>

@@ -14,7 +14,7 @@ export const invoiceApi = baseApi.injectEndpoints({
                 },
                 data: {
                     search: search || null,
-                    status: status || null,         
+                    status: status || null,
                     fromDate: fromDate || null,
                     toDate: toDate || null,
                     sort: sort || "dueDate,desc",
@@ -37,6 +37,19 @@ export const invoiceApi = baseApi.injectEndpoints({
                         { type: "Invoice", id: "LIST" },
                     ]
                     : [{ type: "Invoice", id: "LIST" }],
+        }),
+
+        /* ================ GET RECENT INVOICES ============== */
+        getRecentInvoice: builder.query({
+            query: (limit = 5) => ({
+                url: "/invoices/recent",
+                method: "GET",
+                params: { limit },
+            }),
+
+            transformResponse: (response) => response.data,
+
+            providesTags: [{ type: "Invoice", id: "LIST" }],
         }),
 
         /* ================== GET ONE ================== */
@@ -101,4 +114,5 @@ export const {
     useCreateInvoiceMutation,
     useDeleteInvoiceMutation,
     useDownloadInvoicePDFMutation,
+    useGetRecentInvoiceQuery
 } = invoiceApi;

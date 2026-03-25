@@ -1,4 +1,4 @@
-package com.invoice.tracker.dto.auth;
+package com.invoice.tracker.dto.shop;
 
 import java.util.UUID;
 
@@ -9,11 +9,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class UserResponse {
-    
+public class ShopResponse {
     private UUID id;
-    private String email;
-    private String role;
-    private UUID shopId;
     private String shopName;
+    private String ownername;
+    private String phone;
+    private String address;
 }

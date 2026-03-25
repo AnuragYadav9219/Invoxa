@@ -40,7 +40,7 @@ public class UserPrincipal implements UserDetails {
     public UUID getShopId() {
         return user.getShop() != null ? user.getShop().getId() : null;
     }
-
+    
     public String getRole() {
         return user.getRole().name();
     }

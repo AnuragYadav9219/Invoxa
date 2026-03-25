@@ -19,6 +19,7 @@ import com.invoice.tracker.entity.auth.Role;
 import com.invoice.tracker.entity.auth.Shop;
 import com.invoice.tracker.entity.auth.User;
 import com.invoice.tracker.helper.auth.DeviceHelper;
+import com.invoice.tracker.mapper.AuthMapper;
 import com.invoice.tracker.repository.auth.UserRepository;
 import com.invoice.tracker.repository.shop.ShopRepository;
 import com.invoice.tracker.security.JwtUtil;
@@ -95,13 +96,11 @@ public class AuthService {
                                 deviceId,
                                 deviceName);
 
-                return new AuthResponse(
-                                "User registered successfully!",
-                                accessToken,
-                                refreshToken.getToken());
+                return AuthMapper.buildAuthResponse(user, accessToken, refreshToken.getToken());
         }
 
         // ================= LOGIN =================
+        @Transactional
         public AuthResponse login(LoginRequest request) {
 
                 // Authenticate user using Spring Security
@@ -115,8 +114,12 @@ public class AuthService {
                         throw new BadRequestException("Invalid email or password");
                 }
 
-                User user = userRepository.findByEmail(request.getEmail())
+                User user = userRepository.findByEmailWithShop(request.getEmail())
                                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+                if (user.getShop() == null) {
+                        throw new IllegalStateException("User has no shop assigned");
+                }
 
                 String deviceId = deviceHelper.getDeviceId(request.getDeviceId());
                 String deviceName = deviceHelper.getDeviceName(request.getDeviceName());
@@ -140,10 +143,7 @@ public class AuthService {
                                 deviceId,
                                 deviceName);
 
-                return new AuthResponse(
-                                "Login successful",
-                                accessToken,
-                                refreshToken.getToken());
+                return AuthMapper.buildAuthResponse(user, accessToken, refreshToken.getToken());
         }
 
         // =================== VERIFY OTP LOGIN ==========================
@@ -182,10 +182,7 @@ public class AuthService {
                                 deviceId,
                                 deviceName);
 
-                return new AuthResponse(
-                                "OTP Login Successful",
-                                accessToken,
-                                refreshToken.getToken());
+                return AuthMapper.buildAuthResponse(user, accessToken, refreshToken.getToken());
         }
 
         // ================= REFRESH TOKEN (ROTATION) =================
@@ -208,10 +205,7 @@ public class AuthService {
                                 user.getEmail(),
                                 user.getTokenVersion());
 
-                return new AuthResponse(
-                                "Token Refreshed Successfully",
-                                accessToken,
-                                newToken.getToken());
+                return AuthMapper.buildAuthResponse(user, accessToken, newToken.getToken());
         }
 
         // ================= LOGOUT (CURRENT DEVICE) =================

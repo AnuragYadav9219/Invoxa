@@ -41,7 +41,7 @@ public class DashboardServiceImpl implements DashboardService {
 
             switch (status) {
                 case PAID -> paid = count;
-                case PENDING -> pending = count;
+                case PENDING, PARTIALLY_PAID -> pending += count;
                 case OVERDUE -> overdue = count;
             }
         }

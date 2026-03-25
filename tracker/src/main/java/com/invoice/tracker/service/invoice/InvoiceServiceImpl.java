@@ -166,6 +166,19 @@ public class InvoiceServiceImpl implements InvoiceService {
                 return pdfService.generateInvoicePdf(invoice);
         }
 
+        // ====================== GET RECENT INVOICES ====================
+        @Transactional(readOnly = true)
+        public List<InvoiceResponse> getRecentInvoices(int limit) {
+
+                Pageable pageable = PageRequest.of(0, limit);
+
+                return invoiceRepository
+                                .findRecentInvoicesWithItems(pageable)
+                                .stream()
+                                .map(invoiceMapper::toResponse)
+                                .toList();
+        }
+
         // ======================== FILTER =========================
         @Override
         public PageResponse<InvoiceResponse> filterInvoices(InvoiceFilterRequest filter, int page, int size) {

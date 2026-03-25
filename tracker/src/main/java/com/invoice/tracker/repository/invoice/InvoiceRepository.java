@@ -33,6 +33,13 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID>, JpaSpec
                         org.springframework.data.jpa.domain.Specification<Invoice> spec,
                         Pageable pageable);
 
+        @Query("""
+                            SELECT i FROM Invoice i
+                            LEFT JOIN FETCH i.items
+                            ORDER BY i.createdAt DESC
+                        """)
+        List<Invoice> findRecentInvoicesWithItems(Pageable pageable);
+
         // ===================== BULK UPDATE =========================
         @Modifying
         @Transactional
@@ -49,10 +56,9 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID>, JpaSpec
 
         // Total Revenue
         @Query("""
-                        SELECT COALESCE(SUM(i.totalAmount), 0)
+                        SELECT COALESCE(SUM(i.paidAmount), 0)
                         FROM Invoice i
                         WHERE i.shopId = :shopId
-                        AND i.status = 'PAID'
                         """)
         BigDecimal getTotalRevenue(UUID shopId);
 
@@ -61,7 +67,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID>, JpaSpec
                         SELECT COALESCE(SUM(i.remainingAmount), 0)
                         FROM Invoice i
                         WHERE i.shopId = :shopId
-                        AND i.status = 'PENDING'
+                        AND i.status IN ('PENDING', 'PARTIALLY_PAID')
                         """)
         BigDecimal getTotalPending(UUID shopId);
 

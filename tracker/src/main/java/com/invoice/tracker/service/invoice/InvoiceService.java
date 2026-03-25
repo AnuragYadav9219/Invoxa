@@ -1,5 +1,6 @@
 package com.invoice.tracker.service.invoice;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.invoice.tracker.dto.common.PageResponse;
@@ -18,6 +19,8 @@ public interface InvoiceService {
     void deleteInvoice(UUID invoiceId);
 
     byte[] getInvoicePdf(UUID invoiceId, UUID shopId);
+
+    List<InvoiceResponse> getRecentInvoices(int limit);
 
     PageResponse<InvoiceResponse> filterInvoices(InvoiceFilterRequest filter, int page, int size);
 }

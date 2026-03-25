@@ -16,15 +16,15 @@ const useDebounce = (value, delay = 500) => {
 /* ================= MAIN HOOK ================= */
 export default function useInvoiceFilters({
     page = 0,
+    size = 10,
     externalStatus,
     externalSort,
     search: externalSearch,
+    fromDate,
+    toDate,
 }) {
-    const [search, setSearch] = useState("");
-    const [fromDate, setFromDate] = useState("");
-    const [toDate, setToDate] = useState("");
-
-    const debouncedSearch = useDebounce(externalSearch || "");
+    const finalSearch = externalSearch ?? "";
+    const debouncedSearch = useDebounce(finalSearch.trim(), 500);
 
     /* ================= SORT MAPPING ================= */
     const sortValue = useMemo(() => {
@@ -53,11 +53,11 @@ export default function useInvoiceFilters({
     /* ================= FINAL QUERY PARAMS ================= */
     const queryParams = useMemo(() => ({
         page,
-        size: 10,
-        search: debouncedSearch || null,
+        size,
+        search: debouncedSearch.length > 0 ? debouncedSearch : null,
         status: externalStatus === "ALL" ? null : externalStatus, 
-        fromDate,
-        toDate,
+        fromDate: fromDate || null,
+        toDate: toDate || null,
         sort: sortValue,
     }), [page, debouncedSearch, externalStatus, fromDate, toDate, sortValue]);
 
@@ -71,28 +71,16 @@ export default function useInvoiceFilters({
     } = useGetInvoicesQuery(queryParams, {
         refetchOnFocus: true,
         refetchOnReconnect: true,
+        skip: false,
     });
 
     return {
-        /* DATA */
         invoices: data?.content || [],
         totalPages: data?.totalPages || 0,
         totalElements: data?.totalElements || 0,
-
-        /* STATES */
         isLoading,
         isFetching,
         error,
-
-        /* FILTERS */
-        search,
-        setSearch,
-        fromDate,
-        setFromDate,
-        toDate,
-        setToDate,
-
-        /* ACTIONS */
         refetch,
     };
 }
