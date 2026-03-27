@@ -1,6 +1,7 @@
+import { getErrorMessage } from "@/components/toast/getErrorMessage";
+import { showError, showWarning } from "@/components/toast/toast";
 import { tokenService } from "@/services/tokenService";
 import axios from "axios";
-import { toast } from "sonner";
 
 const axiosInstance = axios.create({
     baseURL: "http://localhost:8080/api",
@@ -9,27 +10,30 @@ const axiosInstance = axios.create({
 
 export const axiosBaseQuery =
     () =>
-        async ({ url, method, data, params }) => {
+        async ({ url, method, body, params, responseType, meta }) => {
             try {
                 const token = tokenService.getToken();
+                const shopId = localStorage.getItem("shopId");
 
                 const result = await axiosInstance({
                     url,
                     method,
-                    data,
+                    data: body,
                     params,
-                    headers: token
-                        ? { Authorization: `Bearer ${token}` }
-                        : {},
+                    responseType,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` }),
+                        ...(shopId && { "X-Shop-Id": shopId }),
+                    },
                 });
 
                 return { data: result.data };
+
             } catch (error) {
                 const status = error.response?.status;
 
-                /* AUTO LOGOUT */
                 if (status === 401) {
-                    const refreshToken = localStorage.getItem("refreshToken");
+                    const refreshToken = tokenService.getRefreshToken();
 
                     if (refreshToken) {
                         try {
@@ -38,18 +42,23 @@ export const axiosBaseQuery =
                                 { refreshToken }
                             );
 
-                            const newAccessToken = refreshResponse.data.data.accessToken;
+                            const res = refreshResponse.data?.data;
 
-                            tokenService.setToken(newAccessToken);
+                            tokenService.setToken(res.accessToken);
+                            tokenService.setRefreshToken(res.refreshToken);
+                            tokenService.setUser(res.user);
 
-                            // retry original request
+                            localStorage.setItem("shopId", res.user.shopId);
+
                             const retryResult = await axiosInstance({
                                 url,
                                 method,
-                                data,
+                                data: body,
                                 params,
+                                responseType,
                                 headers: {
-                                    Authorization: `Bearer ${newAccessToken}`,
+                                    Authorization: `Bearer ${res.accessToken}`,
+                                    "X-Shop-Id": res.user.shopId,
                                 },
                             });
 
@@ -57,21 +66,36 @@ export const axiosBaseQuery =
 
                         } catch {
                             tokenService.clear();
-                            window.location.href = "/login";
+
+                            showWarning("Session expired. Please login again.");
+
+                            if (window.location.pathname !== "/login") {
+                                window.location.replace("/login");
+                            }
                         }
                     } else {
                         tokenService.clear();
-                        window.location.href = "/login";
+
+                        showWarning("Session expired. Please login again.");
+
+                        if (window.location.pathname !== "/login") {
+                            window.location.replace("/login");
+                        }
                     }
                 }
 
-                /* GLOBAL ERROR */
-                toast.error("API Error", {
-                    description:
-                        error.response?.data?.message ||
-                        error.message ||
-                        "Something went wrong",
-                });
+                /* ================= GLOBAL ERROR ================= */
+                if (status !== 401) {
+                    const feature = meta?.feature || "common";
+
+                    const message = getErrorMessage(
+                        status,
+                        feature,
+                        error.response?.data?.message
+                    );
+
+                    showError(message, { id: message });
+                }
 
                 return {
                     error: {

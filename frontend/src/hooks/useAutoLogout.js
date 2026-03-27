@@ -13,7 +13,9 @@ export const useAutoLogout = () => {
         if (!token || isTokenExpired(token)) {
             tokenService.clear();
             dispatch(logout());
-            window.location.href = "/login";
+            if (window.location.pathname !== "/login") {
+                window.location.replace("/login");
+            }
         }
     }, []);
 };

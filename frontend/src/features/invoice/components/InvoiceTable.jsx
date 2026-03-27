@@ -44,23 +44,6 @@ export default function InvoiceTable({
       {/* DESKTOP */}
       <div className="hidden lg:block rounded-xl border overflow-hidden">
         <Table>
-          {/* <TableHeader className="bg-gray-50">
-            <TableRow className="hover:bg-transparent">
-              <TableHead>Invoice</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Total</TableHead>
-              <TableHead>Paid</TableHead>
-              <TableHead>Remaining</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Due Date</TableHead>
-              {showActions && (
-                <TableHead className="text-right">
-                  Action
-                </TableHead>
-              )}
-            </TableRow>
-          </TableHeader> */}
-
           <TableHeader className="bg-gray-50">
             <TableRow className="hover:bg-transparent">
               <TableHead>Invoice</TableHead>

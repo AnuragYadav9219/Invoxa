@@ -12,25 +12,26 @@ export const invoiceApi = baseApi.injectEndpoints({
                     page,
                     size,
                 },
-                data: {
+                body: {
                     search: search || null,
-                    status: status || null,
+                    status: status === "ALL" ? null : status,
                     fromDate: fromDate || null,
                     toDate: toDate || null,
                     sort: sort || "dueDate,desc",
                 },
+                meta: { feature: "invoice" },
             }),
 
             transformResponse: (response) => response.data,
 
             serializeQueryArgs: ({ endpointName, queryArgs }) => {
-                return endpointName + JSON.stringify(queryArgs);
+                return `${endpointName}-${JSON.stringify(queryArgs)}`;
             },
 
             providesTags: (result) =>
-                result?.data?.content
+                result?.content
                     ? [
-                        ...result.data.content.map(({ id }) => ({
+                        ...result.content.map(({ id }) => ({
                             type: "Invoice",
                             id,
                         })),
@@ -45,6 +46,7 @@ export const invoiceApi = baseApi.injectEndpoints({
                 url: "/invoices/recent",
                 method: "GET",
                 params: { limit },
+                meta: { feature: "invoice" },
             }),
 
             transformResponse: (response) => response.data,
@@ -56,6 +58,8 @@ export const invoiceApi = baseApi.injectEndpoints({
         getInvoiceById: builder.query({
             query: (id) => ({
                 url: `/invoices/${id}`,
+                method: "GET",
+                meta: { feature: "invoice" },
             }),
             providesTags: (result, error, id) => [
                 { type: "Invoice", id },
@@ -67,9 +71,28 @@ export const invoiceApi = baseApi.injectEndpoints({
             query: (data) => ({
                 url: "/invoices",
                 method: "POST",
-                data,
+                body: data,
+                meta: { feature: "invoice" },
             }),
+
+            
+
             invalidatesTags: [{ type: "Invoice", id: "LIST" }],
+        }),
+
+        /* ================== UPDATE ================== */
+        updateInvoice: builder.mutation({
+            query: ({ id, ...data }) => ({
+                url: `/invoices/${id}`,
+                method: "PUT",
+                body: data,
+                meta: { feature: "invoice" },
+            }),
+
+            invalidatesTags: (result, error, { id }) => [
+                { type: "Invoice", id },
+                { type: "Invoice", id: "LIST" },
+            ],
         }),
 
         /* ================== DELETE ================== */
@@ -77,6 +100,7 @@ export const invoiceApi = baseApi.injectEndpoints({
             query: (id) => ({
                 url: `/invoices/${id}`,
                 method: "DELETE",
+                meta: { feature: "invoice" },
             }),
             invalidatesTags: (result, error, id) => [
                 { type: "Invoice", id },
@@ -89,21 +113,25 @@ export const invoiceApi = baseApi.injectEndpoints({
             query: (id) => ({
                 url: `/invoices/${id}/pdf`,
                 method: "GET",
-                responseHandler: async (response) => {
-                    const blob = await response.blob();
-
-                    const url = window.URL.createObjectURL(blob);
-                    const link = document.createElement("a");
-
-                    link.href = url;
-                    link.setAttribute("download", `invoice-${id}.pdf`);
-
-                    document.body.appendChild(link);
-                    link.click();
-
-                    return { success: true };
-                },
+                responseType: "blob",
+                meta: { feature: "invoice" },
             }),
+
+            async transformResponse(response, meta, arg) {
+                const url = window.URL.createObjectURL(response);
+                const link = document.createElement("a");
+
+                link.href = url;
+                link.setAttribute("download", `invoice-${arg}.pdf`);
+
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+
+                window.URL.revokeObjectURL(url);
+
+                return { success: true };
+            },
         }),
     }),
 });
@@ -112,6 +140,7 @@ export const {
     useGetInvoicesQuery,
     useGetInvoiceByIdQuery,
     useCreateInvoiceMutation,
+    useUpdateInvoiceMutation,
     useDeleteInvoiceMutation,
     useDownloadInvoicePDFMutation,
     useGetRecentInvoiceQuery

@@ -24,12 +24,14 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import useInvoiceFilters from "@/features/invoice/useInvoiceFilters";
 import { setPage, updateFilter } from "@/features/invoice/invoiceSlice";
-import { useNavigate } from "react-router-dom";
 import InvoiceTable from "../components/InvoiceTable";
+import { useState } from "react";
+import InvoiceForm from "../components/InvoiceForm";
 
 export default function Invoices() {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const [open, setOpen] = useState(false);
 
   const { page, pageSize, filters } = useSelector((state) => state.invoiceUI);
   const { search, status, sort, fromDate, toDate } = filters;
@@ -64,12 +66,14 @@ export default function Invoices() {
 
         <Button
           className="cursor-pointer"
-          onClick={() => navigate("/invoices/create")}
+          onClick={() => setOpen(true)}
         >
           <Plus size={16} />
           New Invoice
         </Button>
       </div>
+
+      <InvoiceForm open={open} setOpen={setOpen} />
 
       {/* SUMMARY BAR */}
       <div className="flex items-center justify-between bg-white border rounded-xl px-4 py-3 shadow-sm">

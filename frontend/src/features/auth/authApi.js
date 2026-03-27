@@ -10,7 +10,7 @@ export const authApi = baseApi.injectEndpoints({
             query: (data) => ({
                 url: "/auth/login",
                 method: "POST",
-                data: {
+                body: {
                     ...data,
                     deviceId: "web-app",
                     deviceName: "Chrome",
@@ -25,13 +25,17 @@ export const authApi = baseApi.injectEndpoints({
 
                     tokenService.setToken(res.accessToken);
                     tokenService.setRefreshToken(res.refreshToken);
-
                     tokenService.setUser(res.user);
+
+                    localStorage.setItem("shopId", res.user.shopId);
 
                     dispatch(setCredentials(res.user));
 
                 } catch (err) {
-                    console.error("Login failed");
+                    toast.error("Login failed", {
+                        description:
+                            err?.error?.data?.message || "Invalid credentials",
+                    });
                 }
             },
         }),
@@ -48,29 +52,9 @@ export const authApi = baseApi.injectEndpoints({
                     await queryFulfilled;
                 } finally {
                     tokenService.clear();
+                    localStorage.removeItem("shopId");
                     dispatch(logout());
-                }
-            },
-        }),
-
-        /* =============== REFRESH =================== */
-        refresh: builder.mutation({
-            query: () => ({
-                url: "/auth/refresh",
-                method: "POST",
-                data: {
-                    refreshToken: localStorage.getItem("refreshToken"),
-                },
-            }),
-
-            async onQueryStarted(arg, { queryFulfilled }) {
-                try {
-                    const { data } = await queryFulfilled;
-                    const res = data.data;
-                    tokenService.setToken(res.accessToken);
-                } catch {
-                    tokenService.clear();
-                    window.location.href = "/login";
+                    window.location.replace("/login");
                 }
             },
         }),
@@ -80,5 +64,4 @@ export const authApi = baseApi.injectEndpoints({
 export const {
     useLoginMutation,
     useLogoutMutation,
-    useRefreshMutation,
 } = authApi;
