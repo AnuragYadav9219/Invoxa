@@ -31,7 +31,7 @@
   }
 }
 
-/* ✅ FIXED stagger effect */
+/* FIXED stagger effect */
 .skeleton-delay::after {
   animation-delay: calc(var(--i) * 0.08s);
 }

@@ -6,15 +6,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, ReceiptText } from "lucide-react";
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
 import { format } from "date-fns";
 import { useGetItemsQuery } from "@/features/item/itemApi";
 import { formatCurrency } from "@/utils/formatters";
@@ -28,14 +19,11 @@ import {
 
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
+import { useMemo, useState } from "react";
 
 export default function InvoiceForm({ open, setOpen, invoice = null }) {
   const { data } = useGetItemsQuery();
-  const itemsData = data?.data || [];
-
-  const itemsMap = Object.fromEntries(
-    itemsData.map((i) => [i.id, i])
-  );
+  const itemsData = data || [];
 
   const {
     form,
@@ -53,35 +41,47 @@ export default function InvoiceForm({ open, setOpen, invoice = null }) {
     isUpdating,
   } = formUtils(invoice, open, setOpen, itemsData);
 
+  /* ================= SEARCH ================= */
+  const [search, setSearch] = useState("");
+
+  const filteredItems = useMemo(() => {
+    const selectedIds = new Set(items.map((i) => i.itemId));
+
+    return (itemsData || []).filter((item) => {
+      const name = (item?.name || "").toLowerCase();
+      const query = (search || "").toLowerCase().trim();
+
+      const match = query === "" || name.includes(query);
+      const notSelected = !selectedIds.has(item.id);
+
+
+      return match && notSelected;
+    });
+  }, [itemsData, search, items]);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-[100vw] md:max-w-[95vw] lg:max-w-6xl p-0 border rounded-none md:rounded-2xl shadow-2xl bg-white flex flex-col h-dvh md:h-[82vh]">
+      <DialogContent className="max-w-[100vw] md:max-w-[95vw] lg:max-w-6xl p-0 bg-white flex flex-col h-dvh md:h-[82vh]">
 
         {/* HEADER */}
-        <div className="px-4 md:px-6 py-3 border-b bg-white flex items-center justify-between sticky top-0 z-10">
-          <div className="flex items-center gap-3">
-            <div className="bg-slate-100 p-2 rounded-lg">
-              <ReceiptText size={18} />
-            </div>
-            <div>
-              <DialogTitle className="text-base font-bold">
-                {isEditMode ? "Edit Invoice" : "New Invoice"}
-              </DialogTitle>
-              <p className="text-xs text-gray-400">
-                {isEditMode ? `Ref: ${invoice?.id?.slice(-6)}` : "Draft"}
-              </p>
-            </div>
+        <div className="px-6 py-3 border-b flex justify-between">
+          <div>
+            <DialogTitle className="font-bold">
+              {isEditMode ? "Edit Invoice" : "New Invoice"}
+            </DialogTitle>
+            <p className="text-xs text-gray-400">
+              {isEditMode ? `Ref: ${invoice?.id?.slice(-6)}` : "Draft"}
+            </p>
           </div>
         </div>
 
-        {/* MAIN */}
         <div className="flex flex-col lg:flex-row flex-1 min-h-0">
 
-          {/* LEFT SIDE */}
-          <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 bg-slate-50">
+          {/* LEFT */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 bg-gray-50">
 
             {/* CUSTOMER */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <Input
                 placeholder="Customer Name"
                 value={form.customerName || ""}
@@ -108,7 +108,7 @@ export default function InvoiceForm({ open, setOpen, invoice = null }) {
 
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline">
                     {form.dueDate
                       ? format(new Date(form.dueDate), "PPP")
                       : "Pick date"}
@@ -126,35 +126,43 @@ export default function InvoiceForm({ open, setOpen, invoice = null }) {
               </Popover>
             </div>
 
-            {/* ADD ITEM */}
-            <div className="bg-white p-4 rounded-xl border space-y-4 shadow-sm">
+            {/* SEARCHABLE ITEM SELECT */}
+            <div className="bg-white p-4 rounded-xl border space-y-3">
 
-              <Select
-                value={newItem.itemId || ""}
-                onValueChange={(val) => {
-                  const selected = itemsData.find((i) => i.id === val);
-                  if (selected) {
-                    setNewItem({
-                      itemId: val,
-                      name: selected.name,
-                      price: selected.price,
-                      quantity: 1,
-                    });
-                  }
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select item" />
-                </SelectTrigger>
-                <SelectContent>
-                  {itemsData.map((i) => (
-                    <SelectItem key={i.id} value={i.id}>
-                      {i.name} — {formatCurrency(i.price)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                placeholder="Search item..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
 
+              <div className="max-h-40 overflow-y-auto custom-scrollbar border rounded-md">
+                {filteredItems.length === 0 ? (
+                  <p className="text-sm text-gray-400 p-3 text-center">
+                    No items found
+                  </p>
+                ) : (
+                  filteredItems.map((item) => (
+                    <div
+                      key={item.id}
+                      onClick={() => {
+                        setNewItem({
+                          itemId: item.id,
+                          name: item.name,
+                          price: item.price,
+                          quantity: 1,
+                        });
+                        setSearch("");
+                      }}
+                      className="px-3 py-2 cursor-pointer hover:bg-gray-100 flex justify-between"
+                    >
+                      <span>{item.name}</span>
+                      <span>{formatCurrency(item.price)}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* NEW ITEM INPUT */}
               <div className="grid grid-cols-3 gap-3">
                 <Input
                   placeholder="Name"
@@ -187,108 +195,53 @@ export default function InvoiceForm({ open, setOpen, invoice = null }) {
                 />
               </div>
 
-              <Button onClick={handleAddItem} className="w-full h-10">
+              <Button
+                onClick={handleAddItem}
+                disabled={!newItem.name || newItem.quantity <= 0}
+                className="w-full"
+              >
                 <Plus size={16} /> Add Item
               </Button>
             </div>
           </div>
 
-          {/* RIGHT SIDE */}
-          <div className="w-full lg:w-96 bg-white border-t lg:border-l flex flex-col max-h-[40vh] lg:max-h-full">
+          {/* RIGHT */}
+          <div className="w-full lg:w-96 bg-white border-l flex flex-col">
 
             <div className="p-4 border-b flex justify-between">
-              <span className="font-medium">Items Cart</span>
-              <Badge>{items.length} Items</Badge>
+              <span>Items</span>
+              <Badge>{items.length}</Badge>
             </div>
 
-            {/* SCROLLABLE ITEMS */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
-              {items.map((item) => {
-                const base = itemsMap[item.itemId];
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-3">
+              {items.map((item) => (
+                <div key={item.id} className="p-3 border rounded-lg space-y-2">
+                  <div className="flex justify-between">
+                    <p className="font-semibold">{item.name}</p>
 
-                return (
-                  <div
-                    key={item.id || item.itemId}
-                    className="p-3 border rounded-xl bg-gray-50 space-y-3 shadow-sm"
-                  >
-                    {/* NAME */}
-                    <div className="flex gap-2 items-center">
-                      <Input
-                        value={item.name}
-                        className="h-9 text-sm font-semibold"
-                        onChange={(e) => {
-                          const updated = items.map((i) =>
-                            i.id === item.id
-                              ? { ...i, name: e.target.value }
-                              : i
-                          );
-                          setItems(updated);
-                        }}
-                      />
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeItem(item.id);
-                        }}
-                        className="text-red-500"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-
-                    {/* QTY + PRICE */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <Input
-                        type="number"
-                        value={item.quantity}
-                        placeholder="Qty"
-                        className="h-9 text-sm"
-                        onChange={(e) => {
-                          const updated = items.map((i) =>
-                            i.id === item.id
-                              ? { ...i, quantity: Number(e.target.value) || 0 }
-                              : i
-                          );
-                          setItems(updated);
-                        }}
-                      />
-
-                      <Input
-                        type="number"
-                        value={item.price}
-                        placeholder="Price"
-                        className="h-9 text-sm"
-                        onChange={(e) => {
-                          const updated = items.map((i) =>
-                            i.id === item.id
-                              ? { ...i, price: Number(e.target.value) || 0 }
-                              : i
-                          );
-                          setItems(updated);
-                        }}
-                      />
-                    </div>
-
-                    {/* TOTAL */}
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Total</span>
-                      <span className="font-semibold">
-                        {formatCurrency(item.quantity * item.price)}
-                      </span>
-                    </div>
-
-                    {base && (
-                      <p className="text-xs text-gray-400">
-                        Base: {formatCurrency(base.price)}
-                      </p>
-                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeItem(item.id);
+                      }}
+                      className="text-red-500"
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
-                );
-              })}
+
+                  <div className="flex justify-between text-sm">
+                    <span>
+                      {item.quantity} × {formatCurrency(item.price)}
+                    </span>
+                    <span className="font-bold">
+                      {formatCurrency(item.quantity * item.price)}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            {/* FOOTER */}
             <div className="p-4 border-t space-y-3">
               <div className="flex justify-between font-bold">
                 <span>Total</span>
@@ -303,7 +256,7 @@ export default function InvoiceForm({ open, setOpen, invoice = null }) {
                   items.length === 0 ||
                   !form.customerName
                 }
-                className="w-full h-11 text-base font-semibold"
+                className="w-full"
               >
                 {isEditMode ? "Update Invoice" : "Create Invoice"}
               </Button>

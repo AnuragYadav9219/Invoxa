@@ -3,13 +3,11 @@ import {
   useCreateInvoiceMutation,
   useUpdateInvoiceMutation,
 } from '@/features/invoice/invoiceApi';
-import { useCreateItemMutation } from '@/features/item/itemApi';
 import { useEffect, useState } from 'react';
 
-export default function formUtils(invoice, open, setOpen, itemsData = []) {
+export default function formUtils(invoice, open, setOpen) {
   const isEditMode = !!invoice;
 
-  const [createItem] = useCreateItemMutation();
   const [createInvoice, { isLoading: isCreating }] =
     useCreateInvoiceMutation();
   const [updateInvoice, { isLoading: isUpdating }] =
@@ -40,7 +38,6 @@ export default function formUtils(invoice, open, setOpen, itemsData = []) {
   /* ================= HELPERS ================= */
 
   const toNumber = (val) => Number(val) || 0;
-  const normalize = (str) => str?.trim().toLowerCase();
 
   const isValidEmail = (email) =>
     !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -64,14 +61,13 @@ export default function formUtils(invoice, open, setOpen, itemsData = []) {
         dueDate: invoice.dueDate || null,
       });
 
-      // ✅ Replace items (NO duplication)
       setItems(
-        (invoice.items || []).map((item, index) => ({
-          id: item.itemId || `${index}`,
-          itemId: item.itemId || null,
-          name: item.itemName || '',
-          quantity: item.quantity || 1,
-          price: item.price || 0,
+        (invoice.items || []).map((item) => ({
+          id: crypto.randomUUID(),
+          itemId: item.itemId,         
+          name: item.itemName,
+          quantity: item.quantity,
+          price: item.price,
         }))
       );
     } else {
@@ -104,7 +100,7 @@ export default function formUtils(invoice, open, setOpen, itemsData = []) {
     }
 
     const exists = items.find(
-      (i) => normalize(i.name) === normalize(newItem.name)
+      (i) => i.itemId === newItem.itemId
     );
 
     if (exists) {
@@ -115,7 +111,7 @@ export default function formUtils(invoice, open, setOpen, itemsData = []) {
       ...prev,
       {
         id: crypto.randomUUID(),
-        itemId: newItem.itemId || null,
+        itemId: newItem.itemId,
         name: newItem.name.trim(),
         quantity,
         price,
@@ -140,55 +136,11 @@ export default function formUtils(invoice, open, setOpen, itemsData = []) {
 
   /* ================= FORMAT ITEMS ================= */
 
-  const formatItems = async () => {
-    const formatted = [];
-
-    for (const item of items) {
-      let itemId = item.itemId;
-
-      // Step 1: find existing item
-      if (!itemId) {
-        const existing = itemsData?.find(
-          (i) => normalize(i.name) === normalize(item.name)
-        );
-
-        if (existing?.id) {
-          itemId = existing.id;
-        } else {
-          // Step 2: create new item
-          try {
-            const res = await createItem({
-              name: item.name.trim(),
-              price: item.price,
-            }).unwrap();
-
-            itemId = res?.data?.id || res?.id;
-
-            if (!itemId) {
-              throw new Error('Item creation failed');
-            }
-          } catch {
-            throw new Error('Failed to create item');
-          }
-        }
-      }
-
-      // Step 3: merge duplicates
-      const existingFormatted = formatted.find(
-        (f) => f.itemId === itemId
-      );
-
-      if (existingFormatted) {
-        existingFormatted.quantity += toNumber(item.quantity);
-      } else {
-        formatted.push({
-          itemId,
-          quantity: toNumber(item.quantity),
-        });
-      }
-    }
-
-    return formatted;
+  const formatItems = () => {
+    return items.map((item) => ({
+      itemId: item.itemId,
+      quantity: toNumber(item.quantity),
+    }));
   };
 
   /* ================= SUBMIT ================= */
@@ -215,11 +167,9 @@ export default function formUtils(invoice, open, setOpen, itemsData = []) {
         return showWarning('Add at least one item');
       }
 
-      const formattedItems = await formatItems();
-
       const payload = {
         ...form,
-        items: formattedItems,
+        items: formatItems(),
       };
 
       const action = isEditMode
