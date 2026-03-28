@@ -49,6 +49,6 @@ public class Notification {
     private LocalDateTime sentAt;
 
     @ManyToOne
-    @JoinColumn(name = "invoice_id")
+    @JoinColumn(name = "invoice_id", nullable = false)
     private Invoice invoice;
 }

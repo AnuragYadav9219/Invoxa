@@ -190,7 +190,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 BigDecimal totalAmount = BigDecimal.ZERO;
 
                 // Rebuild items
-                for (InvoiceItemRequest itemRequest : request.getItems()) {                        
+                for (InvoiceItemRequest itemRequest : request.getItems()) {
 
                         if (itemRequest.getQuantity() <= 0) {
                                 throw new BadRequestException("Quantity must be greater than zero");
@@ -205,6 +205,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                         totalAmount = totalAmount.add(itemTotal);
 
                         InvoiceItem invoiceItem = InvoiceItem.builder()
+                                        .item(item)
                                         .itemName(item.getName())
                                         .price(price)
                                         .quantity(itemRequest.getQuantity())

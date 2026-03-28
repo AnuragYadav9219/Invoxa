@@ -9,29 +9,30 @@ import com.invoice.tracker.entity.invoice.Invoice;
 @Component
 public class InvoiceMapper {
 
-    public InvoiceResponse toResponse(Invoice invoice) {
+        public InvoiceResponse toResponse(Invoice invoice) {
 
-        return InvoiceResponse.builder()
-                .id(invoice.getId())
-                .invoiceNumber(invoice.getInvoiceNumber())
-                .shopId(invoice.getShopId())
-                .customerName(invoice.getCustomerName())
-                .customerPhone(invoice.getCustomerPhone())
-                .customerEmail(invoice.getCustomerEmail())
-                .totalAmount(invoice.getTotalAmount())
-                .paidAmount(invoice.getPaidAmount())
-                .remainingAmount(invoice.getRemainingAmount())
-                .status(invoice.getStatus().name())
-                .dueDate(invoice.getDueDate())
-                .items(
-                        invoice.getItems().stream()
-                                .map(item -> InvoiceItemResponse.builder()
-                                        .itemName(item.getItemName())
-                                        .quantity(item.getQuantity())
-                                        .price(item.getPrice())
-                                        .total(item.getTotal())
-                                        .build())
-                                .toList())
-                .build();
-    }
+                return InvoiceResponse.builder()
+                                .id(invoice.getId())
+                                .invoiceNumber(invoice.getInvoiceNumber())
+                                .shopId(invoice.getShopId())
+                                .customerName(invoice.getCustomerName())
+                                .customerPhone(invoice.getCustomerPhone())
+                                .customerEmail(invoice.getCustomerEmail())
+                                .totalAmount(invoice.getTotalAmount())
+                                .paidAmount(invoice.getPaidAmount())
+                                .remainingAmount(invoice.getRemainingAmount())
+                                .status(invoice.getStatus().name())
+                                .dueDate(invoice.getDueDate())
+                                .items(
+                                                invoice.getItems().stream()
+                                                                .map(item -> InvoiceItemResponse.builder()
+                                                                                .itemId(item.getItem().getId())
+                                                                                .itemName(item.getItemName())
+                                                                                .quantity(item.getQuantity())
+                                                                                .price(item.getPrice())
+                                                                                .total(item.getTotal())
+                                                                                .build())
+                                                                .toList())
+                                .build();
+        }
 }

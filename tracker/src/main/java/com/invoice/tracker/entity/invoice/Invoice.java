@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.invoice.tracker.entity.BaseEntity;
+import com.invoice.tracker.entity.notification.Notification;
 import com.invoice.tracker.entity.payment.Payment;
 
 import jakarta.persistence.CascadeType;
@@ -34,16 +35,16 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class Invoice extends BaseEntity {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(unique = true)
     private String invoiceNumber;
-    
+
     @Column(nullable = false)
-    private UUID shopId;    // tenantId
+    private UUID shopId; // tenantId
 
     private String customerName;
     private String customerEmail;
@@ -55,13 +56,17 @@ public class Invoice extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private InvoiceStatus status;
-    
+
     private LocalDate dueDate;
 
     @Builder.Default
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<InvoiceItem> items = new ArrayList<>();
 
-    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Payment> payments;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Notification> notifications = new ArrayList<>();
 }
