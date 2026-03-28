@@ -16,6 +16,8 @@ public interface InvoiceService {
 
     InvoiceResponse getInvoice(UUID invoiceId);
 
+    InvoiceResponse updateInvoice(UUID invoiceId, CreateInvoiceRequest request);
+
     void deleteInvoice(UUID invoiceId);
 
     byte[] getInvoicePdf(UUID invoiceId, UUID shopId);

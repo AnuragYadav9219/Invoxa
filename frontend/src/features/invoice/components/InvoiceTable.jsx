@@ -10,6 +10,10 @@ import InvoiceRow from "./InvoiceRow";
 import InvoiceCard from "./InvoiceCard";
 import { FileText } from "lucide-react";
 import InvoiceTableSkeleton from "@/components/loaders/InvoiceTableSkeleton";
+import { useState } from "react";
+import { useDeleteInvoiceMutation } from "../invoiceApi";
+import { showError, showSuccess } from "@/components/toast/toast";
+import InvoiceForm from "./InvoiceForm";
 
 export default function InvoiceTable({
   invoices = [],
@@ -18,6 +22,26 @@ export default function InvoiceTable({
   limit,
 }) {
   const navigate = useNavigate();
+
+  const [openForm, setOpenForm] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [deleteInvoice] = useDeleteInvoiceMutation();
+
+  const handleEdit = (inv) => {
+    setSelectedInvoice(inv);
+    setOpenForm(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm("Are you sure you want to delete this invoice?")) return;
+
+    try {
+      await deleteInvoice(id).unwrap();
+      showSuccess("Invoice deleted successfully");
+    } catch {
+      showError("Failed to delete invoice");
+    }
+  };
 
   const data = limit ? invoices.slice(0, limit) : invoices;
 
@@ -53,7 +77,7 @@ export default function InvoiceTable({
               <TableHead>Remaining</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Due Date</TableHead>
-              
+
               <TableHead
                 className={`text-right ${!showActions ? "opacity-0 pointer-events-none" : ""}`}
               >
@@ -69,6 +93,8 @@ export default function InvoiceTable({
                 inv={inv}
                 navigate={navigate}
                 showActions={showActions}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
               />
             ))}
           </TableBody>
@@ -83,6 +109,8 @@ export default function InvoiceTable({
             inv={inv}
             navigate={navigate}
             showActions={showActions}
+            onEdit={handleEdit}
+            onDelete={handleEdit}
           />
         ))}
       </div>
@@ -96,9 +124,17 @@ export default function InvoiceTable({
             navigate={navigate}
             isMobile
             showActions={showActions}
+            onEdit={handleEdit}
+            onDelete={handleEdit}
           />
         ))}
       </div>
+
+      <InvoiceForm
+        open={openForm}
+        setOpen={setOpenForm}
+        invoice={selectedInvoice}
+      />
     </>
   );
 }

@@ -5,7 +5,13 @@ import { Check, CreditCard } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import { COLORS, formatCurrency, formatDate } from "@/utils/formatters";
 
-export default function InvoiceRow({ inv, navigate, showActions = false }) {
+export default function InvoiceRow({
+  inv,
+  navigate,
+  showActions = false,
+  onEdit,
+  onDelete,
+}) {
   const color = COLORS[(inv.customerName?.charCodeAt(0) || 0) % COLORS.length];
   const isPaid = inv.status === "PAID";
 
@@ -83,25 +89,22 @@ export default function InvoiceRow({ inv, navigate, showActions = false }) {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => navigate(`/invoices/edit/${inv.id}`)}
+            onClick={() => onEdit(inv)}
+            className="cursor-pointer"
           >
             Edit
           </Button>
 
+
           <Button
             size="sm"
-            disabled={isPaid}
-            onClick={() => !isPaid && navigate(`/invoices/pay/${inv.id}`)}
-            className={cn(
-              "flex items-center gap-1",
-              isPaid
-                ? "bg-gray-300 text-gray-600"
-                : "bg-green-600 hover:bg-green-700 text-white"
-            )}
+            variant="destructive"
+            onClick={() => onDelete(inv.id)}
+            className="cursor-pointer"
           >
-            {isPaid ? <Check size={14} /> : <CreditCard size={14} />}
-            {isPaid ? "Paid" : "Pay"}
+            Delete
           </Button>
+
         </div>
       </TableCell>
     </TableRow>

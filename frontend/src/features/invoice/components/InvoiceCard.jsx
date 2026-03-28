@@ -2,12 +2,15 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import StatusBadge from "./StatusBadge";
 import { COLORS, formatCurrency, formatDate } from "@/utils/formatters";
+import { Edit2, Trash2 } from "lucide-react";
 
 export default function InvoiceCard({
     inv,
     navigate,
     isMobile,
     showActions = false,
+    onEdit, 
+    onDelete
 }) {
     const color =
         COLORS[(inv.customerName?.charCodeAt(0) || 0) % COLORS.length];
@@ -143,33 +146,25 @@ export default function InvoiceCard({
                         {/* EDIT only if not fully paid */}
                         {inv.remainingAmount > 0 && (
                             <Button
-                                size="sm"
+                                size="lg"
                                 variant="outline"
-                                className="rounded-lg"
-                                onClick={() => navigate(`/invoices/edit/${inv.id}`)}
+                                className="rounded-lg cursor-pointer"
+                                onClick={() => onEdit(inv)}
                             >
+                                <Edit2 />
                                 Edit
                             </Button>
                         )}
 
-                        {/* PAY / PAID */}
-                        {inv.remainingAmount > 0 ? (
-                            <Button
-                                size="sm"
-                                className="bg-green-600 hover:bg-green-700 text-white rounded-lg"
-                                onClick={() => navigate(`/invoices/pay/${inv.id}`)}
-                            >
-                                Pay
-                            </Button>
-                        ) : (
-                            <Button
-                                size="sm"
-                                disabled
-                                className="rounded-lg bg-gray-200 text-gray-500 cursor-not-allowed"
-                            >
-                                Paid
-                            </Button>
-                        )}
+                        <Button
+                            size="lg"
+                            variant="destructive"
+                            className="cursor-pointer"
+                            onClick={() => onDelete(inv.id)}
+                        >
+                            <Trash2 />
+                            Delete
+                        </Button>
                     </div>
                 )}
             </div>

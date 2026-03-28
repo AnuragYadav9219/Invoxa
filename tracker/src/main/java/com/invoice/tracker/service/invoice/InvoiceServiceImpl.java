@@ -149,6 +149,89 @@ public class InvoiceServiceImpl implements InvoiceService {
                 return invoiceMapper.toResponse(invoice);
         }
 
+        // ===================== UPDATE INVOICE ==========================
+        @Override
+        @Transactional
+        public InvoiceResponse updateInvoice(UUID invoiceId, CreateInvoiceRequest request) {
+
+                System.out.println("ITEMS: " + request.getItems());
+
+                UUID shopId = SecurityUtils.getCurrentUserShopId();
+
+                // Validations
+                if (request.getItems() == null || request.getItems().isEmpty()) {
+                        throw new BadRequestException("Invoice must contain at least one item");
+                }
+
+                if (request.getCustomerName() == null || request.getCustomerName().isBlank()) {
+                        throw new BadRequestException("Customer name is required");
+                }
+
+                if (request.getCustomerEmail() == null || request.getCustomerEmail().isBlank()) {
+                        throw new BadRequestException("Customer email is required");
+                }
+
+                Invoice invoice = invoiceHelper.getInvoiceOrThrow(invoiceId);
+
+                if (!invoice.getShopId().equals(shopId)) {
+                        throw new BadRequestException("Unauthorized access to invoice");
+                }
+
+                // Update basic fields
+                invoice.setCustomerName(request.getCustomerName());
+                invoice.setCustomerEmail(request.getCustomerEmail());
+                invoice.setCustomerPhone(request.getCustomerPhone());
+                invoice.setDueDate(request.getDueDate());
+
+                // Remove old items
+                invoice.getItems().clear();
+
+                List<InvoiceItem> updatedItems = new ArrayList<>();
+                BigDecimal totalAmount = BigDecimal.ZERO;
+
+                // Rebuild items
+                for (InvoiceItemRequest itemRequest : request.getItems()) {                        
+
+                        if (itemRequest.getQuantity() <= 0) {
+                                throw new BadRequestException("Quantity must be greater than zero");
+                        }
+
+                        Item item = itemHelper.getItemOrThrow(itemRequest.getItemId());
+
+                        BigDecimal price = BigDecimal.valueOf(item.getPrice());
+                        BigDecimal quantity = BigDecimal.valueOf(itemRequest.getQuantity());
+
+                        BigDecimal itemTotal = price.multiply(quantity);
+                        totalAmount = totalAmount.add(itemTotal);
+
+                        InvoiceItem invoiceItem = InvoiceItem.builder()
+                                        .itemName(item.getName())
+                                        .price(price)
+                                        .quantity(itemRequest.getQuantity())
+                                        .total(itemTotal)
+                                        .invoice(invoice)
+                                        .build();
+
+                        updatedItems.add(invoiceItem);
+                }
+
+                invoice.getItems().addAll(updatedItems);
+
+                // Update totals
+                invoice.setTotalAmount(totalAmount);
+
+                // Recalculate remaining amount
+                BigDecimal paidAmount = invoice.getPaidAmount() != null
+                                ? invoice.getPaidAmount()
+                                : BigDecimal.ZERO;
+
+                invoice.setRemainingAmount(totalAmount.subtract(paidAmount));
+
+                Invoice updatedInvoice = invoiceRepository.save(invoice);
+
+                return invoiceMapper.toResponse(updatedInvoice);
+        }
+
         // ====================== DELETE INVOICE =========================
         @Override
         public void deleteInvoice(UUID invoiceId) {

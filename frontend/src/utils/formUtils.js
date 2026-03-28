@@ -15,29 +15,31 @@ export default function formUtils(invoice, open, setOpen, itemsData = []) {
   const [updateInvoice, { isLoading: isUpdating }] =
     useUpdateInvoiceMutation();
 
-  const [form, setForm] = useState({
+  /* ================= STATE ================= */
+
+  const initialForm = {
     customerName: '',
     customerEmail: '',
     customerPhone: '',
     dueDate: null,
+  };
+
+  const [form, setForm] = useState(initialForm);
+
+  const createItemObj = () => ({
+    id: crypto.randomUUID(),
+    itemId: null,
+    name: '',
+    quantity: 1,
+    price: 0,
   });
 
   const [items, setItems] = useState([]);
-
-  const [newItem, setNewItem] = useState({
-    name: '',
-    quantity: 1,
-    price: '',
-    itemId: '',
-  });
+  const [newItem, setNewItem] = useState(createItemObj());
 
   /* ================= HELPERS ================= */
 
-  const toNumber = (val) => {
-    if (val === '' || val === null || val === undefined) return 0;
-    return Number(val);
-  };
-
+  const toNumber = (val) => Number(val) || 0;
   const normalize = (str) => str?.trim().toLowerCase();
 
   const isValidEmail = (email) =>
@@ -52,30 +54,38 @@ export default function formUtils(invoice, open, setOpen, itemsData = []) {
   /* ================= EFFECT ================= */
 
   useEffect(() => {
-    if (invoice && open) {
+    if (!open) return;
+
+    if (invoice) {
       setForm({
         customerName: invoice.customerName || '',
         customerEmail: invoice.customerEmail || '',
         customerPhone: invoice.customerPhone || '',
         dueDate: invoice.dueDate || null,
       });
-      setItems(invoice.items || []);
-    } else if (!open) {
+
+      // ✅ Replace items (NO duplication)
+      setItems(
+        (invoice.items || []).map((item, index) => ({
+          id: item.itemId || `${index}`,
+          itemId: item.itemId || null,
+          name: item.itemName || '',
+          quantity: item.quantity || 1,
+          price: item.price || 0,
+        }))
+      );
+    } else {
       resetForm();
     }
   }, [invoice, open]);
 
   const resetForm = () => {
-    setForm({
-      customerName: '',
-      customerEmail: '',
-      customerPhone: '',
-      dueDate: null,
-    });
+    setForm(initialForm);
     setItems([]);
+    setNewItem(createItemObj());
   };
 
-  /* ================= ITEM ADD ================= */
+  /* ================= ADD ITEM ================= */
 
   const handleAddItem = () => {
     const price = toNumber(newItem.price);
@@ -93,7 +103,6 @@ export default function formUtils(invoice, open, setOpen, itemsData = []) {
       return showWarning('Quantity must be at least 1');
     }
 
-    // Prevent duplicate items (SaaS behavior)
     const exists = items.find(
       (i) => normalize(i.name) === normalize(newItem.name)
     );
@@ -105,7 +114,7 @@ export default function formUtils(invoice, open, setOpen, itemsData = []) {
     setItems((prev) => [
       ...prev,
       {
-        id: Date.now().toString(),
+        id: crypto.randomUUID(),
         itemId: newItem.itemId || null,
         name: newItem.name.trim(),
         quantity,
@@ -113,18 +122,13 @@ export default function formUtils(invoice, open, setOpen, itemsData = []) {
       },
     ]);
 
-    setNewItem({
-      name: '',
-      quantity: 1,
-      price: '',
-      itemId: '',
-    });
+    setNewItem(createItemObj());
   };
 
+  /* ================= REMOVE ================= */
+
   const removeItem = (id) => {
-    setItems((prev) =>
-      prev.filter((i) => (i.id || i._id) !== id)
-    );
+    setItems((prev) => prev.filter((i) => i.id !== id));
   };
 
   /* ================= TOTAL ================= */
@@ -134,69 +138,84 @@ export default function formUtils(invoice, open, setOpen, itemsData = []) {
     0
   );
 
+  /* ================= FORMAT ITEMS ================= */
+
+  const formatItems = async () => {
+    const formatted = [];
+
+    for (const item of items) {
+      let itemId = item.itemId;
+
+      // Step 1: find existing item
+      if (!itemId) {
+        const existing = itemsData?.find(
+          (i) => normalize(i.name) === normalize(item.name)
+        );
+
+        if (existing?.id) {
+          itemId = existing.id;
+        } else {
+          // Step 2: create new item
+          try {
+            const res = await createItem({
+              name: item.name.trim(),
+              price: item.price,
+            }).unwrap();
+
+            itemId = res?.data?.id || res?.id;
+
+            if (!itemId) {
+              throw new Error('Item creation failed');
+            }
+          } catch {
+            throw new Error('Failed to create item');
+          }
+        }
+      }
+
+      // Step 3: merge duplicates
+      const existingFormatted = formatted.find(
+        (f) => f.itemId === itemId
+      );
+
+      if (existingFormatted) {
+        existingFormatted.quantity += toNumber(item.quantity);
+      } else {
+        formatted.push({
+          itemId,
+          quantity: toNumber(item.quantity),
+        });
+      }
+    }
+
+    return formatted;
+  };
+
   /* ================= SUBMIT ================= */
 
   const handleSubmit = async () => {
     try {
-      /* -------- FORM VALIDATION -------- */
-
       if (!form.customerName?.trim()) {
         return showWarning('Customer name is required');
       }
 
       if (!isValidEmail(form.customerEmail)) {
-        return showWarning('Invalid email format');
+        return showWarning('Invalid email');
       }
 
       if (!isValidPhone(form.customerPhone)) {
-        return showWarning('Invalid phone number');
+        return showWarning('Invalid phone');
       }
 
       if (!isValidDate(form.dueDate)) {
-        return showWarning('Invalid due date');
+        return showWarning('Invalid date');
       }
 
       if (!items.length) {
         return showWarning('Add at least one item');
       }
 
-      /* -------- ITEMS PROCESS -------- */
-
-      const formattedItems = [];
-
-      for (const item of items) {
-        let itemId = item.itemId;
-
-        if (!itemId) {
-          const existing = itemsData.find(
-            (i) => normalize(i.name) === normalize(item.name)
-          );
-
-          if (existing) {
-            itemId = existing.id;
-          } else {
-            try {
-              const res = await createItem({
-                name: item.name.trim(),
-                price: item.price,
-              }).unwrap();
-
-              itemId = res?.data?.id || res?.id;
-            } catch (err) {
-              return showWarning('Failed to create item');
-            }
-          }
-        }
-
-        formattedItems.push({
-          itemId,
-          itemName: item.name,
-          quantity: toNumber(item.quantity),
-          price: toNumber(item.price),
-        });
-      }
-
-      /* -------- PAYLOAD -------- */
+      const formattedItems = await formatItems();
 
       const payload = {
         ...form,
@@ -204,27 +223,32 @@ export default function formUtils(invoice, open, setOpen, itemsData = []) {
       };
 
       const action = isEditMode
-        ? updateInvoice({ id: invoice.id, ...payload }).unwrap()
+        ? updateInvoice({ id: invoice.id, body: payload }).unwrap()
         : createInvoice(payload).unwrap();
 
       showPromise(action, {
-        loading: isEditMode ? 'Updating...' : 'Creating...',
-        success: isEditMode ? 'Updated' : 'Created',
-        error: 'Failed',
+        loading: isEditMode ? 'Updating invoice...' : 'Creating invoice...',
+        success: isEditMode
+          ? 'Invoice updated successfully'
+          : 'Invoice created successfully',
+        error: 'Something went wrong',
       });
 
       await action;
       setOpen(false);
-
     } catch (err) {
-      showWarning('Something went wrong. Please try again.');
+      console.error(err);
+      showWarning(err.message || 'Something went wrong');
     }
   };
+
+  /* ================= RETURN ================= */
 
   return {
     form,
     setForm,
     items,
+    setItems,
     newItem,
     setNewItem,
     handleAddItem,

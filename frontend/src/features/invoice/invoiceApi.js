@@ -61,6 +61,9 @@ export const invoiceApi = baseApi.injectEndpoints({
                 method: "GET",
                 meta: { feature: "invoice" },
             }),
+
+            transformResponse: (response) => response.data,
+
             providesTags: (result, error, id) => [
                 { type: "Invoice", id },
             ],
@@ -75,17 +78,15 @@ export const invoiceApi = baseApi.injectEndpoints({
                 meta: { feature: "invoice" },
             }),
 
-            
-
             invalidatesTags: [{ type: "Invoice", id: "LIST" }],
         }),
 
         /* ================== UPDATE ================== */
         updateInvoice: builder.mutation({
-            query: ({ id, ...data }) => ({
+            query: ({ id, body }) => ({
                 url: `/invoices/${id}`,
                 method: "PUT",
-                body: data,
+                body,
                 meta: { feature: "invoice" },
             }),
 
@@ -113,7 +114,7 @@ export const invoiceApi = baseApi.injectEndpoints({
             query: (id) => ({
                 url: `/invoices/${id}/pdf`,
                 method: "GET",
-                responseType: "blob",
+                responseHandler: (response) => response.blob(),
                 meta: { feature: "invoice" },
             }),
 

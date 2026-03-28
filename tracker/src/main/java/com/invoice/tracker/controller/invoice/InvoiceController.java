@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.invoice.tracker.common.response.ApiResponse;
+import com.invoice.tracker.common.response.ResponseBuilder;
 import com.invoice.tracker.dto.common.PageResponse;
 import com.invoice.tracker.dto.invoice.CreateInvoiceRequest;
 import com.invoice.tracker.dto.invoice.InvoiceFilterRequest;
@@ -39,15 +41,10 @@ public class InvoiceController {
 
                 InvoiceResponse invoice = invoiceService.createInvoice(request);
 
-                ApiResponse<InvoiceResponse> response = ApiResponse.<InvoiceResponse>builder()
-                                .success(true)
-                                .message("Invoice created successfully")
-                                .data(invoice)
-                                .build();
-
-                return ResponseEntity
-                                .status(HttpStatus.CREATED)
-                                .body(response);
+                return ResponseBuilder.success(
+                                invoice,
+                                "Invoice created successfully",
+                                HttpStatus.CREATED);
         }
 
         // ============================ GET INVOICES =========================
@@ -59,14 +56,9 @@ public class InvoiceController {
 
                 PageResponse<InvoiceResponse> invoices = invoiceService.getInvoices(page, size);
 
-                ApiResponse<PageResponse<InvoiceResponse>> response = ApiResponse
-                                .<PageResponse<InvoiceResponse>>builder()
-                                .success(true)
-                                .message("Invoices fetched successfully")
-                                .data(invoices)
-                                .build();
-
-                return ResponseEntity.ok(response);
+                return ResponseBuilder.success(
+                                invoices,
+                                "Invoices fetched successfully");
         }
 
         // ============================ GET SINGLE INVOICE =========================
@@ -76,13 +68,21 @@ public class InvoiceController {
 
                 InvoiceResponse invoice = invoiceService.getInvoice(id);
 
-                ApiResponse<InvoiceResponse> response = ApiResponse.<InvoiceResponse>builder()
-                                .success(true)
-                                .message("Invoice fetched successfully")
-                                .data(invoice)
-                                .build();
+                return ResponseBuilder.success(
+                                invoice,
+                                "Invoice fetched successfully");
+        }
 
-                return ResponseEntity.ok(response);
+        // =========================== UPDATE INVOICE ==========================
+        @PutMapping("/{id}")
+        @PreAuthorize("hasRole('OWNER')")
+        public ResponseEntity<ApiResponse<InvoiceResponse>> updateInvoice(
+                        @PathVariable UUID id,
+                        @RequestBody CreateInvoiceRequest request) {
+
+                InvoiceResponse invoice = invoiceService.updateInvoice(id, request);
+
+                return ResponseBuilder.success(invoice, "Invoice updated successfully");
         }
 
         // ============================ DELETE INVOICE =========================
@@ -92,13 +92,9 @@ public class InvoiceController {
 
                 invoiceService.deleteInvoice(id);
 
-                ApiResponse<Void> response = ApiResponse.<Void>builder()
-                                .success(true)
-                                .message("Invoice deleted successfully")
-                                .data(null)
-                                .build();
-
-                return ResponseEntity.ok(response);
+                return ResponseBuilder.success(
+                                null,
+                                "Invoice deleted successfully");
         }
 
         // ==================== VIEW + DOWNLOAD INVOICE ====================
@@ -127,13 +123,9 @@ public class InvoiceController {
 
                 List<InvoiceResponse> invoices = invoiceService.getRecentInvoices(limit);
 
-                ApiResponse<List<InvoiceResponse>> response = ApiResponse.<List<InvoiceResponse>>builder()
-                                .success(true)
-                                .message("Recent invoices fetched successfully")
-                                .data(invoices)
-                                .build();
-
-                return ResponseEntity.ok(response);
+                return ResponseBuilder.success(
+                                invoices,
+                                "Recent Invoices fetched successfully");
         }
 
         // ========================== FILTER ========================
@@ -146,13 +138,8 @@ public class InvoiceController {
 
                 PageResponse<InvoiceResponse> invoices = invoiceService.filterInvoices(request, page, size);
 
-                ApiResponse<PageResponse<InvoiceResponse>> response = ApiResponse
-                                .<PageResponse<InvoiceResponse>>builder()
-                                .success(true)
-                                .message("Filtered invoices fetched successfully")
-                                .data(invoices)
-                                .build();
-
-                return ResponseEntity.ok(response);
+                return ResponseBuilder.success(
+                                invoices,
+                                "Filtered invoices fetched successfully");
         }
 }

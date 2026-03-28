@@ -17,6 +17,7 @@ export default function InvoiceDetails() {
     const { id } = useParams();
 
     const { data, isLoading, error } = useGetInvoiceByIdQuery(id);
+    console.log("RTK data:", data);
 
     const user = useSelector((state) => state.auth.user);
 
@@ -25,7 +26,8 @@ export default function InvoiceDetails() {
     });
 
     const shop = shopData?.data;
-    const invoice = data?.data;
+    const invoice = data;
+    console.log("RTK data:", data);
 
     if (isLoading) {
         return <PageLoader />
@@ -35,6 +37,9 @@ export default function InvoiceDetails() {
         return (
             <div className="p-10 text-center text-gray-500">
                 Invoice not found
+                <div>
+                    {console.log(invoice)}
+                </div>
             </div>
         );
     }
