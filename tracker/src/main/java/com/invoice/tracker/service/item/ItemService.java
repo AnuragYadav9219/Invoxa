@@ -17,4 +17,10 @@ public interface ItemService {
     ItemResponse updateItem(UUID itemId, CreateItemRequest request);
 
     void deleteItem(UUID itemId);
+
+    void restoreItem(UUID itemId);
+
+    List<ItemResponse> getDeletedItems();
+
+    void permanentlyDeleteItem(UUID itemId);
 }

@@ -6,6 +6,7 @@ import {
     FileText,
     Users,
     X,
+    Trash2,
 } from "lucide-react";
 
 export default function Sidebar({ isOpen, setIsOpen }) {
@@ -70,6 +71,16 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                     <NavLink to="/invoices" className={linkClass}>
                         <FileText size={16} />
                         Invoices
+                    </NavLink>
+                </nav>
+
+                {/* Section Title */}
+                <p className="text-xs text-gray-400 mt-6 mb-2">SYSTEM</p>
+
+                <nav className="space-y-1">
+                    <NavLink to="/trash" className={linkClass}>
+                        <Trash2 size={16} />
+                        Trash
                     </NavLink>
                 </nav>
             </div>

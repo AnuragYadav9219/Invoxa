@@ -9,6 +9,8 @@ import AdminPage from "./features/admin/AdminPage";
 import { Toaster } from "sonner";
 import { useAutoLogout } from "./hooks/useAutoLogout";
 import Login from "./pages/Login";
+import Items from "./features/item/pages/Items";
+import Trash from "./components/common/Trash";
 
 export default function App() {
   useAutoLogout();
@@ -42,11 +44,33 @@ export default function App() {
           />
 
           <Route
+            path="/items"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Items />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
             path="/invoices/:id"
             element={
               <ProtectedRoute>
                 <Layout>
                   <InvoiceDetails />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/trash"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Trash />
                 </Layout>
               </ProtectedRoute>
             }

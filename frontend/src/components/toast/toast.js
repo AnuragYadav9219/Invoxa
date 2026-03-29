@@ -56,8 +56,10 @@ export const dismissToast = (id) => {
 };
 
 /* ============= SHOW ERROR WITH RETRY ============= */
-export const showErrorWithRetry = (message, onRetry) => {
+export const showErrorWithRetry = (message, onRetry, options = {}) => {
     toast.error(message, {
+        ...toastTypes.error,
+        ...options,
         action: {
             label: "Retry",
             onClick: onRetry,

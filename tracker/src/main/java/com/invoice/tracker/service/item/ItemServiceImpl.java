@@ -1,5 +1,6 @@
 package com.invoice.tracker.service.item;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -7,6 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.invoice.tracker.common.exception.ResourceNotFoundException;
 import com.invoice.tracker.dto.item.CreateItemRequest;
 import com.invoice.tracker.dto.item.ItemResponse;
 import com.invoice.tracker.entity.auth.Shop;
@@ -61,7 +63,7 @@ public class ItemServiceImpl implements ItemService {
 
         UUID shopId = SecurityUtils.getCurrentUserShopId();
 
-        return itemRepository.findByShopId(shopId)
+        return itemRepository.findByShopIdAndDeletedFalse(shopId)
                 .stream()
                 .map(itemMapper::toResponse)
                 .collect(Collectors.toList());
@@ -83,9 +85,63 @@ public class ItemServiceImpl implements ItemService {
 
     // Delete item
     @Override
+    @Transactional
     public void deleteItem(UUID itemId) {
 
         Item item = itemHelper.getItemOrThrow(itemId);
+
+        item.setDeleted(true);
+        item.setDeletedAt(LocalDateTime.now());
+        item.setDeletedBy(SecurityUtils.getCurrentUserId());
+
+        itemRepository.save(item);
+    }
+
+    // ============== RESTORE ITEM ================
+    @Override
+    @Transactional
+    public void restoreItem(UUID itemId) {
+        UUID shopId = SecurityUtils.getCurrentUserShopId();
+
+        Item item = itemRepository.findByIdAndShopId(itemId, shopId)
+                .orElseThrow(() -> new ResourceNotFoundException("Item not found"));
+
+        if (!item.isDeleted()) {
+            throw new RuntimeException("Item is not deleted");
+        }
+
+        item.setDeleted(false);
+        item.setDeletedAt(null);
+        item.setDeletedBy(null);
+
+        itemRepository.save(item);
+    }
+
+    // ================ GET DELETED ITEMS ================
+    @Override
+    public List<ItemResponse> getDeletedItems() {
+
+        UUID shopId = SecurityUtils.getCurrentUserShopId();
+
+        return itemRepository.findByShopIdAndDeletedTrue(shopId)
+                .stream()
+                .map(itemMapper::toResponse)
+                .toList();
+    }
+
+    // ================ PERMANENTLY DELETE =================
+    @Override
+    @Transactional
+    public void permanentlyDeleteItem(UUID itemId) {
+
+        UUID shopId = SecurityUtils.getCurrentUserShopId();
+
+        Item item = itemRepository.findByIdAndShopId(itemId, shopId)
+                .orElseThrow(() -> new ResourceNotFoundException("Item not found"));
+
+        if (!item.isDeleted()) {
+            throw new RuntimeException("Item must be deleted first");
+        }
 
         itemRepository.delete(item);
     }

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.invoice.tracker.common.response.ApiResponse;
+import com.invoice.tracker.common.response.ResponseBuilder;
 import com.invoice.tracker.dto.item.CreateItemRequest;
 import com.invoice.tracker.dto.item.ItemResponse;
 import com.invoice.tracker.service.item.ItemService;
@@ -36,15 +37,7 @@ public class ItemController {
 
                 ItemResponse item = itemService.createItem(request);
 
-                ApiResponse<ItemResponse> response = ApiResponse.<ItemResponse>builder()
-                                .success(true)
-                                .message("Item created successfully")
-                                .data(item)
-                                .build();
-
-                return ResponseEntity
-                                .status(HttpStatus.CREATED)
-                                .body(response);
+                return ResponseBuilder.success(item, "Item created successfully", HttpStatus.CREATED);
         }
 
         // ===================== GET ALL ITEMS =========================
@@ -54,13 +47,7 @@ public class ItemController {
 
                 List<ItemResponse> items = itemService.getItems();
 
-                ApiResponse<List<ItemResponse>> response = ApiResponse.<List<ItemResponse>>builder()
-                                .success(true)
-                                .message("Items fetched successfully")
-                                .data(items)
-                                .build();
-
-                return ResponseEntity.ok(response);
+                return ResponseBuilder.success(items, "Items fetched successfully");
         }
 
         // ===================== GET AN ITEM =========================
@@ -70,13 +57,7 @@ public class ItemController {
 
                 ItemResponse item = itemService.getItem(id);
 
-                ApiResponse<ItemResponse> response = ApiResponse.<ItemResponse>builder()
-                                .success(true)
-                                .message("Item fetched successfully")
-                                .data(item)
-                                .build();
-
-                return ResponseEntity.ok(response);
+                return ResponseBuilder.success(item, "Items fetched successfully");
         }
 
         // ===================== UPDATE AN ITEM =========================
@@ -88,28 +69,43 @@ public class ItemController {
 
                 ItemResponse item = itemService.updateItem(id, request);
 
-                ApiResponse<ItemResponse> response = ApiResponse.<ItemResponse>builder()
-                                .success(true)
-                                .message("Item updated successfully")
-                                .data(item)
-                                .build();
-
-                return ResponseEntity.ok(response);
+                return ResponseBuilder.success(item, "Item updated successfully");
         }
 
-        // ===================== DELETE AN ITEM =========================
+        // ===================== DELETE (SOFT) =========================
         @PreAuthorize("hasRole('OWNER')")
         @DeleteMapping("/{id}")
         public ResponseEntity<ApiResponse<Void>> deleteItem(@PathVariable UUID id) {
 
                 itemService.deleteItem(id);
 
-                ApiResponse<Void> response = ApiResponse.<Void>builder()
-                                .success(true)
-                                .message("Item deleted successfully")
-                                .data(null)
-                                .build();
+                return ResponseBuilder.success(null, "Item deleted successfully");
+        }
 
-                return ResponseEntity.ok(response);
+        // ================== RESTORE ITEM ========================
+        @PreAuthorize("hasRole('OWNER')")
+        @PostMapping("/{id}/restore")
+        public ResponseEntity<ApiResponse<Void>> restoreItem(@PathVariable UUID id) {
+
+                itemService.restoreItem(id);
+
+                return ResponseBuilder.success(null, "Item restored successfully");
+        }
+
+        // =================== GET TRASH ITEMS ======================
+        @GetMapping("/trash")
+        @PreAuthorize("hasRole('OWNER')")
+        public ResponseEntity<ApiResponse<List<ItemResponse>>> getTrashItems() {
+                return ResponseBuilder.success(itemService.getDeletedItems(), "Deleted items fetched");
+        }
+
+        // =================== PERMANENTLY DELETE ===================
+        @DeleteMapping("/{id}/permanent")
+        @PreAuthorize("hasRole('OWNER')")
+        public ResponseEntity<ApiResponse<Void>> permanentlyDelete(@PathVariable UUID id) {
+
+                itemService.permanentlyDeleteItem(id);
+
+                return ResponseBuilder.success(null, "Item permanently deleted");
         }
 }

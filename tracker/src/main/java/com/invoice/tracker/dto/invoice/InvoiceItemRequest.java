@@ -1,6 +1,6 @@
 package com.invoice.tracker.dto.invoice;
 
-import java.util.UUID;
+import java.math.BigDecimal;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class InvoiceItemRequest {
     
-    private UUID itemId;
-
+    private String itemName;
+    private BigDecimal price;
     private int quantity;
 }

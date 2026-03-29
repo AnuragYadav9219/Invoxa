@@ -26,7 +26,6 @@ public class InvoiceMapper {
                                 .items(
                                                 invoice.getItems().stream()
                                                                 .map(item -> InvoiceItemResponse.builder()
-                                                                                .itemId(item.getItem().getId())
                                                                                 .itemName(item.getItemName())
                                                                                 .quantity(item.getQuantity())
                                                                                 .price(item.getPrice())

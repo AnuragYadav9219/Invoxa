@@ -19,9 +19,11 @@ public class ItemHelper {
 
     public Item getItemOrThrow(UUID itemId) {
 
-        return itemRepository.findByIdAndShopId(
+        UUID shopId = SecurityUtils.getCurrentUserShopId();
+
+        return itemRepository.findByIdAndShopIdAndDeletedFalse(
                 itemId,
-                SecurityUtils.getCurrentUserShopId())
+                shopId)
                 .orElseThrow(() -> new ResourceNotFoundException("Item not found"));
     }
 }

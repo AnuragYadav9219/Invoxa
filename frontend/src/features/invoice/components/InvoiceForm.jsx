@@ -54,14 +54,13 @@ export default function InvoiceForm({ open, setOpen, invoice = null }) {
       const match = query === "" || name.includes(query);
       const notSelected = !selectedIds.has(item.id);
 
-
       return match && notSelected;
     });
   }, [itemsData, search, items]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-[100vw] md:max-w-[95vw] lg:max-w-6xl p-0 bg-white flex flex-col h-dvh md:h-[82vh]">
+      <DialogContent className="max-w-[100vw] md:max-w-[95vw] lg:max-w-6xl p-0 bg-white flex flex-col max-h-[90vh] h-full">
 
         {/* HEADER */}
         <div className="px-6 py-3 border-b flex justify-between">
@@ -175,6 +174,7 @@ export default function InvoiceForm({ open, setOpen, invoice = null }) {
                 <Input
                   type="number"
                   value={newItem.quantity}
+                  onWheel={(e) => e.target.blur()}
                   onChange={(e) =>
                     setNewItem((p) => ({
                       ...p,
@@ -186,6 +186,7 @@ export default function InvoiceForm({ open, setOpen, invoice = null }) {
                 <Input
                   type="number"
                   value={newItem.price}
+                  onWheel={(e) => e.target.blur()}
                   onChange={(e) =>
                     setNewItem((p) => ({
                       ...p,
@@ -198,7 +199,7 @@ export default function InvoiceForm({ open, setOpen, invoice = null }) {
               <Button
                 onClick={handleAddItem}
                 disabled={!newItem.name || newItem.quantity <= 0}
-                className="w-full"
+                className="w-full cursor-pointer"
               >
                 <Plus size={16} /> Add Item
               </Button>
@@ -206,48 +207,109 @@ export default function InvoiceForm({ open, setOpen, invoice = null }) {
           </div>
 
           {/* RIGHT */}
-          <div className="w-full lg:w-96 bg-white border-l flex flex-col">
+          <div className="w-full lg:w-96 bg-white border-l flex flex-col max-h-[50vh]">
 
-            <div className="p-4 border-b flex justify-between">
+            {/* HEADER */}
+            <div className="p-4 border-b flex justify-between shrink-0">
               <span>Items</span>
               <Badge>{items.length}</Badge>
             </div>
 
+            {/* SCROLLABLE AREA */}
             <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-3">
-              {items.map((item) => (
-                <div key={item.id} className="p-3 border rounded-lg space-y-2">
-                  <div className="flex justify-between">
-                    <p className="font-semibold">{item.name}</p>
 
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeItem(item.id);
-                      }}
-                      className="text-red-500"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
+              {items.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center">
+                  No items added
+                </p>
+              ) : (
+                items.map((item) => (
+                  <div key={item.id} className="p-3 border rounded-lg space-y-2">
 
-                  <div className="flex justify-between text-sm">
-                    <span>
-                      {item.quantity} × {formatCurrency(item.price)}
-                    </span>
-                    <span className="font-bold">
-                      {formatCurrency(item.quantity * item.price)}
-                    </span>
+                    {/* HEADER */}
+                    <div className="flex justify-between items-center">
+                      <p className="font-semibold text-sm">{item.name}</p>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeItem(item.id);
+                        }}
+                        className="text-red-500 hover:text-red-600"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+
+                    {/* EDIT ROW */}
+                    <div className="flex items-center gap-2">
+
+                      {/* QTY */}
+                      <Input
+                        type="number"
+                        value={item.quantity}
+                        min={1}
+                        onWheel={(e) => e.target.blur()}
+                        onChange={(e) => {
+                          const val = Number(e.target.value) || 0;
+                          if (val <= 0) return;
+
+                          setItems((prev) =>
+                            prev.map((i) =>
+                              i.id === item.id ? { ...i, quantity: val } : i
+                            )
+                          );
+                        }}
+                        className="w-20 h-8 text-sm"
+                      />
+
+                      <span className="text-gray-400">×</span>
+
+                      {/* PRICE */}
+                      <Input
+                        type="number"
+                        value={item.price}
+                        min={0}
+                        onWheel={(e) => e.target.blur()}
+                        onChange={(e) => {
+                          const val = Number(e.target.value) || 0;
+
+                          setItems((prev) =>
+                            prev.map((i) =>
+                              i.id === item.id ? { ...i, price: val } : i
+                            )
+                          );
+                        }}
+                        className="w-24 h-8 text-sm"
+                      />
+
+                      {/* TOTAL */}
+                      <div className="ml-auto font-semibold text-sm">
+                        {formatCurrency(item.quantity * item.price)}
+                      </div>
+                    </div>
+
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
 
-            <div className="p-4 border-t space-y-3">
-              <div className="flex justify-between font-bold">
-                <span>Total</span>
-                <span>{formatCurrency(totalAmount)}</span>
+            {/* FOOTER */}
+            <div className="p-4 border-t bg-white space-y-4 shrink-0">
+
+              {/* TOTAL CARD */}
+              <div className="flex justify-between items-center p-3 rounded-lg bg-linear-to-r from-slate-50 to-slate-100 border">
+
+                <span className="text-sm text-gray-500 font-medium">
+                  Total Amount
+                </span>
+
+                <span className="text-xl font-bold text-green-600 tracking-tight">
+                  {formatCurrency(totalAmount)}
+                </span>
               </div>
 
+              {/* CTA BUTTON */}
               <Button
                 onClick={handleSubmit}
                 disabled={
@@ -256,12 +318,14 @@ export default function InvoiceForm({ open, setOpen, invoice = null }) {
                   items.length === 0 ||
                   !form.customerName
                 }
-                className="w-full"
+                className="w-full h-11 text-base font-semibold bg-black hover:bg-gray-900 text-white transition"
               >
                 {isEditMode ? "Update Invoice" : "Create Invoice"}
               </Button>
             </div>
           </div>
+
+
         </div>
       </DialogContent>
     </Dialog>

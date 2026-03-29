@@ -26,7 +26,7 @@ export default function Navbar({ isOpen, setIsOpen }) {
 
     /* ================= LOGOUT ================= */
     const handleLogout = () => {
-        tokenService.clear();        // remove token + user
+        tokenService.clear();        
         navigate("/login");          
     };
 

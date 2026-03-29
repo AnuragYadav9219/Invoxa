@@ -1,17 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useGetInvoicesQuery } from "@/features/invoice/invoiceApi";
-
-/* ================= DEBOUNCE ================= */
-const useDebounce = (value, delay = 500) => {
-    const [debounced, setDebounced] = useState(value);
-
-    useEffect(() => {
-        const t = setTimeout(() => setDebounced(value), delay);
-        return () => clearTimeout(t);
-    }, [value, delay]);
-
-    return debounced;
-};
+import useDebounce from "@/hooks/useDebounce";
 
 /* ================= MAIN HOOK ================= */
 export default function useInvoiceFilters({

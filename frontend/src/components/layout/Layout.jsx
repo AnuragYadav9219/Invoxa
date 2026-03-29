@@ -14,7 +14,7 @@ export default function Layout({ children }) {
   }, [location.pathname]);
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100">
+    <div className="flex flex-col bg-gray-100">
       <Navbar isOpen={isOpen} setIsOpen={setIsOpen} />
 
       <div className="flex flex-1 pt-14">

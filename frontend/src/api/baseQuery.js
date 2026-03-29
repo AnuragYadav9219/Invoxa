@@ -11,6 +11,15 @@ const axiosInstance = axios.create({
 export const axiosBaseQuery =
     () =>
         async ({ url, method, body, params, responseType, meta }) => {
+            if (!url) {
+                console.error("❌ Missing URL in API call");
+                console.log(url)
+                return {
+                    error: { status: 400, data: "Invalid API URL" },
+                };
+            }
+
+
             try {
                 const token = tokenService.getToken();
                 const shopId = localStorage.getItem("shopId");

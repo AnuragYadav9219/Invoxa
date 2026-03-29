@@ -1,5 +1,6 @@
 package com.invoice.tracker.entity.item;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.invoice.tracker.entity.AuditableEntity;
@@ -38,4 +39,12 @@ public class Item extends AuditableEntity {
     @ManyToOne
     @JoinColumn(name = "shop_id")
     private Shop shop;
+
+    // Soft delete
+    @Builder.Default
+    private boolean deleted = false;
+
+    private LocalDateTime deletedAt;
+
+    private UUID deletedBy;
 }

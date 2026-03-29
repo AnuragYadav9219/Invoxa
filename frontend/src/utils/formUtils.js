@@ -8,10 +8,8 @@ import { useEffect, useState } from 'react';
 export default function formUtils(invoice, open, setOpen) {
   const isEditMode = !!invoice;
 
-  const [createInvoice, { isLoading: isCreating }] =
-    useCreateInvoiceMutation();
-  const [updateInvoice, { isLoading: isUpdating }] =
-    useUpdateInvoiceMutation();
+  const [createInvoice, { isLoading: isCreating }] = useCreateInvoiceMutation();
+  const [updateInvoice, { isLoading: isUpdating }] = useUpdateInvoiceMutation();
 
   /* ================= STATE ================= */
 
@@ -26,7 +24,6 @@ export default function formUtils(invoice, open, setOpen) {
 
   const createItemObj = () => ({
     id: crypto.randomUUID(),
-    itemId: null,
     name: '',
     quantity: 1,
     price: 0,
@@ -64,7 +61,6 @@ export default function formUtils(invoice, open, setOpen) {
       setItems(
         (invoice.items || []).map((item) => ({
           id: crypto.randomUUID(),
-          itemId: item.itemId,         
           name: item.itemName,
           quantity: item.quantity,
           price: item.price,
@@ -138,7 +134,8 @@ export default function formUtils(invoice, open, setOpen) {
 
   const formatItems = () => {
     return items.map((item) => ({
-      itemId: item.itemId,
+      itemName: item.name,
+      price: toNumber(item.price),
       quantity: toNumber(item.quantity),
     }));
   };
@@ -175,6 +172,9 @@ export default function formUtils(invoice, open, setOpen) {
       const action = isEditMode
         ? updateInvoice({ id: invoice.id, body: payload }).unwrap()
         : createInvoice(payload).unwrap();
+
+        
+  console.log(payload);
 
       showPromise(action, {
         loading: isEditMode ? 'Updating invoice...' : 'Creating invoice...',

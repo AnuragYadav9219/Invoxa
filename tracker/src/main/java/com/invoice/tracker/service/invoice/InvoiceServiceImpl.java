@@ -25,10 +25,8 @@ import com.invoice.tracker.dto.invoice.InvoiceFilterRequest;
 import com.invoice.tracker.entity.invoice.Invoice;
 import com.invoice.tracker.entity.invoice.InvoiceItem;
 import com.invoice.tracker.entity.invoice.InvoiceStatus;
-import com.invoice.tracker.entity.item.Item;
 import com.invoice.tracker.event.invoice.InvoiceCreatedEvent;
 import com.invoice.tracker.helper.invoice.InvoiceHelper;
-import com.invoice.tracker.helper.item.ItemHelper;
 import com.invoice.tracker.mapper.InvoiceMapper;
 import com.invoice.tracker.repository.invoice.InvoiceRepository;
 import com.invoice.tracker.security.SecurityUtils;
@@ -44,7 +42,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         private final InvoiceRepository invoiceRepository;
         private final InvoiceMapper invoiceMapper;
         private final InvoiceHelper invoiceHelper;
-        private final ItemHelper itemHelper;
         private final InvoiceNumberGenerator invoiceNumberGenerator;
         private final ApplicationEventPublisher eventPublisher;
 
@@ -76,16 +73,22 @@ public class InvoiceServiceImpl implements InvoiceService {
                                 throw new BadRequestException("Quantity must be greater than zero");
                         }
 
-                        Item item = itemHelper.getItemOrThrow(itemRequest.getItemId());
+                        if (itemRequest.getPrice() == null) {
+                                throw new BadRequestException("Item price is required");
+                        }
 
-                        BigDecimal price = BigDecimal.valueOf(item.getPrice());
+                        if (itemRequest.getItemName() == null || itemRequest.getItemName().isBlank()) {
+                                throw new BadRequestException("Item name is required");
+                        }
+
+                        BigDecimal price = itemRequest.getPrice();
                         BigDecimal quantity = BigDecimal.valueOf(itemRequest.getQuantity());
 
                         BigDecimal itemTotal = price.multiply(quantity);
                         totalAmount = totalAmount.add(itemTotal);
 
                         InvoiceItem invoiceItem = InvoiceItem.builder()
-                                        .itemName(item.getName())
+                                        .itemName(itemRequest.getItemName())
                                         .price(price)
                                         .quantity(itemRequest.getQuantity())
                                         .total(itemTotal)
@@ -196,17 +199,14 @@ public class InvoiceServiceImpl implements InvoiceService {
                                 throw new BadRequestException("Quantity must be greater than zero");
                         }
 
-                        Item item = itemHelper.getItemOrThrow(itemRequest.getItemId());
-
-                        BigDecimal price = BigDecimal.valueOf(item.getPrice());
+                        BigDecimal price = itemRequest.getPrice();
                         BigDecimal quantity = BigDecimal.valueOf(itemRequest.getQuantity());
 
                         BigDecimal itemTotal = price.multiply(quantity);
                         totalAmount = totalAmount.add(itemTotal);
 
                         InvoiceItem invoiceItem = InvoiceItem.builder()
-                                        .item(item)
-                                        .itemName(item.getName())
+                                        .itemName(itemRequest.getItemName())
                                         .price(price)
                                         .quantity(itemRequest.getQuantity())
                                         .total(itemTotal)
