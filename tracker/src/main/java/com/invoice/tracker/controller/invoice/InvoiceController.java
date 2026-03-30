@@ -34,6 +34,16 @@ public class InvoiceController {
 
         private final InvoiceService invoiceService;
 
+        // ========================= GET INVOICE TRASH =======================
+        @PreAuthorize("hasRole('OWNER')")
+        @GetMapping("/trash")
+        public ResponseEntity<ApiResponse<List<InvoiceResponse>>> trashInvoice() {
+
+                List<InvoiceResponse> invoices = invoiceService.getDeletedInvoices();
+
+                return ResponseBuilder.success(invoices, "Trash fetched");
+        }
+
         // ============================ CREATE INVOICE =========================
         @PreAuthorize("hasRole('OWNER')")
         @PostMapping
@@ -48,7 +58,6 @@ public class InvoiceController {
         }
 
         // ============================ GET INVOICES =========================
-
         @GetMapping
         public ResponseEntity<ApiResponse<PageResponse<InvoiceResponse>>> getInvoices(
                         @RequestParam(defaultValue = "0") int page,
@@ -85,7 +94,7 @@ public class InvoiceController {
                 return ResponseBuilder.success(invoice, "Invoice updated successfully");
         }
 
-        // ============================ DELETE INVOICE =========================
+        // ============================ DELETE INVOICE (SOFT) =========================
         @PreAuthorize("hasRole('OWNER')")
         @DeleteMapping("/{id}")
         public ResponseEntity<ApiResponse<Void>> deleteInvoice(@PathVariable UUID id) {
@@ -95,6 +104,26 @@ public class InvoiceController {
                 return ResponseBuilder.success(
                                 null,
                                 "Invoice deleted successfully");
+        }
+
+        // ========================= RESTORE INVOICE =======================
+        @PreAuthorize("hasRole('OWNER')")
+        @PostMapping("/{id}/restore")
+        public ResponseEntity<ApiResponse<Void>> restoreInvoice(@PathVariable UUID id) {
+
+                invoiceService.restoreInvoice(id);
+
+                return ResponseBuilder.success(null, "Invoice restored");
+        }
+
+        // ========================= PERMANENT DELETE =======================
+        @PreAuthorize("hasRole('OWNER')")
+        @DeleteMapping("/{id}/permanent")
+        public ResponseEntity<ApiResponse<Void>> permanentDelete(@PathVariable UUID id) {
+
+                invoiceService.permanentDeleteInvoice(id);
+
+                return ResponseBuilder.success(null, "Invoice deleted permanently");
         }
 
         // ==================== VIEW + DOWNLOAD INVOICE ====================

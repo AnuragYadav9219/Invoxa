@@ -4,46 +4,39 @@ import { cn } from "@/lib/utils";
 import StatusBadge from "./StatusBadge";
 import { COLORS, formatCurrency, formatDate } from "@/utils/formatters";
 import { Edit2, Trash2, ChevronRight, User } from "lucide-react";
-
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-} from "@/components/ui/alert-dialog";
+import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
+import { useInvoiceActions } from "../hooks/useInvoiceActions";
+import ConfirmDialog from "@/components/common/ConfirmDialog";
 
 export default function InvoiceCard({
   inv,
   navigate,
   showActions = false,
   onEdit,
-  onDelete,
 }) {
-  const [openDelete, setOpenDelete] = useState(false);
+  const { handleDelete } = useInvoiceActions();
 
   const color = COLORS[(inv.customerName?.charCodeAt(0) || 0) % COLORS.length];
 
-  const progress = inv.totalAmount > 0 ? (inv.paidAmount / inv.totalAmount) * 100 : 0;
+  const progress = inv.totalAmount > 0
+    ? (inv.paidAmount / inv.totalAmount) * 100
+    : 0;
 
   const barColor =
     inv.status === "PAID"
       ? "bg-emerald-500"
       : inv.status === "OVERDUE"
-      ? "bg-rose-500"
-      : "bg-amber-500";
+        ? "bg-rose-500"
+        : "bg-amber-500";
 
   const handleNavigation = () => navigate(`/invoices/${inv.id}`);
 
   return (
     <>
       <div className="group bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-        
+
         {/* Header through Progress */}
-        <div 
+        <div
           onClick={handleNavigation}
           className="p-6 cursor-pointer active:bg-slate-50 transition-colors"
         >
@@ -105,7 +98,7 @@ export default function InvoiceCard({
           </div>
         </div>
 
-        {/* ACTION STRIP: Fixed at bottom */}
+        {/* ACTION STRIP */}
         {showActions && (
           <div className="flex p-3 gap-2 bg-slate-50/50 border-t border-slate-100">
             {inv.remainingAmount > 0 && (
@@ -121,50 +114,32 @@ export default function InvoiceCard({
                 Update
               </Button>
             )}
-            <Button
-              variant="secondary"
-              className="flex-1 bg-white cursor-pointer hover:bg-rose-50 hover:text-rose-600 text-slate-400 rounded-xl h-10 text-xs font-bold transition-all border border-slate-200 shadow-sm active:scale-95"
-              onClick={(e) => {
-                e.stopPropagation();
-                setOpenDelete(true);
-              }}
+
+            <ConfirmDialog
+              type="delete"
+              onConfirm={() => handleDelete()}
+              description={
+                <>
+                  Move invoice{" "}
+                  <span className="font-bold text-slate-900">
+                    "#{inv.invoiceNumber}"
+                  </span> to trash?
+                </>
+              }
             >
-              <Trash2 size={14} className="mr-2" />
-              Remove
-            </Button>
+              <Button
+                variant="secondary"
+                className="flex-1 bg-white cursor-pointer text-rose-600 rounded-xl h-10 text-xs font-bold border shadow-sm active:scale-95"
+                onClick={(e) => e.stopPropagation()}
+                title="Delete Invoice"
+              >
+                <Trash2 size={14} className="mr-2" />
+                Remove
+              </Button>
+            </ConfirmDialog>
           </div>
         )}
       </div>
-
-      {/* DELETE DIALOG: Same logic, tighter styling */}
-      <AlertDialog open={openDelete} onOpenChange={setOpenDelete}>
-        <AlertDialogContent className="rounded-[2rem] w-[92vw] max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl font-bold text-slate-900 text-center">Delete Invoice?</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-500 text-center px-2">
-              Are you sure you want to delete <span className="font-bold text-slate-900">#{inv.invoiceNumber}</span>? This data cannot be recovered.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="flex flex-col sm:flex-row gap-3 mt-6">
-            <AlertDialogCancel 
-              className="flex-1 rounded-2xl h-12 cursor-pointer border-slate-200 font-bold"
-              onClick={(e) => e.stopPropagation()}
-            >
-              Go Back
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="flex-1 rounded-2xl h-12 cursor-pointer bg-rose-600 hover:bg-rose-700 font-bold shadow-lg shadow-rose-100"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(inv.id);
-                setOpenDelete(false);
-              }}
-            >
-              Confirm
-            </AlertDialogAction>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

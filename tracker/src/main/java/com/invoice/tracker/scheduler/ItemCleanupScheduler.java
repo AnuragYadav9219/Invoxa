@@ -28,7 +28,7 @@ public class ItemCleanupScheduler {
 
         if (!oldItems.isEmpty()) {
             itemRepository.deleteAll(oldItems);
-            log.info("Deleted {} old items permanently", oldItems.size());
+            log.info("Deleted {} old invoices permanently", oldItems.size());
         }
     }
 }

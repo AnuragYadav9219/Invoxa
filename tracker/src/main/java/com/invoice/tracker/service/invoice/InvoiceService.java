@@ -20,6 +20,12 @@ public interface InvoiceService {
 
     void deleteInvoice(UUID invoiceId);
 
+    void restoreInvoice(UUID id);
+
+    void permanentDeleteInvoice(UUID id);
+
+    List<InvoiceResponse> getDeletedInvoices();
+
     byte[] getInvoicePdf(UUID invoiceId, UUID shopId);
 
     List<InvoiceResponse> getRecentInvoices(int limit);

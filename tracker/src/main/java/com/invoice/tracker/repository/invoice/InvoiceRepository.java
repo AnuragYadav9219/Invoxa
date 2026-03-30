@@ -2,6 +2,7 @@ package com.invoice.tracker.repository.invoice;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,6 +25,21 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID>, JpaSpec
         Page<Invoice> findByShopId(UUID shopId, Pageable pageable);
 
         Optional<Invoice> findByIdAndShopId(UUID id, UUID shopId);
+
+        List<Invoice> findByShopIdAndDeletedFalse(UUID shopId);
+
+        List<Invoice> findByShopIdAndDeletedTrue(UUID shopId);
+
+        List<Invoice> findByDeletedTrueAndDeletedAtBefore(LocalDateTime cutoff);
+
+        Optional<Invoice> findByIdAndShopIdAndDeletedFalse(UUID id, UUID shopId);
+
+        @Query("""
+                        SELECT i FROM Invoice i
+                        LEFT JOIN FETCH i.items
+                        WHERE i.shopId = :shopId AND i.deleted = true
+                        """)
+        List<Invoice> findDeletedInvoicesWithItems(UUID shopId);
 
         @EntityGraph(attributePaths = "items")
         Optional<Invoice> findById(UUID id);

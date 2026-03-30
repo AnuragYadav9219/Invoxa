@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
-import { useItemActions } from "@/hooks/useItemActions";
+import { useItemActions } from "@/features/item/hooks/useItemActions";
 
 export default function ItemForm({ open, setOpen, editItem }) {
     const [name, setName] = useState("");

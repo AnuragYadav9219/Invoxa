@@ -1,6 +1,6 @@
-import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
+import ConfirmDialog from "@/components/common/ConfirmDialog";
 import { Button } from "@/components/ui/button";
-import { useItemActions } from "@/hooks/useItemActions";
+import { useItemActions } from "@/features/item/hooks/useItemActions";
 
 export default function ItemRow({ item, onEdit }) {
     const { handleDelete } = useItemActions();
@@ -19,14 +19,19 @@ export default function ItemRow({ item, onEdit }) {
                         onClick={() => onEdit(item)}
                         className="cursor-pointer"
                     >
-                        Edit
+                        Update
                     </Button>
 
-                    <DeleteConfirmDialog
+                    <ConfirmDialog
+                        type="delete"
                         onConfirm={() => handleDelete(item)}
                         description={
                             <>
-                                Delete <b>"{item.name}"</b> permanently?
+                                Move{" "}
+                                <span className="font-semibold text-foreground">
+                                    "{item.name}"
+                                </span>{" "}
+                                to trash?
                             </>
                         }
                     >
@@ -35,9 +40,9 @@ export default function ItemRow({ item, onEdit }) {
                             size="sm"
                             className="cursor-pointer"
                         >
-                            Delete
+                            Remove
                         </Button>
-                    </DeleteConfirmDialog>
+                    </ConfirmDialog>
 
                 </div>
             </td>

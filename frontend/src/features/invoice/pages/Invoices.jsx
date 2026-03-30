@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
-import useInvoiceFilters from "@/features/invoice/useInvoiceFilters";
+import useInvoiceFilters from "@/features/invoice/hooks/useInvoiceFilters";
 import { setPage, updateFilter } from "@/features/invoice/invoiceSlice";
 import InvoiceTable from "../components/InvoiceTable";
 import { useState } from "react";

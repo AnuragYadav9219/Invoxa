@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Edit2, Trash2 } from "lucide-react";
-import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
-import { useItemActions } from "@/hooks/useItemActions";
+import { useItemActions } from "@/features/item/hooks/useItemActions";
+import ConfirmDialog from "@/components/common/ConfirmDialog";
 
 export default function ItemCard({ item, onEdit }) {
     const { handleDelete } = useItemActions();
@@ -20,22 +20,23 @@ export default function ItemCard({ item, onEdit }) {
                     <Edit2 size={16} />
                 </Button>
 
-                <DeleteConfirmDialog
+                <ConfirmDialog
+                    type="delete"
                     onConfirm={() => handleDelete(item)}
                     description={
                         <>
-                            This will delete{" "}
+                            Move{" "}
                             <span className="font-semibold text-foreground">
                                 "{item.name}"
                             </span>{" "}
-                            permanently
+                            to trash?
                         </>
                     }
                 >
                     <Button variant="destructive" size="icon" className="cursor-pointer">
                         <Trash2 size={16} />
                     </Button>
-                </DeleteConfirmDialog>
+                </ConfirmDialog>
             </div>
         </div>
     );

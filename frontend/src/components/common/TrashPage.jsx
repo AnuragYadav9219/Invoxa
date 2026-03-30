@@ -1,7 +1,6 @@
-import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
-import RestoreConfirmDialog from "@/components/common/RestoreConfirmDialog";
 import { Button } from "@/components/ui/button";
-import { showSuccess, showErrorWithRetry } from "@/components/toast/toast";
+import { RotateCcw, Trash2 } from "lucide-react";
+import ConfirmDialog from "./ConfirmDialog";
 
 export default function TrashPage({
     title = "Trash",
@@ -10,12 +9,19 @@ export default function TrashPage({
     onRestore,
     onPermanentDelete,
     renderItem,
+    getLabel = (item) => item.name,
 }) {
+
     /* ================= LOADING ================= */
     if (isLoading) {
         return (
-            <div className="text-center py-10 text-gray-500">
-                Loading {title.toLowerCase()}...
+            <div className="grid gap-4">
+                {[1, 2, 3].map((i) => (
+                    <div
+                        key={i}
+                        className="h-20 rounded-xl bg-gray-200 animate-pulse"
+                    />
+                ))}
             </div>
         );
     }
@@ -23,101 +29,85 @@ export default function TrashPage({
     /* ================= EMPTY ================= */
     if (!items.length) {
         return (
-            <div className="text-center py-16 text-gray-500">
-                No deleted {title.toLowerCase()} 
+            <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
+                <div className="p-4 rounded-full bg-gray-100">
+                    <Trash2 size={22} className="text-gray-400" />
+                </div>
+                <p className="text-sm sm:text-base font-medium text-gray-500">
+                    No deleted {title.toLowerCase()}
+                </p>
+                <p className="text-xs sm:text-sm text-gray-400">
+                    Deleted items will appear here
+                </p>
             </div>
         );
     }
 
     /* ================= UI ================= */
     return (
-        <div className="space-y-4">
+        <div className="grid gap-4">
 
-            {/* HEADER */}
-            <div>
-                <h2 className="text-lg font-semibold">{title}</h2>
-                <p className="text-xs text-gray-400">
-                    Items in trash will be permanently deleted after 30 days
-                </p>
-            </div>
-
-            {/* LIST */}
             {items.map((item) => (
                 <div
-                    key={item.id}
-                    className="flex justify-between items-center p-4 border rounded-xl bg-white shadow-sm hover:shadow-md transition"
+                    key={`${item.type}-${item.id}`}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border bg-white hover:shadow-md transition"
                 >
-                    {/* LEFT CONTENT */}
-                    <div className="flex flex-col">
+
+                    {/* LEFT */}
+                    <div className="space-y-1">
                         {renderItem(item)}
                     </div>
 
                     {/* ACTIONS */}
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
 
-                        {/* ================= RESTORE ================= */}
-                        <RestoreConfirmDialog
-                            onConfirm={async () => {
-                                try {
-                                    const res = await onRestore(item);
-                                    showSuccess(res?.message || "Item restored");
-                                } catch (err) {
-                                    showErrorWithRetry(
-                                        err?.data?.message || "Restore failed",
-                                        () => onRestore(item)
-                                    );
-                                }
-                            }}
+                        {/* RESTORE */}
+                        <ConfirmDialog
+                            type="restore"
+                            onConfirm={() => onRestore(item)}
                             description={
                                 <>
-                                    Restore{" "}
-                                    <span className="font-semibold text-foreground">
-                                        "{item.name || "this item"}"
-                                    </span>{" "}
-                                    back to active items?
+                                    Do you really want to restore <b>"{getLabel(item)}"</b>?
                                 </>
                             }
-                        >
-                            <Button variant="outline" className="cursor-pointer">
-                                Restore
-                            </Button>
-                        </RestoreConfirmDialog>
-
-                        {/* ================= PERMANENT DELETE ================= */}
-                        <DeleteConfirmDialog
-                            title="Delete permanently?"
-                            description={
-                                <>
-                                    This cannot be undone. Delete{" "}
-                                    <span className="font-semibold text-destructive">
-                                        "{item.name || "this item"}"
-                                    </span>{" "}
-                                    permanently?
-                                </>
-                            }
-                            onConfirm={async () => {
-                                try {
-                                    const res = await onPermanentDelete(item);
-                                    showSuccess(res?.message || "Deleted permanently");
-                                } catch (err) {
-                                    showErrorWithRetry(
-                                        err?.data?.message || "Delete failed",
-                                        () => onPermanentDelete(item)
-                                    );
-                                }
-                            }}
                         >
                             <Button
-                                variant="destructive"
-                                className="cursor-pointer"
+                                size="sm"
+                                variant="outline"
+                                className="flex items-center cursor-pointer justify-center gap-2 w-full sm:w-auto"
                             >
-                                Delete Permanently
+                                <RotateCcw size={14} />
+                                Restore
                             </Button>
-                        </DeleteConfirmDialog>
+                        </ConfirmDialog>
+
+                        {/* DELETE */}
+                        <ConfirmDialog
+                            type="delete"
+                            onConfirm={() => onPermanentDelete(item)}
+                            description={
+                                <>
+                                    This action cannot be undone. Delete{" "}
+                                    <b className="text-destructive">
+                                        "{getLabel(item)}"
+                                    </b>?
+                                </>
+                            }
+                        >
+                            <Button
+                                size="sm"
+                                variant="destructive"
+                                className="flex items-center cursor-pointer justify-center gap-2 w-full sm:w-auto"
+                            >
+                                <Trash2 size={14} />
+                                Delete
+                            </Button>
+                        </ConfirmDialog>
 
                     </div>
                 </div>
             ))}
+
         </div>
     );
 }

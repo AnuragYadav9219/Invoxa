@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -6,16 +5,8 @@ import { Edit2, Trash2, FileText, Calendar, User } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import { COLORS, formatCurrency, formatDate } from "@/utils/formatters";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-} from "@/components/ui/alert-dialog";
+import { useInvoiceActions } from "../hooks/useInvoiceActions";
+import ConfirmDialog from "@/components/common/ConfirmDialog";
 
 export default function InvoiceRow({
   inv,
@@ -24,7 +15,7 @@ export default function InvoiceRow({
   onEdit,
   onDelete,
 }) {
-  const [openDelete, setOpenDelete] = useState(false);
+  const { handleDelete } = useInvoiceActions();
 
   const color = COLORS[(inv.customerName?.charCodeAt(0) || 0) % COLORS.length];
 
@@ -85,8 +76,8 @@ export default function InvoiceRow({
         <TableCell>
           <span className={cn(
             "font-bold px-2 py-1 rounded-md text-sm whitespace-nowrap",
-            inv.remainingAmount > 0 
-              ? "text-rose-600 bg-rose-50/50" 
+            inv.remainingAmount > 0
+              ? "text-rose-600 bg-rose-50/50"
               : "text-slate-500 bg-slate-100"
           )}>
             {formatCurrency(inv.remainingAmount)}
@@ -125,48 +116,31 @@ export default function InvoiceRow({
               <Edit2 size={15} />
             </Button>
 
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-9 w-9 p-0 cursor-pointer border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all shadow-sm active:scale-90"
-              onClick={() => setOpenDelete(true)}
-              title="Delete Invoice"
+            <ConfirmDialog
+              type="delete"
+              onConfirm={() => handleDelete(item)}
+              description={
+                <>
+                  Move invoice{" "}
+                  <span className="font-bold text-slate-900">
+                    "#{inv.invoiceNumber}"
+                  </span>{" "} to trash?
+                </>
+              }
             >
-              <Trash2 size={15} />
-            </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-9 w-9 p-0 cursor-pointer border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all shadow-sm active:scale-90"
+                onClick={(e) => e.stopPropagation()}
+                title="Delete Invoice"
+              >
+                <Trash2 size={15} />
+              </Button>
+            </ConfirmDialog>
           </div>
         </TableCell>
       </TableRow>
-
-      {/* DELETE MODAL */}
-      <AlertDialog open={openDelete} onOpenChange={setOpenDelete}>
-        <AlertDialogContent className="rounded-[2rem] max-w-100">
-          <AlertDialogHeader>
-            <div className="mx-auto p-3 bg-rose-50 rounded-full w-fit mb-2">
-              <Trash2 className="text-rose-600 h-6 w-6" />
-            </div>
-            <AlertDialogTitle className="text-center font-bold text-xl">Delete Invoice?</AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-slate-500">
-              Are you sure you want to delete invoice <span className="font-bold text-slate-900">{inv.invoiceNumber}</span>? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="sm:justify-center gap-3 mt-4">
-            <AlertDialogCancel className="rounded-xl font-bold flex-1 cursor-pointer border-slate-200" onClick={(e) => e.stopPropagation()}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-rose-600 cursor-pointer hover:bg-rose-700 rounded-xl font-bold flex-1 shadow-lg shadow-rose-100"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(inv.id);
-                setOpenDelete(false);
-              }}
-            >
-              Confirm
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

@@ -4,6 +4,7 @@ import com.invoice.tracker.service.pdf.PdfService;
 import com.invoice.tracker.specification.InvoiceSpecification;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.invoice.tracker.dto.invoice.InvoiceItemRequest;
 import com.invoice.tracker.dto.invoice.InvoiceResponse;
 import com.invoice.tracker.common.exception.BadRequestException;
+import com.invoice.tracker.common.exception.ResourceNotFoundException;
 import com.invoice.tracker.dto.common.PageResponse;
 import com.invoice.tracker.dto.invoice.CreateInvoiceRequest;
 import com.invoice.tracker.dto.invoice.InvoiceFilterRequest;
@@ -233,13 +235,54 @@ public class InvoiceServiceImpl implements InvoiceService {
                 return invoiceMapper.toResponse(updatedInvoice);
         }
 
-        // ====================== DELETE INVOICE =========================
+        // ====================== DELETE (SOFT) =========================
         @Override
+        @Transactional
         public void deleteInvoice(UUID invoiceId) {
 
                 Invoice invoice = invoiceHelper.getInvoiceOrThrow(invoiceId);
 
+                invoice.setDeleted(true);
+                invoice.setDeletedAt(LocalDateTime.now());
+
+                invoiceRepository.save(invoice);
+        }
+
+        // ====================== RESTORE INVOICE ========================
+        @Override
+        @Transactional
+        public void restoreInvoice(UUID id) {
+                Invoice invoice = invoiceRepository
+                                .findByIdAndShopId(id, SecurityUtils.getCurrentUserShopId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
+
+                invoice.setDeleted(false);
+                invoice.setDeletedAt(null);
+
+                invoiceRepository.save(invoice);
+        }
+
+        // ======================== PERMANENT DELETE =====================
+        @Override
+        public void permanentDeleteInvoice(UUID id) {
+
+                Invoice invoice = invoiceRepository
+                                .findByIdAndShopId(id, SecurityUtils.getCurrentUserShopId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
+
                 invoiceRepository.delete(invoice);
+        }
+
+        // ======================= GET DELETED INVOICES ====================
+        @Override
+        public List<InvoiceResponse> getDeletedInvoices() {
+
+                UUID shopId = SecurityUtils.getCurrentUserShopId();
+
+                return invoiceRepository.findDeletedInvoicesWithItems(shopId)
+                                .stream()
+                                .map(invoiceMapper::toResponse)
+                                .toList();
         }
 
         // ====================== PDF GENERATION =========================

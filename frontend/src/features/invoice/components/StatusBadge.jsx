@@ -9,10 +9,10 @@ export default function StatusBadge({ status }) {
     };
 
     const labels = {
-        PAID: "✔ Paid",
-        PENDING: "⏳ Pending",
-        PARTIALLY_PAID: "🔵 Partial",
-        OVERDUE: "⚠ Overdue",
+        PAID: "Paid",
+        PENDING: "Pending",
+        PARTIALLY_PAID: "Partial",
+        OVERDUE: "Overdue",
     };
 
     return (

@@ -2,6 +2,7 @@ package com.invoice.tracker.entity.invoice;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -69,4 +70,11 @@ public class Invoice extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Notification> notifications = new ArrayList<>();
+
+    @Builder.Default
+    private boolean deleted = false;
+
+    private LocalDateTime deletedAt;
+    
+    private UUID deletedBy;
 }

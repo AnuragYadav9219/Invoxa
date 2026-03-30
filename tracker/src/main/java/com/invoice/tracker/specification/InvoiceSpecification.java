@@ -23,6 +23,9 @@ public class InvoiceSpecification {
             // Multi-tenant safety
             predicates.add(cb.equal(root.get("shopId"), shopId));
 
+            // Exclude soft deleted
+            predicates.add(cb.isFalse(root.get("deleted")));
+
             // Search
             if (filter.getSearch() != null && !filter.getSearch().isBlank()) {
 

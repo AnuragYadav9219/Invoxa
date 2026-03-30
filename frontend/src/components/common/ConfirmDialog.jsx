@@ -11,15 +11,19 @@ import {
     AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import { Loader2 } from "lucide-react";
+import { CONFIRM_DIALOG_VARIANTS } from "@/config/uiConfig";
 
-export default function RestoreConfirmDialog({
+export default function ConfirmDialog({
     children,
     onConfirm,
-    title = "Restore this item?",
     description,
+    type = "delete",
+    title,
 }) {
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
+
+    const config = CONFIRM_DIALOG_VARIANTS[type];
 
     const handleConfirm = async () => {
         try {
@@ -37,30 +41,42 @@ export default function RestoreConfirmDialog({
                 {children}
             </AlertDialogTrigger>
 
-            <AlertDialogContent>
+            <AlertDialogContent className="rounded-2xl max-w-md">
+
+                {/* HEADER */}
                 <AlertDialogHeader>
-                    <AlertDialogTitle className="text-green-600">
-                        {title}
+                    <div className={`mx-auto p-3 rounded-full w-fit mb-2 ${config.bg}`}>
+                        {config.icon}
+                    </div>
+
+                    <AlertDialogTitle className="text-center font-bold text-lg text-slate-900">
+                        {title || config.title}
                     </AlertDialogTitle>
 
-                    <AlertDialogDescription>
+                    <AlertDialogDescription className="text-center text-slate-500 px-2">
                         {description}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
 
-                <AlertDialogFooter>
-                    <AlertDialogCancel disabled={loading}>
+                {/* FOOTER */}
+                <AlertDialogFooter className="flex flex-col sm:flex-row gap-3 mt-4">
+
+                    <AlertDialogCancel
+                        disabled={loading}
+                        className="cursor-pointer rounded-xl h-11 border-slate-200 font-medium"
+                    >
                         Cancel
                     </AlertDialogCancel>
 
                     <AlertDialogAction
                         onClick={handleConfirm}
                         disabled={loading}
-                        className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
+                        className={`${config.btn} cursor-pointer rounded-xl h-11 font-medium flex items-center justify-center gap-2 shadow-sm`}
                     >
                         {loading && <Loader2 className="animate-spin" size={16} />}
-                        {loading ? "Restoring..." : "Restore"}
+                        {loading ? config.loadingText : config.confirmText}
                     </AlertDialogAction>
+
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
