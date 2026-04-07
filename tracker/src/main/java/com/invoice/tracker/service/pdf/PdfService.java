@@ -34,22 +34,6 @@ public class PdfService {
 
             document.open();
 
-            // Watermark
-            if (invoice.getStatus() != null) {
-                switch (invoice.getStatus()) {
-                    case PAID:
-                        addWatermark(writer, "PAID", new Color(46, 204, 113));
-                        break;
-
-                    case OVERDUE:
-                        addWatermark(writer, "OVERDUE", new Color(231, 76, 60));
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-
             // Title
             Font titleFont = new Font(Font.HELVETICA, 20, Font.BOLD);
             Paragraph title = new Paragraph("INVOICE", titleFont);
@@ -107,6 +91,22 @@ public class PdfService {
             total.setSpacingBefore(10);
             document.add(total);
 
+            // Watermark
+            if (invoice.getStatus() != null) {
+                switch (invoice.getStatus()) {
+                    case PAID:
+                        addWatermark(writer, "PAID", new Color(46, 204, 113));
+                        break;
+
+                    case OVERDUE:
+                        addWatermark(writer, "OVERDUE", new Color(231, 76, 60));
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+
             document.close();
 
             return out.toByteArray();
@@ -148,7 +148,7 @@ public class PdfService {
     // ==================== WATERMARK =======================
     private void addWatermark(PdfWriter writer, String text, Color color) {
 
-        PdfContentByte canvas = writer.getDirectContentUnder();
+        PdfContentByte canvas = writer.getDirectContent();
 
         PdfGState gs = new PdfGState();
         gs.setFillOpacity(0.3f);

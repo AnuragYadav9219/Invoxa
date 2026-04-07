@@ -11,6 +11,8 @@ import { useAutoLogout } from "./hooks/useAutoLogout";
 import Login from "./pages/Login";
 import Items from "./features/item/pages/Items";
 import Trash from "./components/common/Trash";
+import Payment from "./features/payment/pages/Payments";
+import PaymentDetails from "./features/payment/pages/PaymentDetails";
 
 export default function App() {
   useAutoLogout();
@@ -71,6 +73,28 @@ export default function App() {
               <ProtectedRoute>
                 <Layout>
                   <Trash />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/payments"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Payment />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/payments/:id"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <PaymentDetails />
                 </Layout>
               </ProtectedRoute>
             }

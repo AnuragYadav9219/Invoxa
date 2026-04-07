@@ -27,12 +27,12 @@ export const invoiceApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result?.content
           ? [
-              ...result.content.map(({ id }) => ({
-                type: "Invoice",
-                id,
-              })),
-              { type: "Invoice", id: "LIST" },
-            ]
+            ...result.content.map(({ id }) => ({
+              type: "Invoice",
+              id,
+            })),
+            { type: "Invoice", id: "LIST" },
+          ]
           : [{ type: "Invoice", id: "LIST" }],
     }),
 
@@ -162,31 +162,45 @@ export const invoiceApi = baseApi.injectEndpoints({
 
     /* ================= DOWNLOAD PDF ================= */
     downloadInvoicePDF: builder.mutation({
-      query: (id) => ({
-        url: `/invoices/${id}/pdf`,
-        method: "GET",
-        responseHandler: (response) => response.blob(),
-        meta: { feature: "invoice" },
-      }),
+      async queryFn(id) {
+        try {
+          const token = localStorage.getItem("token");
+          const user = JSON.parse(localStorage.getItem("user"));
+          const shopId = user?.shopId;
 
-      async transformResponse(response, meta, arg) {
-        const url = window.URL.createObjectURL(response);
-        const link = document.createElement("a");
+          if (!token || !shopId) {
+            throw new Error("Auth missing");
+          }
 
-        link.href = url;
-        link.setAttribute("download", `invoice-${arg}.pdf`);
+          const res = await fetch(
+            `http://localhost:8080/api/invoices/${id}/pdf`,
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "X-Shop-Id": shopId,
+              },
+            }
+          );
 
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+          if (!res.ok) throw new Error("Failed to fetch PDF");
 
-        window.URL.revokeObjectURL(url);
+          const blob = await res.blob();
 
-        return { success: true };
+          if (blob.type !== "application/pdf") {
+            const text = await blob.text();
+            console.error("Invalid response:", text);
+            throw new Error("Invalid PDF response");
+          }
+
+          return { data: blob };
+        } catch (error) {
+          return { error: error.message };
+        }
       },
     }),
-
   }),
+
 });
 
 /* ================= EXPORT HOOKS ================= */

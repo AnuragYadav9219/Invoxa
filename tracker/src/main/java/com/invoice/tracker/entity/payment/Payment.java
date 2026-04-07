@@ -1,6 +1,7 @@
 package com.invoice.tracker.entity.payment;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.invoice.tracker.entity.AuditableEntity;
@@ -30,7 +31,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class Payment extends AuditableEntity {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -47,4 +48,10 @@ public class Payment extends AuditableEntity {
     @JoinColumn(name = "invoice_id")
     private Invoice invoice;
 
+    @Builder.Default
+    private boolean deleted = false;
+
+    private LocalDateTime deletedAt;
+
+    private UUID deletedBy;
 }

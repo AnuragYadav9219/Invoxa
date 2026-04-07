@@ -44,6 +44,13 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID>, JpaSpec
         @EntityGraph(attributePaths = "items")
         Optional<Invoice> findById(UUID id);
 
+        @Query("""
+                            SELECT i FROM Invoice i
+                            LEFT JOIN FETCH i.items
+                            WHERE i.id = :id AND i.shopId = :shopId
+                        """)
+        Optional<Invoice> findByIdWithItems(UUID id, UUID shopId);
+
         @EntityGraph(attributePaths = { "items" })
         Page<Invoice> findAll(
                         org.springframework.data.jpa.domain.Specification<Invoice> spec,

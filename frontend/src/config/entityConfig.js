@@ -10,4 +10,9 @@ export const entityConfig = {
   customer: {
     label: (cus) => cus.name,
   },
-}
+
+  payment: {
+    label: (pay) =>
+      `₹${pay.amount} • ${pay.method} • ${pay.referenceNumber || "No Ref"}`,
+  }
+};

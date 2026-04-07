@@ -3,7 +3,9 @@ package com.invoice.tracker.controller.invoice;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -139,8 +141,10 @@ public class InvoiceController {
                 String disposition = download ? "attachment" : "inline";
 
                 return ResponseEntity.ok()
-                                .header("Content-Type", "application/pdf")
-                                .header("Content-Disposition", disposition + "; filename=invoice-" + invoiceId + ".pdf")
+                                .contentType(MediaType.APPLICATION_PDF)
+                                .contentLength(pdf.length)
+                                .header(HttpHeaders.CONTENT_DISPOSITION,
+                                                disposition + "; filename=invoice-" + invoiceId + ".pdf")
                                 .body(pdf);
         }
 

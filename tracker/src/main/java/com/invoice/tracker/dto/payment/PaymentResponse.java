@@ -2,6 +2,7 @@ package com.invoice.tracker.dto.payment;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import com.invoice.tracker.entity.payment.PaymentMethod;
 
@@ -13,9 +14,16 @@ import lombok.Setter;
 @Setter
 @Builder
 public class PaymentResponse {
-    
+
+    private UUID id;
+
     private BigDecimal amount;
     private PaymentMethod method;
     private String referenceNumber;
+    private BigDecimal remainingAmount;
     private LocalDateTime paymentDate;
+
+    private UUID invoiceId;
+    private String invoiceNumber;
+    private String customerName;
 }

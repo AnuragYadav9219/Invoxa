@@ -1,5 +1,6 @@
 package com.invoice.tracker.service.invoice;
 
+import com.invoice.tracker.service.payment.PaymentService;
 import com.invoice.tracker.service.pdf.PdfService;
 import com.invoice.tracker.specification.InvoiceSpecification;
 
@@ -44,6 +45,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         private final InvoiceRepository invoiceRepository;
         private final InvoiceMapper invoiceMapper;
         private final InvoiceHelper invoiceHelper;
+        private final PaymentService paymentService;
         private final InvoiceNumberGenerator invoiceNumberGenerator;
         private final ApplicationEventPublisher eventPublisher;
 
@@ -246,6 +248,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 invoice.setDeletedAt(LocalDateTime.now());
 
                 invoiceRepository.save(invoice);
+                paymentService.deletePaymentsByInvoice(invoiceId);
         }
 
         // ====================== RESTORE INVOICE ========================
@@ -260,6 +263,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 invoice.setDeletedAt(null);
 
                 invoiceRepository.save(invoice);
+                paymentService.restorePaymentsByInvoice(id);
         }
 
         // ======================== PERMANENT DELETE =====================

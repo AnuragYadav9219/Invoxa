@@ -8,14 +8,16 @@ import {
 import { useItemActions } from "@/features/item/hooks/useItemActions";
 import { useGetDeletedInvoicesQuery } from "@/features/invoice/invoiceApi";
 import { useInvoiceActions } from "@/features/invoice/hooks/useInvoiceActions";
-import { entityConfig } from "@/config/entityConfig";
+import { useGetDeletedPaymentsQuery } from "@/features/payment/paymentApi";
+import { usePaymentActions } from "@/features/payment/hooks/usePaymentActions";
 import { getEntityLabel } from "@/utils/entityHelpers";
 
 export default function Trash() {
     const { data: items = [], isLoading: itemsLoading } = useGetDeletedItemsQuery();
     const { data: invoices = [], isLoading: invoicesLoading } = useGetDeletedInvoicesQuery();
+    const { data: payments = [], isLoading: paymentsLoading } = useGetDeletedPaymentsQuery();
 
-    const isLoading = itemsLoading || invoicesLoading;
+    const isLoading = itemsLoading || invoicesLoading || paymentsLoading;
 
     const {
         handleRestore: restoreItem,
@@ -27,21 +29,39 @@ export default function Trash() {
         handlePermanentDelete: deleteInvoice
     } = useInvoiceActions();
 
+    const {
+        handleRestore: restorePayment,
+        handlePermanentDelete: deletePayment,
+    } = usePaymentActions();
+
     const allTrash = [
         ...items.map((i) => ({ ...i, type: "item" })),
         ...invoices.map((i) => ({ ...i, type: "invoice" })),
+        ...payments.map((i) => ({ ...i, type: "payment" })),
     ];
 
     /* =============== HANDLERS =================== */
 
     const handleRestore = (item) => {
+        if (!item?.id) {
+            console.error("Invalid item:", item);
+            return;
+        }
+
         if (item.type === 'item') return restoreItem(item);
         if (item.type === 'invoice') return restoreInvoice(item);
+        if (item.type === 'payment') return restorePayment(item);
     }
 
     const handlePermanentDelete = (item) => {
+        if (!item?.id) {
+            console.error("Invalid item:", item);
+            return;
+        }
+
         if (item.type === 'item') return deleteItem(item);
         if (item.type === 'invoice') return deleteInvoice(item);
+        if (item.type === 'payment') return deletePayment(item);
     }
 
     return (
@@ -76,6 +96,10 @@ export default function Trash() {
                     <TabsTrigger value="invoices" className="flex-1 cursor-pointer sm:flex-none">
                         Invoices ({invoices.length})
                     </TabsTrigger>
+
+                    <TabsTrigger value="payments" className="flex-1 cursor-pointer sm:flex-none">
+                        Payments ({payments.length})
+                    </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="all">
@@ -95,9 +119,12 @@ export default function Trash() {
                                     </span>
                                 </p>
                                 <p className="text-xs sm:text-sm text-gray-500">
-                                    {item.type === "item"
-                                        ? `₹${item.price}`
-                                        : `₹${item.totalAmount || 0}`
+                                    {
+                                        item.type === "payment"
+                                            ? `₹${item.amount || 0}`
+                                            : item.type === "item"
+                                                ? `₹${item.price}`
+                                                : `₹${item.totalAmount || 0}`
                                     }
                                 </p>
                             </>
@@ -141,6 +168,28 @@ export default function Trash() {
                                 </p>
                                 <p className="text-xs sm:text-sm text-gray-500">
                                     ₹{item.totalAmount || 0}
+                                </p>
+                            </>
+                        )}
+                    />
+                </TabsContent>
+
+                {/* ===================== PAYMENTS ======================= */}
+                <TabsContent value="payments">
+                    <TrashPage
+                        title="Payments Trash"
+                        items={payments.map((i) => ({ ...i, type: "payment" }))}
+                        isLoading={isLoading}
+                        onRestore={restorePayment}
+                        onPermanentDelete={deletePayment}
+                        getLabel={getEntityLabel}
+                        renderItem={(item) => (
+                            <>
+                                <p className="font-medium text-sm sm:text-base">
+                                    {item.customerName}
+                                </p>
+                                <p className="text-xs sm:text-sm text-gray-500">
+                                    ₹{item.amount || 0}
                                 </p>
                             </>
                         )}

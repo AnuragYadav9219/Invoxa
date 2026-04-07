@@ -1,10 +1,8 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import StatusBadge from "./StatusBadge";
 import { COLORS, formatCurrency, formatDate } from "@/utils/formatters";
 import { Edit2, Trash2, ChevronRight, User } from "lucide-react";
-import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 import { useInvoiceActions } from "../hooks/useInvoiceActions";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 
@@ -117,7 +115,7 @@ export default function InvoiceCard({
 
             <ConfirmDialog
               type="delete"
-              onConfirm={() => handleDelete()}
+              onConfirm={() => handleDelete(inv)}
               description={
                 <>
                   Move invoice{" "}
