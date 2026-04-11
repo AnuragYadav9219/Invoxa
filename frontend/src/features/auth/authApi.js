@@ -1,6 +1,7 @@
 import { baseApi } from "@/api/baseApi";
 import { tokenService } from "@/services/tokenService";
 import { logout, setCredentials } from "./authSlice";
+import { toast } from "sonner";
 
 export const authApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -40,6 +41,40 @@ export const authApi = baseApi.injectEndpoints({
             },
         }),
 
+        /* ================ REGISTER =================== */
+        register: builder.mutation({
+            query: (data) => ({
+                url: "/auth/register",
+                method: "POST",
+                body: {
+                    ...data,
+                    deviceId: "web-app",
+                    deviceName: "Chrome",
+                },
+            }),
+
+            async onQueryStarted(args, { dispatch, queryFulfilled }) {
+                try {
+                    const { data } = await queryFulfilled;
+                    const res = data.data;
+
+                    tokenService.setToken(res.accessToken);
+                    tokenService.setRefreshToken(res.refreshToken);
+                    tokenService.setUser(res.user);
+
+                    localStorage.setItem("shopId", res.user.shopId);
+
+                    dispatch(setCredentials(res.user));
+
+                } catch (err) {
+                    toast.error("Account Creation failed", {
+                        description:
+                            err?.error?.data?.message || "Please try again later",
+                    });
+                }
+            },
+        }),
+
         /* ============== LOGOUT ================ */
         logout: builder.mutation({
             query: () => ({
@@ -64,4 +99,5 @@ export const authApi = baseApi.injectEndpoints({
 export const {
     useLoginMutation,
     useLogoutMutation,
+    useRegisterMutation,
 } = authApi;

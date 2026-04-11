@@ -13,6 +13,7 @@ import {
     Wallet,
     IndianRupee,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
     const { data: dashboardData, isLoading: dashboardLoading } = useGetDashboardQuery();
@@ -32,136 +33,188 @@ export default function Dashboard() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="relative min-h-screen w-full overflow-hidden">
 
-            {/* HEADER */}
-            <div>
-                <h1 className="text-2xl font-bold">Dashboard</h1>
-                <p className="text-sm text-gray-500">
-                    Overview of your business performance
-                </p>
-            </div>
+            {/* 🌈 BACKGROUND GRADIENT (FIXED) */}
+            <div className="fixed inset-0 -z-10 bg-linear-to-br from-indigo-100 via-white to-white" />
 
-            {/* STATS */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            {/* ✨ Glow Effects */}
+            <div className="fixed top-0 right-0 w-96 h-96 bg-indigo-300 opacity-20 blur-3xl rounded-full -z-10" />
+            <div className="fixed bottom-0 left-0 w-96 h-96 bg-green-300 opacity-20 blur-3xl rounded-full -z-10" />
 
-                <StatCard
-                    title="Total Invoices"
-                    value={stats.totalInvoices || 0}
-                    icon={<FileText size={20} />}
-                />
+            {/* CONTENT */}
+            <div className="p-4 space-y-6">
+                {/* HEADER */}
+                <div>
+                    <h1 className="text-2xl font-bold">Dashboard</h1>
+                    <p className="text-sm text-gray-500">
+                        Overview of your business performance
+                    </p>
+                </div>
 
-                <StatCard
-                    title="Paid"
-                    value={stats.paidInvoices || 0}
-                    icon={<TrendingUp size={20} />}
-                    color="green"
-                />
+                {/* STATS */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
 
-                <StatCard
-                    title="Pending"
-                    value={stats.pendingInvoices || 0}
-                    icon={<Clock size={20} />}
-                    color="yellow"
-                />
+                    <StatCard
+                        title="Total Invoices"
+                        value={stats.totalInvoices || 0}
+                        icon={<FileText size={20} />}
+                    />
 
-                <StatCard
-                    title="Overdue"
-                    value={stats.overdueInvoices || 0}
-                    icon={<AlertTriangle size={20} />}
-                    color="red"
-                />
+                    <StatCard
+                        title="Paid"
+                        value={stats.paidInvoices || 0}
+                        icon={<TrendingUp size={20} />}
+                        color="green"
+                    />
 
-                <StatCard
-                    title="Revenue"
-                    value={formatCurrency(stats.totalRevenue)}
-                    icon={<IndianRupee size={20} />}
-                    color="green"
-                />
+                    <StatCard
+                        title="Pending"
+                        value={stats.pendingInvoices || 0}
+                        icon={<Clock size={20} />}
+                        color="yellow"
+                    />
 
-                <StatCard
-                    title="Pending Amount"
-                    value={formatCurrency(stats.totalPending)}
-                    icon={<Wallet size={20} />}
-                    color="yellow"
-                />
+                    <StatCard
+                        title="Overdue"
+                        value={stats.overdueInvoices || 0}
+                        icon={<AlertTriangle size={20} />}
+                        color="red"
+                    />
 
-                <StatCard
-                    title="Overdue Amount"
-                    value={formatCurrency(stats.totalOverdue)}
-                    icon={<AlertTriangle size={20} />}
-                    color="red"
-                />
+                    <StatCard
+                        title="Revenue"
+                        value={stats.totalRevenue || 0}
+                        icon={<IndianRupee size={20} />}
+                        color="green"
+                        isCurrency
+                    />
 
-            </div>
+                    <StatCard
+                        title="Pending Amount"
+                        value={stats.totalPending || 0}
+                        icon={<Wallet size={20} />}
+                        color="yellow"
+                        isCurrency
+                    />
 
-            {/* TABLE */}
-            <Card>
-                <CardContent className="p-5 space-y-4">
+                    <StatCard
+                        title="Overdue Amount"
+                        value={stats.totalOverdue || 0}
+                        icon={<AlertTriangle size={20} />}
+                        color="red"
+                        isCurrency
+                    />
 
-                    {/* HEADER */}
-                    <div className="flex items-center justify-between">
-                        <div>
+                </div>
+
+                {/* TABLE */}
+                <Card>
+                    <CardContent className="p-5 space-y-4">
+
+                        {/* HEADER */}
+                        <div className="flex items-center justify-between">
                             <h2 className="text-lg font-semibold">
                                 Recent Invoices
                             </h2>
+
+                            {invoicesFetching && (
+                                <div className="text-sm text-gray-500 flex items-center gap-2">
+                                    <Spinner size={16} />
+                                    Updating...
+                                </div>
+                            )}
                         </div>
 
-                        {invoicesFetching && (
-                            <div className="text-sm text-gray-500 flex items-center gap-2">
-                                <Spinner size={16} />
-                                Updating...
-                            </div>
-                        )}
-                    </div>
+                        {/* TABLE */}
+                        <div className="relative">
+                            <InvoiceTable
+                                invoices={invoices}
+                                isLoading={invoicesLoading}
+                                limit={5}
+                                showActions={false}
+                            />
 
-                    {/* TABLE */}
-                    <div className="relative">
-                        <InvoiceTable
-                            invoices={invoices}
-                            isLoading={invoicesLoading}
-                            limit={5}
-                            showActions={false}
-                        />
+                            {invoicesFetching && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-sm rounded-xl">
+                                    <Spinner size={24} />
+                                </div>
+                            )}
+                        </div>
 
-                        {/* OVERLAY SPINNER */}
-                        {invoicesFetching && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-sm rounded-xl">
-                                <Spinner size={24} />
-                            </div>
-                        )}
-                    </div>
-
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 }
 
 /* ================= STAT CARD ================= */
 
-function StatCard({ title, value, icon, color }) {
+function StatCard({ title, value, icon, color = "green", isCurrency = false }) {
+    const [displayValue, setDisplayValue] = useState(0);
+
+    useEffect(() => {
+        let start = 0;
+        const end = Number(value) || 0;
+        const duration = 800;
+        const increment = end / (duration / 16);
+
+        const timer = setInterval(() => {
+            start += increment;
+            if (start >= end) {
+                setDisplayValue(end);
+                clearInterval(timer);
+            } else {
+                setDisplayValue(start);
+            }
+        }, 16);
+
+        return () => clearInterval(timer);
+    }, [value]);
+
     const colors = {
-        green: "bg-green-100 text-green-600",
-        yellow: "bg-yellow-100 text-yellow-600",
-        red: "bg-red-100 text-red-600",
+        green: {
+            bg: "bg-green-100",
+            text: "text-green-600",
+            glow: "hover:shadow-green-200",
+            gradient: "from-green-400 to-green-600",
+        },
+        yellow: {
+            bg: "bg-yellow-100",
+            text: "text-yellow-600",
+            glow: "hover:shadow-yellow-200",
+            gradient: "from-yellow-400 to-yellow-600",
+        },
+        red: {
+            bg: "bg-red-100",
+            text: "text-red-600",
+            glow: "hover:shadow-red-200",
+            gradient: "from-red-400 to-red-600",
+        },
     };
 
-    return (
-        <Card className="shadow-sm hover:shadow-md transition rounded-2xl">
-            <CardContent className="p-4 flex items-center justify-between">
+    const theme = colors[color] || colors.green;
 
-                {/* TEXT */}
+    return (
+        <Card className={`group relative overflow-hidden rounded-2xl shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${theme.glow}`}>
+
+            {/* Gradient Hover Glow */}
+            <div className={`absolute inset-0 opacity-0 group-hover:opacity-20 bg-linear-to-r ${theme.gradient} blur-xl transition`} />
+
+            <CardContent className="p-5 flex items-center justify-between relative z-10">
+
                 <div>
                     <p className="text-sm text-gray-500">{title}</p>
-                    <h2 className="text-2xl font-bold mt-1">{value}</h2>
+
+                    <h2 className="text-2xl font-bold mt-1 tracking-tight">
+                        {isCurrency
+                            ? formatCurrency(displayValue)
+                            : Math.floor(displayValue)}
+                    </h2>
                 </div>
 
-                {/* ICON */}
-                <div
-                    className={`p-3 rounded-xl ${colors[color] || "bg-gray-100 text-gray-600"
-                        }`}
-                >
+                <div className={`p-3 rounded-xl ${theme.bg} ${theme.text} transition-all duration-300 group-hover:scale-110 group-hover:rotate-6`}>
                     {icon}
                 </div>
             </CardContent>

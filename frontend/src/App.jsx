@@ -13,6 +13,9 @@ import Items from "./features/item/pages/Items";
 import Trash from "./components/common/Trash";
 import Payment from "./features/payment/pages/Payments";
 import PaymentDetails from "./features/payment/pages/PaymentDetails";
+import BankingPage from "./features/banking/BankingPage";
+import CustomerPage from "./features/customer/CustomerPage";
+import Register from "./pages/Register";
 
 export default function App() {
   useAutoLogout();
@@ -22,6 +25,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           <Route
             path="/dashboard"
@@ -95,6 +99,28 @@ export default function App() {
               <ProtectedRoute>
                 <Layout>
                   <PaymentDetails />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/banking"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <BankingPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/customers"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <CustomerPage />
                 </Layout>
               </ProtectedRoute>
             }
