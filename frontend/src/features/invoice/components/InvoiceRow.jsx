@@ -118,7 +118,7 @@ export default function InvoiceRow({
 
             <ConfirmDialog
               type="delete"
-              onConfirm={() => handleDelete(item)}
+              onConfirm={() => handleDelete(inv)}
               description={
                 <>
                   Move invoice{" "}

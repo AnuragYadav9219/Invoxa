@@ -16,6 +16,7 @@ import PaymentDetails from "./features/payment/pages/PaymentDetails";
 import BankingPage from "./features/banking/BankingPage";
 import CustomerPage from "./features/customer/CustomerPage";
 import Register from "./pages/Register";
+import CustomerDetailsPage from "./features/customer/CustomerDetailsPage";
 
 export default function App() {
   useAutoLogout();
@@ -121,6 +122,17 @@ export default function App() {
               <ProtectedRoute>
                 <Layout>
                   <CustomerPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/customers/:name"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <CustomerDetailsPage />
                 </Layout>
               </ProtectedRoute>
             }

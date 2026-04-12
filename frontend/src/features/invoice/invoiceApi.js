@@ -64,6 +64,41 @@ export const invoiceApi = baseApi.injectEndpoints({
       ],
     }),
 
+    /* ================= CUSTOMER INVOICES ================= */
+    getInvoicesByCustomer: builder.query({
+      query: (customerName) => ({
+        url: "/invoices/by-customer",
+        method: "GET",
+        params: { customerName },
+        meta: { feature: "invoice" },
+      }),
+
+      transformResponse: (res) => res.data,
+
+      providesTags: (result) =>
+        result
+          ? [
+            ...result.map(({ id }) => ({
+              type: "Invoice",
+              id,
+            })),
+          ]
+          : [],
+    }),
+
+    /* ================= CUSTOMER SUMMARY ================= */
+    getCustomerSummary: builder.query({
+      query: () => ({
+        url: "/invoices/customers-summary",
+        method: "GET",
+        meta: { feature: "invoice" },
+      }),
+
+      transformResponse: (res) => res.data,
+
+      providesTags: [{ type: "Invoice", id: "CUSTOMERS" }],
+    }),
+
     /* ================== CREATE ================= */
     createInvoice: builder.mutation({
       query: (data) => ({
@@ -207,6 +242,8 @@ export const invoiceApi = baseApi.injectEndpoints({
 export const {
   useGetInvoicesQuery,
   useGetInvoiceByIdQuery,
+  useGetInvoicesByCustomerQuery,
+  useGetCustomerSummaryQuery,
   useCreateInvoiceMutation,
   useUpdateInvoiceMutation,
   useDeleteInvoiceMutation,

@@ -7,7 +7,9 @@ import com.invoice.tracker.specification.InvoiceSpecification;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -154,6 +156,74 @@ public class InvoiceServiceImpl implements InvoiceService {
                 Invoice invoice = invoiceHelper.getInvoiceOrThrow(invoiceId);
 
                 return invoiceMapper.toResponse(invoice);
+        }
+
+        // ====================== GET CUSTOMER's INVOICES =====================
+        @Override
+        public List<InvoiceResponse> getInvoicesByCustomer(String customerName) {
+
+                UUID shopId = SecurityUtils.getCurrentUserShopId();
+
+                return invoiceRepository
+                                .findByShopIdAndCustomerNameIgnoreCase(shopId, customerName)
+                                .stream()
+                                .map(invoiceMapper::toSummaryResponse)
+                                .toList();
+        }
+
+        // ====================== CUSTOMER SUMMARY =========================
+        @Override
+        public List<Map<String, Object>> getCustomerSummary() {
+
+                UUID shopId = SecurityUtils.getCurrentUserShopId();
+
+                List<Invoice> invoices = invoiceRepository
+                                .findByShopIdAndDeletedFalse(shopId);
+
+                Map<String, Map<String, Object>> map = new HashMap<>();
+
+                for (Invoice inv : invoices) {
+
+                        if (inv.getCustomerName() == null)
+                                continue;
+
+                        String key = inv.getCustomerName().toLowerCase();
+
+                        map.putIfAbsent(key, new HashMap<>());
+                        Map<String, Object> data = map.get(key);
+
+                        data.put("name", inv.getCustomerName());
+                        data.put("phone", inv.getCustomerPhone());
+
+                        data.put(
+                                        "totalAmount",
+                                        ((BigDecimal) data.getOrDefault("totalAmount", BigDecimal.ZERO))
+                                                        .add(inv.getTotalAmount() != null ? inv.getTotalAmount()
+                                                                        : BigDecimal.ZERO));
+
+                        data.put(
+                                        "paidAmount",
+                                        ((BigDecimal) data.getOrDefault("paidAmount", BigDecimal.ZERO))
+                                                        .add(inv.getPaidAmount() != null ? inv.getPaidAmount()
+                                                                        : BigDecimal.ZERO));
+
+                        data.put(
+                                        "invoiceCount",
+                                        ((Integer) data.getOrDefault("invoiceCount", 0)) + 1);
+                }
+
+                for (Map<String, Object> data : map.values()) {
+                        
+                        BigDecimal total = (BigDecimal) data.getOrDefault("totalAmount", BigDecimal.ZERO);
+                        BigDecimal paid = (BigDecimal) data.getOrDefault("paidAmount", BigDecimal.ZERO);
+
+                        data.put("pendingAmount", total.subtract(paid));
+                }
+
+                return map.values().stream()
+                                .sorted((a, b) -> ((BigDecimal) b.get("totalAmount"))
+                                                .compareTo((BigDecimal) a.get("totalAmount")))
+                                .toList();
         }
 
         // ===================== UPDATE INVOICE ==========================

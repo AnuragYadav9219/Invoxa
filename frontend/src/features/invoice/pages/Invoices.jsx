@@ -53,7 +53,7 @@ export default function Invoices() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-2">
 
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">

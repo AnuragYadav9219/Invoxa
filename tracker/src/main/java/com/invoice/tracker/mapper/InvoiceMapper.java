@@ -34,4 +34,21 @@ public class InvoiceMapper {
                                                                 .toList())
                                 .build();
         }
+
+        public InvoiceResponse toSummaryResponse(Invoice invoice) {
+
+                return InvoiceResponse.builder()
+                                .id(invoice.getId())
+                                .invoiceNumber(invoice.getInvoiceNumber())
+                                .shopId(invoice.getShopId())
+                                .customerName(invoice.getCustomerName())
+                                .customerPhone(invoice.getCustomerPhone())
+                                .customerEmail(invoice.getCustomerEmail())
+                                .totalAmount(invoice.getTotalAmount())
+                                .paidAmount(invoice.getPaidAmount())
+                                .remainingAmount(invoice.getRemainingAmount())
+                                .status(invoice.getStatus().name())
+                                .dueDate(invoice.getDueDate())
+                                .build();
+        }
 }

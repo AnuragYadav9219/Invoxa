@@ -65,7 +65,7 @@ export default function Trash() {
     }
 
     return (
-        <div className="space-y-6 h-screen">
+        <div className="space-y-6 h-screen p-2">
 
             {/* HEADER */}
             <div className="flex items-start sm:items-center gap-3">
@@ -85,7 +85,7 @@ export default function Trash() {
             <Tabs defaultValue="all">
 
                 <TabsList className="flex w-full sm:w-auto overflow-x-auto bg-muted p-1 rounded-lg">
-                    <TabsTrigger value="all" className="flex-1 cursor-pointer sm:flex-none">
+                    <TabsTrigger value="all" className="flex-1 cursor-pointer sm:flex-none ">
                         All ({allTrash.length})
                     </TabsTrigger>
 

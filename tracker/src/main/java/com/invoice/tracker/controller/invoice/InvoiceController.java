@@ -1,6 +1,7 @@
 package com.invoice.tracker.controller.invoice;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.http.HttpHeaders;
@@ -57,6 +58,30 @@ public class InvoiceController {
                                 invoice,
                                 "Invoice created successfully",
                                 HttpStatus.CREATED);
+        }
+
+        // ========================== GET BY CUSTOMER ========================
+        @PreAuthorize("hasAnyRole('OWNER','STAFF')")
+        @GetMapping("/by-customer")
+        public ResponseEntity<ApiResponse<List<InvoiceResponse>>> getByCustomer(@RequestParam String customerName) {
+
+                List<InvoiceResponse> invoices = invoiceService.getInvoicesByCustomer(customerName);
+
+                return ResponseBuilder.success(
+                                invoices,
+                                "Customer invoices fetched successfully");
+        }
+
+        // ========================== GET SUMMARIES OF CUSTOMER ========================
+        @PreAuthorize("hasAnyRole('OWNER','STAFF')")
+        @GetMapping("/customers-summary")
+        public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getCustomerSummary() {
+
+                List<Map<String, Object>> summaries = invoiceService.getCustomerSummary();
+
+                return ResponseBuilder.success(
+                                summaries,
+                                "Summaries fetched successfully");
         }
 
         // ============================ GET INVOICES =========================

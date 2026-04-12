@@ -2,7 +2,6 @@ import { NavLink } from "react-router-dom";
 import {
   Home,
   Package,
-  Banknote,
   FileText,
   Users,
   CreditCard,
@@ -16,10 +15,9 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     "relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-300 group";
 
   const getLinkClass = ({ isActive }) =>
-    `${linkBase} ${
-      isActive
-        ? "bg-gradient-to-r from-emerald-100 to-emerald-50 text-emerald-700 font-medium shadow-sm"
-        : "text-gray-600 hover:bg-white/60 hover:shadow hover:text-gray-900"
+    `${linkBase} ${isActive
+      ? "bg-gradient-to-r from-emerald-100 to-emerald-50 text-emerald-700 font-medium shadow-sm"
+      : "text-gray-600 hover:bg-white/60 hover:shadow hover:text-gray-900"
     }`;
 
   return (
@@ -63,11 +61,6 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           <NavLink to="/items" onClick={handleClick} className={getLinkClass}>
             <Package size={18} className="transition group-hover:scale-110" />
             {isOpen && "Items"}
-          </NavLink>
-
-          <NavLink to="/banking" onClick={handleClick} className={getLinkClass}>
-            <Banknote size={18} className="transition group-hover:scale-110" />
-            {isOpen && "Banking"}
           </NavLink>
 
         </nav>

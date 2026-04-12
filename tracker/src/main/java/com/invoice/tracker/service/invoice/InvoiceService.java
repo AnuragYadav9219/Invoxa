@@ -1,6 +1,7 @@
 package com.invoice.tracker.service.invoice;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.invoice.tracker.dto.common.PageResponse;
@@ -21,6 +22,10 @@ public interface InvoiceService {
     void deleteInvoice(UUID invoiceId);
 
     void restoreInvoice(UUID id);
+
+    List<InvoiceResponse> getInvoicesByCustomer(String customerName);
+
+    List<Map<String, Object>> getCustomerSummary();
 
     void permanentDeleteInvoice(UUID id);
 
