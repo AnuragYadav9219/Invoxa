@@ -4,7 +4,6 @@ import {
     X,
     UserIcon,
     SettingsIcon,
-    CreditCardIcon,
     LogOutIcon,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -15,17 +14,19 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { tokenService } from "@/services/tokenService";
+import { useSelector } from "react-redux";
+import { useLogoutMutation } from "@/features/auth/authApi";
 
 export default function Navbar({ isOpen, setIsOpen }) {
     const navigate = useNavigate();
+    const [logout] = useLogoutMutation();
 
-    const handleLogout = () => {
-        tokenService.clear();
+    const user = useSelector((state) => state.auth);
+
+    const handleLogout = async () => {
+        await logout();
         navigate("/login");
     };
-
-    const user = tokenService.getUser();
 
     return (
         <div className="fixed top-0 left-0 w-full z-50">
@@ -90,14 +91,15 @@ export default function Navbar({ isOpen, setIsOpen }) {
 
                             <DropdownMenuSeparator />
 
-                            <DropdownMenuItem className="cursor-pointer">
+                            <DropdownMenuItem
+                                className="cursor-pointer"
+                                onClick={() => {
+                                    navigate("/profile");
+                                    setIsOpen(false);
+                                }}
+                            >
                                 <UserIcon size={16} className="mr-2" />
                                 Profile
-                            </DropdownMenuItem>
-
-                            <DropdownMenuItem className="cursor-pointer">
-                                <CreditCardIcon size={16} className="mr-2" />
-                                Billing
                             </DropdownMenuItem>
 
                             <DropdownMenuItem className="cursor-pointer">

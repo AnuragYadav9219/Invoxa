@@ -72,6 +72,7 @@ public class AuthService {
                                 .password(passwordEncoder.encode(request.getPassword()))
                                 .role(Role.OWNER)
                                 .shop(shop)
+                                .tokenVersion(0)
                                 .build();
 
                 userRepository.save(user);
@@ -129,13 +130,15 @@ public class AuthService {
                                 user.getRole(),
                                 deviceName);
 
+                Integer tokenVersion = user.getTokenVersion() != null ? user.getTokenVersion() : 0;
+
                 // Generate JWT access token
                 String accessToken = jwtUtil.generateToken(
                                 user.getId(),
                                 user.getShop().getId(),
                                 user.getRole().name(),
                                 user.getEmail(),
-                                user.getTokenVersion());
+                                tokenVersion);
 
                 // Create refresh token (NO revoke all -> multi-device supported)
                 RefreshToken refreshToken = refreshTokenService.createRefreshToken(
@@ -164,6 +167,7 @@ public class AuthService {
                                                                         .email(request.getEmail())
                                                                         .role(Role.OWNER)
                                                                         .shop(shop)
+                                                                        .tokenVersion(0)
                                                                         .build());
                                 });
 
@@ -197,13 +201,15 @@ public class AuthService {
                 // Rotate token
                 RefreshToken newToken = refreshTokenService.rotateToken(oldToken);
 
+                Integer tokenVersion = user.getTokenVersion() != null ? user.getTokenVersion() : 0;
+
                 // New Access Token
                 String accessToken = jwtUtil.generateToken(
                                 user.getId(),
                                 user.getShop().getId(),
                                 user.getRole().name(),
                                 user.getEmail(),
-                                user.getTokenVersion());
+                                tokenVersion);
 
                 return AuthMapper.buildAuthResponse(user, accessToken, newToken.getToken());
         }
@@ -219,7 +225,9 @@ public class AuthService {
                 User user = userRepository.findByEmail(email)
                                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-                user.setTokenVersion(user.getTokenVersion() + 1);
+                Integer tokenVersion = user.getTokenVersion() != null ? user.getTokenVersion() : 0;
+
+                user.setTokenVersion(tokenVersion + 1);
                 userRepository.save(user);
                 log.info("User logged out | email={}", email);
         }
@@ -234,8 +242,10 @@ public class AuthService {
                 // Revoke all refresh tokens
                 refreshTokenService.revokeUserTokens(user);
 
+                Integer tokenVersion = user.getTokenVersion() != null ? user.getTokenVersion() : 0;
+
                 // Invalidate all access tokens
-                user.setTokenVersion(user.getTokenVersion() + 1);
+                user.setTokenVersion(tokenVersion + 1);
                 userRepository.save(user);
         }
 

@@ -89,7 +89,6 @@ export const authApi = baseApi.injectEndpoints({
                     tokenService.clear();
                     localStorage.removeItem("shopId");
                     dispatch(logout());
-                    window.location.replace("/login");
                 }
             },
         }),

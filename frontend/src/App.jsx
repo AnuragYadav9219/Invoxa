@@ -17,6 +17,7 @@ import BankingPage from "./features/banking/BankingPage";
 import CustomerPage from "./features/customer/CustomerPage";
 import Register from "./pages/Register";
 import CustomerDetailsPage from "./features/customer/CustomerDetailsPage";
+import UserProfile from "./features/user/UserProfile";
 
 export default function App() {
   useAutoLogout();
@@ -106,11 +107,11 @@ export default function App() {
           />
 
           <Route
-            path="/banking"
+            path="/profile"
             element={
               <ProtectedRoute>
                 <Layout>
-                  <BankingPage />
+                  <UserProfile />
                 </Layout>
               </ProtectedRoute>
             }
