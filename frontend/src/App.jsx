@@ -1,23 +1,26 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import ProtectedRoute from "./routes/ProtectedRoute";
-import Layout from "./components/layout/Layout";
+import { Toaster } from "sonner";
+
+import AppLayoutRoute from "./routes/AppLayoutRoute";
+import RoleRoute from "./routes/RoleRoute";
+
 import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import SettingsPage from "./features/user/component/SettingsPage";
+import UserProfile from "./features/user/pages/UserProfile";
+
 import Invoices from "./features/invoice/pages/Invoices";
 import InvoiceDetails from "./features/invoice/pages/InvoiceDetails";
-import RoleRoute from "./routes/RoleRoute";
-import AdminPage from "./features/admin/AdminPage";
-import { Toaster } from "sonner";
-import { useAutoLogout } from "./hooks/useAutoLogout";
-import Login from "./pages/Login";
 import Items from "./features/item/pages/Items";
 import Trash from "./components/common/Trash";
 import Payment from "./features/payment/pages/Payments";
 import PaymentDetails from "./features/payment/pages/PaymentDetails";
-import BankingPage from "./features/banking/BankingPage";
 import CustomerPage from "./features/customer/CustomerPage";
-import Register from "./pages/Register";
 import CustomerDetailsPage from "./features/customer/CustomerDetailsPage";
-import UserProfile from "./features/user/UserProfile";
+import AdminPage from "./features/admin/AdminPage";
+
+import { useAutoLogout } from "./hooks/useAutoLogout";
 
 export default function App() {
   useAutoLogout();
@@ -26,131 +29,40 @@ export default function App() {
     <>
       <BrowserRouter>
         <Routes>
+
+          {/* PUBLIC */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <Dashboard />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
+          {/* PROTECTED */}
+          <Route path="/dashboard" element={<AppLayoutRoute><Dashboard /></AppLayoutRoute>} />
+          <Route path="/settings" element={<AppLayoutRoute><SettingsPage /></AppLayoutRoute>} />
+          <Route path="/profile" element={<AppLayoutRoute><UserProfile /></AppLayoutRoute>} />
 
-          <Route
-            path="/invoices"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <Invoices />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/invoices" element={<AppLayoutRoute><Invoices /></AppLayoutRoute>} />
+          <Route path="/invoices/:id" element={<AppLayoutRoute><InvoiceDetails /></AppLayoutRoute>} />
 
-          <Route
-            path="/items"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <Items />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/items" element={<AppLayoutRoute><Items /></AppLayoutRoute>} />
+          <Route path="/trash" element={<AppLayoutRoute><Trash /></AppLayoutRoute>} />
 
-          <Route
-            path="/invoices/:id"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <InvoiceDetails />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/payments" element={<AppLayoutRoute><Payment /></AppLayoutRoute>} />
+          <Route path="/payments/:id" element={<AppLayoutRoute><PaymentDetails /></AppLayoutRoute>} />
 
-          <Route
-            path="/trash"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <Trash />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/customers" element={<AppLayoutRoute><CustomerPage /></AppLayoutRoute>} />
+          <Route path="/customers/:name" element={<AppLayoutRoute><CustomerDetailsPage /></AppLayoutRoute>} />
 
-          <Route
-            path="/payments"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <Payment />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/payments/:id"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <PaymentDetails />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <UserProfile />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/customers"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <CustomerPage />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/customers/:name"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <CustomerDetailsPage />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-
+          {/* ROLE BASED */}
           <Route
             path="/admin"
             element={
-              <ProtectedRoute>
+              <AppLayoutRoute>
                 <RoleRoute allowedRoles={["OWNER"]}>
-                  <Layout>
-                    <AdminPage />
-                  </Layout>
+                  <AdminPage />
                 </RoleRoute>
-              </ProtectedRoute>
+              </AppLayoutRoute>
             }
           />
+
         </Routes>
       </BrowserRouter>
 

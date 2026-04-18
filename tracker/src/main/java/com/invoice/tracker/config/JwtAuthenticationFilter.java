@@ -38,45 +38,45 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
 
-        // If no token → skip filter
+        // No token → skip
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Extract token
         String jwt = authHeader.substring(7);
-        String email;
 
         try {
-            email = jwtUtil.extractUsername(jwt);
-        } catch (Exception e) {
-            log.error("JWT validation failed: {}", e.getMessage());
-            filterChain.doFilter(request, response);
-            return;
-        }
+            String email = jwtUtil.extractUsername(jwt);
 
-        // Authenticate user
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-            if (jwtUtil.isTokenValid(jwt, userDetails)) {
+                if (jwtUtil.isTokenValid(jwt, userDetails)) {
 
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities());
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities());
 
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request));
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
 
-                // tenant + role
-                request.setAttribute("shopId", jwtUtil.getShopId(jwt));
-                request.setAttribute("role", jwtUtil.getRole(jwt));
+                    // tenant + role
+                    request.setAttribute("shopId", jwtUtil.getShopId(jwt));
+                    request.setAttribute("role", jwtUtil.getRole(jwt));
+                }
             }
+
+        } catch (Exception e) {
+            // NEVER break request
+            log.warn("JWT authentication failed: {}", e.getMessage());
+
+            // clear context just in case
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);

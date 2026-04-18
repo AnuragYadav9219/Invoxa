@@ -1,4 +1,4 @@
-import { Trash2, RotateCcw } from "lucide-react";
+import { Trash2, RotateCcw, LogOut } from "lucide-react";
 
 export const CONFIRM_DIALOG_VARIANTS = {
     delete: {
@@ -17,5 +17,14 @@ export const CONFIRM_DIALOG_VARIANTS = {
         btn: "bg-green-600 hover:bg-green-700",
         confirmText: "Restore",
         loadingText: "Restoring...",
+    },
+
+    logout: {
+        title: "Logout?",
+        icon: <LogOut className="text-red-600 h-6 w-6" />,
+        bg: "bg-red-50",
+        btn: "bg-red-600 hover:bg-red-700",
+        confirmText: "Logout",
+        loadingText: "Logging out...",
     },
 };

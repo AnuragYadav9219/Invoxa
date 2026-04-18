@@ -1,5 +1,7 @@
 package com.invoice.tracker.service.auth;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,6 +16,7 @@ import com.invoice.tracker.dto.auth.AuthResponse;
 import com.invoice.tracker.dto.auth.LoginRequest;
 import com.invoice.tracker.dto.auth.OtpRequest;
 import com.invoice.tracker.dto.auth.RegisterRequest;
+import com.invoice.tracker.dto.auth.SessionResponse;
 import com.invoice.tracker.entity.auth.RefreshToken;
 import com.invoice.tracker.entity.auth.Role;
 import com.invoice.tracker.entity.auth.Shop;
@@ -40,6 +43,11 @@ public class AuthService {
         private final DeviceHelper deviceHelper;
 
         private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+
+        /* ================= HELPER ================= */
+        private int getTokenVersion(User user) {
+                return user.getTokenVersion() != null ? user.getTokenVersion() : 0;
+        }
 
         // ================= REGISTER =================
         @Transactional
@@ -130,15 +138,13 @@ public class AuthService {
                                 user.getRole(),
                                 deviceName);
 
-                Integer tokenVersion = user.getTokenVersion() != null ? user.getTokenVersion() : 0;
-
                 // Generate JWT access token
                 String accessToken = jwtUtil.generateToken(
                                 user.getId(),
                                 user.getShop().getId(),
                                 user.getRole().name(),
                                 user.getEmail(),
-                                tokenVersion);
+                                getTokenVersion(user));
 
                 // Create refresh token (NO revoke all -> multi-device supported)
                 RefreshToken refreshToken = refreshTokenService.createRefreshToken(
@@ -176,7 +182,7 @@ public class AuthService {
                                 user.getShop().getId(),
                                 user.getRole().name(),
                                 user.getEmail(),
-                                user.getTokenVersion());
+                                getTokenVersion(user));
 
                 String deviceId = deviceHelper.getDeviceId(request.getDeviceId());
                 String deviceName = deviceHelper.getDeviceName(request.getDeviceName());
@@ -201,35 +207,52 @@ public class AuthService {
                 // Rotate token
                 RefreshToken newToken = refreshTokenService.rotateToken(oldToken);
 
-                Integer tokenVersion = user.getTokenVersion() != null ? user.getTokenVersion() : 0;
-
                 // New Access Token
                 String accessToken = jwtUtil.generateToken(
                                 user.getId(),
                                 user.getShop().getId(),
                                 user.getRole().name(),
                                 user.getEmail(),
-                                tokenVersion);
+                                getTokenVersion(user));
 
                 return AuthMapper.buildAuthResponse(user, accessToken, newToken.getToken());
+        }
+
+        // ==================== SESSIONS ========================
+        public List<SessionResponse> getUserSessions(String email, String currentDeviceId) {
+
+                if (email == null) {
+                        throw new BadRequestException("Invalid authentication");
+                }
+
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+                List<RefreshToken> tokens = refreshTokenService.getUserTokens(user);
+
+                return tokens.stream().map(token -> SessionResponse.builder()
+                                .id(token.getId().toString())
+                                .deviceId(token.getDeviceId())
+                                .deviceName(token.getDeviceName())
+                                .lastActive(token.getUpdatedAt())
+                                .current(token.getDeviceId().equals(currentDeviceId))
+                                .build()).toList();
         }
 
         // ================= LOGOUT (CURRENT DEVICE) =================
         @Transactional
         public void logout(String refreshTokenValue, String email) {
 
-                // Revoke this token
-                refreshTokenService.revokeToken(refreshTokenValue);
+                try {
+                        // Revoke this token
+                        if (refreshTokenValue != null) {
+                                refreshTokenService.revokeToken(refreshTokenValue);
+                        }
+                } catch (Exception e) {
+                        // Ignore if already revoked
+                }
 
-                // Invalidate access tokens
-                User user = userRepository.findByEmail(email)
-                                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-                Integer tokenVersion = user.getTokenVersion() != null ? user.getTokenVersion() : 0;
-
-                user.setTokenVersion(tokenVersion + 1);
-                userRepository.save(user);
-                log.info("User logged out | email={}", email);
+                log.info("User logged out (single device) | email={}", email);
         }
 
         // ================= LOGOUT ALL DEVICES =================
@@ -242,11 +265,11 @@ public class AuthService {
                 // Revoke all refresh tokens
                 refreshTokenService.revokeUserTokens(user);
 
-                Integer tokenVersion = user.getTokenVersion() != null ? user.getTokenVersion() : 0;
-
                 // Invalidate all access tokens
-                user.setTokenVersion(tokenVersion + 1);
+                user.setTokenVersion(getTokenVersion(user) + 1);
                 userRepository.save(user);
+
+                log.info("Logged out from all devices | email={}", email);
         }
 
         // ================= LOGOUT SPECIFIC DEVICE =================
@@ -258,5 +281,10 @@ public class AuthService {
 
                 // Revoke only that device
                 refreshTokenService.revokeDevice(user, deviceId);
+
+                // user.setTokenVersion(getTokenVersion(user) + 1);
+                // userRepository.save(user);
+
+                log.info("Logged out device | email={} | deviceId={}", email, deviceId);
         }
 }

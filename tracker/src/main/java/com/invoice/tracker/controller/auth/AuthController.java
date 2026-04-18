@@ -1,11 +1,15 @@
 package com.invoice.tracker.controller.auth;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +20,7 @@ import com.invoice.tracker.dto.auth.AuthResponse;
 import com.invoice.tracker.dto.auth.LoginRequest;
 import com.invoice.tracker.dto.auth.OtpRequest;
 import com.invoice.tracker.dto.auth.RegisterRequest;
+import com.invoice.tracker.dto.auth.SessionResponse;
 import com.invoice.tracker.service.auth.AuthService;
 import com.invoice.tracker.service.auth.OtpService;
 import com.invoice.tracker.util.CookieUtil;
@@ -30,142 +35,180 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-        private final AuthService authService;
-        private final OtpService otpService;
-        private final CookieUtil cookieUtil;
+    private final AuthService authService;
+    private final OtpService otpService;
+    private final CookieUtil cookieUtil;
 
-        // ================= REGISTER =================
-        @PostMapping("/register")
-        public ResponseEntity<ApiResponse<AuthResponse>> register(
-                        @Valid @RequestBody RegisterRequest request,
-                        HttpServletResponse response) {
+    private static final int REFRESH_TOKEN_AGE = 7 * 24 * 60 * 60;
 
-                AuthResponse authResponse = authService.register(request);
+    /* ================= REGISTER ================= */
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponse<AuthResponse>> register(
+            @Valid @RequestBody RegisterRequest request,
+            HttpServletResponse response) {
 
-                cookieUtil.addRefreshTokenCookie(
-                                response,
-                                authResponse.getRefreshToken(),
-                                7 * 24 * 60 * 60);
+        AuthResponse authResponse = authService.register(request);
 
-                return ResponseBuilder.success(authResponse, "User registered successfully", HttpStatus.CREATED);
+        cookieUtil.addRefreshTokenCookie(
+                response,
+                authResponse.getRefreshToken(),
+                REFRESH_TOKEN_AGE);
+
+        authResponse.setRefreshToken(null);
+
+        return ResponseBuilder.success(authResponse, "User registered successfully", HttpStatus.CREATED);
+    }
+
+    /* ================= LOGIN ================= */
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<AuthResponse>> login(
+            @Valid @RequestBody LoginRequest request,
+            HttpServletResponse response) {
+
+        AuthResponse authResponse = authService.login(request);
+
+        cookieUtil.addRefreshTokenCookie(
+                response,
+                authResponse.getRefreshToken(),
+                REFRESH_TOKEN_AGE);
+
+        authResponse.setRefreshToken(null); // 🔥 IMPORTANT
+
+        return ResponseBuilder.success(authResponse, "Login successful");
+    }
+
+    /* ================= OTP SEND ================= */
+    @PostMapping("/send-otp")
+    public ResponseEntity<ApiResponse<Void>> sendOtp(@RequestParam String email) {
+
+        otpService.sendOtp(email);
+
+        return ResponseBuilder.success(null, "OTP sent successfully");
+    }
+
+    /* ================= OTP VERIFY ================= */
+    @PostMapping("/verify-otp")
+    public ResponseEntity<ApiResponse<AuthResponse>> verifyOtp(
+            @Valid @RequestBody OtpRequest request,
+            HttpServletResponse response) {
+
+        AuthResponse authResponse = authService.verifyOtpLoginOrRegister(request);
+
+        cookieUtil.addRefreshTokenCookie(
+                response,
+                authResponse.getRefreshToken(),
+                REFRESH_TOKEN_AGE);
+
+        authResponse.setRefreshToken(null);
+
+        return ResponseBuilder.success(authResponse, "OTP verified successfully");
+    }
+
+    /* ================= REFRESH ================= */
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        String refreshToken = cookieUtil.getRefreshToken(request);
+
+        if (refreshToken == null) {
+            return ResponseBuilder.error("Refresh token missing", HttpStatus.UNAUTHORIZED);
         }
 
-        // ================= LOGIN =================
-        @PostMapping("/login")
-        public ResponseEntity<ApiResponse<AuthResponse>> login(
-                        @Valid @RequestBody LoginRequest request,
-                        HttpServletResponse response) {
+        AuthResponse authResponse = authService.refreshToken(refreshToken);
 
-                AuthResponse authResponse = authService.login(request);
+        // rotate cookie
+        cookieUtil.addRefreshTokenCookie(
+                response,
+                authResponse.getRefreshToken(),
+                REFRESH_TOKEN_AGE);
 
-                // Set refresh token in cookie
-                cookieUtil.addRefreshTokenCookie(
-                                response,
-                                authResponse.getRefreshToken(),
-                                7 * 24 * 60 * 60);
+        authResponse.setRefreshToken(null);
 
-                return ResponseBuilder.success(authResponse, "Login successful");
+        return ResponseBuilder.success(authResponse, "Token refreshed successfully");
+    }
+
+    // ================= GET SESSIONS ===================
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/sessions")
+    public ResponseEntity<ApiResponse<List<SessionResponse>>> getSessions(
+            Authentication authentication,
+            @RequestHeader(value = "X-Device-Id", required = false) String deviceId) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseBuilder.error("Unauthorized", HttpStatus.UNAUTHORIZED);
         }
 
-        // ================= OTP SEND =================
-        @PostMapping("/send-otp")
-        public ResponseEntity<ApiResponse<Void>> sendOtp(@RequestParam String email) {
+        try {
+            List<SessionResponse> sessions = authService.getUserSessions(authentication.getName(), deviceId);
 
-                otpService.sendOtp(email);
+            return ResponseBuilder.success(sessions, "Sessions fetched successfully");
+        } catch (Exception e) {
+            return ResponseBuilder.error("Failed to fetch sessions", HttpStatus.UNAUTHORIZED);
+        }
+    }
 
-                return ResponseBuilder.success(null, "OTP sent successfully");
+    /* ================= LOGOUT ================= */
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Authentication authentication) {
+
+        try {
+            String refreshToken = cookieUtil.getRefreshToken(request);
+
+            if (refreshToken != null) {
+                authService.logout(
+                        refreshToken,
+                        authentication != null ? authentication.getName() : null);
+            }
+
+            cookieUtil.clearRefreshTokenCookie(response);
+
+            return ResponseBuilder.success(null, "Logged out successfully");
+        } catch (Exception e) {
+            return ResponseBuilder.error("Logout failed", HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    /* ================= LOGOUT ALL ================= */
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/logout-all")
+    public ResponseEntity<ApiResponse<Void>> logoutAll(
+            HttpServletResponse response,
+            Authentication authentication) {
+
+        if (authentication == null) {
+            return ResponseBuilder.error("User not authenticated", HttpStatus.UNAUTHORIZED);
         }
 
-        // ================= OTP VERIFY (LOGIN / REGISTER) =================
-        @PostMapping("/verify-otp")
-        public ResponseEntity<ApiResponse<AuthResponse>> verifyOtp(
-                        @RequestBody OtpRequest request,
-                        HttpServletResponse response) {
+        authService.logoutAll(authentication.getName());
 
-                AuthResponse authResponse = authService.verifyOtpLoginOrRegister(request);
+        cookieUtil.clearRefreshTokenCookie(response);
 
-                // Set refresh token cookie
-                cookieUtil.addRefreshTokenCookie(
-                                response,
-                                authResponse.getRefreshToken(),
-                                7 * 24 * 60 * 60);
+        return ResponseBuilder.success(null, "Logged out from all devices");
+    }
 
-                return ResponseBuilder.success(authResponse, "OTP verified successfully");
+    /* ================= LOGOUT DEVICE ================= */
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/logout-device")
+    public ResponseEntity<ApiResponse<Void>> logoutDevice(
+            @RequestParam String deviceId,
+            Authentication authentication) {
+
+        if (authentication == null) {
+            return ResponseBuilder.error("User not authenticated", HttpStatus.UNAUTHORIZED);
         }
 
-        // ================= REFRESH =================
-        @PostMapping("/refresh")
-        public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(
-                        HttpServletRequest request,
-                        HttpServletResponse response) {
-
-                // extract R.T. from cookie
-                String refreshToken = cookieUtil.getRefreshToken(request);
-
-                if (refreshToken == null) {
-                        return ResponseBuilder.error("Refresh token missing", HttpStatus.UNAUTHORIZED);
-                }
-
-                AuthResponse authResponse = authService.refreshToken(refreshToken);
-
-                // Rotate cookie
-                cookieUtil.addRefreshTokenCookie(
-                                response,
-                                authResponse.getRefreshToken(),
-                                7 * 24 * 60 * 60);
-
-                return ResponseBuilder.success(authResponse, "Token refreshed successful");
+        if (deviceId == null || deviceId.isBlank()) {
+            return ResponseBuilder.error("Device ID is required", HttpStatus.BAD_REQUEST);
         }
 
-        // ================= LOGOUT =================
-        @PreAuthorize("isAuthenticated()")
-        @PostMapping("/logout")
-        public ResponseEntity<ApiResponse<Void>> logout(
-                        HttpServletRequest request,
-                        HttpServletResponse response,
-                        Authentication authentication) {
+        authService.logoutDevice(authentication.getName(), deviceId);
 
-                // Extract refresh token from cookie
-                String refreshToken = cookieUtil.getRefreshToken(request);
-
-                if (authentication == null || refreshToken == null) {
-                        return ResponseBuilder.error("User not authenticated", HttpStatus.UNAUTHORIZED);
-                }
-
-                authService.logout(refreshToken, authentication.getName());
-
-                // Clear cookie
-                cookieUtil.clearRefreshTokenCookie(response);
-
-                return ResponseBuilder.success(null, "Logged out successfully");
-        }
-
-        // ================= LOGOUT ALL =================
-        @PostMapping("/logout-all")
-        public ResponseEntity<ApiResponse<Void>> logoutAll(
-                        HttpServletResponse response,
-                        Authentication authentication) {
-
-                if (authentication == null) {
-                        return ResponseBuilder.error("User not authenticated", HttpStatus.UNAUTHORIZED);
-                }
-
-                authService.logoutAll(authentication.getName());
-
-                // Clear cookie
-                cookieUtil.clearRefreshTokenCookie(response);
-
-                return ResponseBuilder.success(null, "Logged out from all devices");
-        }
-
-        // ================= LOGOUT SPECIFIC DEVICE =================
-        @PostMapping("/logout-device")
-        public ResponseEntity<ApiResponse<Void>> logoutDevice(
-                        @RequestParam String deviceId,
-                        Authentication authentication) {
-
-                authService.logoutDevice(authentication.getName(), deviceId);
-
-                return ResponseBuilder.success(null, "Device logged out successfully");
-        }
+        return ResponseBuilder.success(null, "Device logged out successfully");
+    }
 }

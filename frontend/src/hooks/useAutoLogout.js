@@ -8,14 +8,15 @@ export const useAutoLogout = () => {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        const token = tokenService.getToken();
+        const interval = setInterval(() => {
+            const token = tokenService.getToken();
 
-        if (!token || isTokenExpired(token)) {
-            tokenService.clear();
-            dispatch(logout());
-            if (window.location.pathname !== "/login") {
-                window.location.replace("/login");
+            if (!token || isTokenExpired(token)) {
+                tokenService.clear();
+                dispatch(logout());
             }
-        }
-    }, []);
+        }, 60 * 1000);
+
+        return () => clearInterval(interval);
+    }, [dispatch]);
 };

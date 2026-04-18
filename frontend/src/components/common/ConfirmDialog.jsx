@@ -23,7 +23,7 @@ export default function ConfirmDialog({
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
 
-    const config = CONFIRM_DIALOG_VARIANTS[type];
+    const config = CONFIRM_DIALOG_VARIANTS[type] || CONFIRM_DIALOG_VARIANTS.delete;
 
     const handleConfirm = async () => {
         try {

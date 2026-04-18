@@ -50,6 +50,14 @@ public class UserService {
             if (request.getAddress() != null) {
                 user.getShop().setAddress(request.getAddress());
             }
+
+            if (request.getShopName() != null) {
+                user.getShop().setShopName(request.getShopName());; 
+            }
+
+            if (request.getOwnerName() != null) {
+                user.getShop().setOwnerName(request.getOwnerName()); 
+            }
         }
 
         userRepository.save(user);
@@ -60,6 +68,8 @@ public class UserService {
                 .phone(user.getShop().getPhone())
                 .address(user.getShop().getAddress())
                 .shopId(user.getShop().getId())
+                .shopName(user.getShop().getShopName())
+                .ownerName(user.getShop().getOwnerName())
                 .build();
     }
 
@@ -76,6 +86,9 @@ public class UserService {
                 .phone(user.getShop() != null ? user.getShop().getPhone() : null)
                 .address(user.getShop() != null ? user.getShop().getAddress() : null)
                 .shopId(user.getShop() != null ? user.getShop().getId() : null)
+                .shopName(user.getShop() != null ? user.getShop().getShopName() : null)
+                .ownerName(user.getShop() != null ? user.getShop().getOwnerName() : null)
+                .createdAt(user.getCreatedAt())
                 .build();
     }
 }

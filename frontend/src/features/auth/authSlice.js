@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { tokenService } from "@/services/tokenService";
 
 const initialState = {
-    user: tokenService.getUser(),
+    user: tokenService.getUser() || null,
     isAuthenticated: !!tokenService.getToken(),
 };
 

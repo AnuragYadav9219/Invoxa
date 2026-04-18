@@ -3,7 +3,7 @@ package com.invoice.tracker.entity.auth;
 import java.time.Instant;
 import java.util.UUID;
 
-import com.invoice.tracker.entity.BaseEntity;
+import com.invoice.tracker.entity.AuditableEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,7 +27,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class RefreshToken extends BaseEntity {
+public class RefreshToken extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

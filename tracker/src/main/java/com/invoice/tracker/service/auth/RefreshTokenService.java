@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.invoice.tracker.common.exception.BadRequestException;
 import com.invoice.tracker.common.exception.ResourceNotFoundException;
+import com.invoice.tracker.common.exception.UnauthorizedException;
 import com.invoice.tracker.config.JwtConfig;
 import com.invoice.tracker.entity.auth.RefreshToken;
 import com.invoice.tracker.entity.auth.User;
@@ -23,7 +24,7 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtConfig jwtConfig;
 
-     // ========================= CREATE TOKEN =========================
+    // ========================= CREATE TOKEN =========================
     public RefreshToken createRefreshToken(User user, String deviceId, String deviceName) {
 
         RefreshToken refreshToken = RefreshToken.builder()
@@ -39,36 +40,36 @@ public class RefreshTokenService {
         return refreshTokenRepository.save(refreshToken);
     }
 
-     // ===================== VERIFY TOKEN =====================
+    // ===================== VERIFY TOKEN =====================
     @Transactional
     public RefreshToken verifyToken(String tokenValue) {
 
         if (tokenValue == null || tokenValue.isBlank()) {
-            throw new RuntimeException("Refresh token missing");
+            throw new UnauthorizedException("Refresh token missing");
         }
 
         RefreshToken token = refreshTokenRepository.findByToken(tokenValue)
-                .orElseThrow(() -> new ResourceNotFoundException("Invalid refresh token"));
+                .orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
 
         // Expiry check
         if (token.getExpiryDate().isBefore(Instant.now())) {
             token.setExpired(true);
             token.setRevoked(true);
             refreshTokenRepository.save(token);
-            throw new BadRequestException("Refresh token expired");
+            throw new UnauthorizedException("Refresh token expired");
         }
 
         // Reuse attack detection
         if (token.isRevoked()) {
             // Possible token theft -> revoke ALL tokens
             revokeUserTokens(token.getUser());
-            throw new BadRequestException("Refresh token reuse detected. All sessions revoked.");
+            throw new UnauthorizedException("Refresh token reuse detected. All sessions revoked.");
         }
 
         return token;
     }
 
-     // ====================== ROTATE ========================
+    // ====================== ROTATE ========================
     @Transactional
     public RefreshToken rotateToken(RefreshToken oldToken) {
 
@@ -89,6 +90,11 @@ public class RefreshTokenService {
                 .build();
 
         return refreshTokenRepository.save(newToken);
+    }
+
+    /* ========================= GET SESSIONS ========================= */
+    public List<RefreshToken> getUserTokens(User user) {
+        return refreshTokenRepository.findByUserAndRevokedFalse(user);
     }
 
     // ========================== REVOKE ALL ==========================
@@ -113,7 +119,7 @@ public class RefreshTokenService {
         refreshTokenRepository.save(token);
     }
 
-     // =========================== REVOKE DEVICE ===========================
+    // =========================== REVOKE DEVICE ===========================
     @Transactional
     public void revokeDevice(User user, String deviceId) {
 
@@ -122,10 +128,5 @@ public class RefreshTokenService {
         }
 
         refreshTokenRepository.revokeByUserAndDeviceId(user, deviceId);
-    }
-
-    // =========================== ACTIVE DEVICES ===========================
-    public List<RefreshToken> getActiveTokens(User user) {
-        return refreshTokenRepository.findByUserAndRevokedFalse(user);
     }
 }

@@ -19,6 +19,27 @@ export const formatDate = (date) => {
     });
 };
 
+export function formatDateInMonth(dateString) {
+  if (!dateString) return "—";
+
+  const date = new Date(dateString);
+
+  return date.toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+}
+
+export function formatTime(time) {
+    if (!time) return "-";
+
+    const date = new Date(time);
+    return date.toLocaleString("en-IN", {
+        dateStyle: "medium",
+        timeStyle: "short",
+    });
+}
+
 export const COLORS = [
     "bg-red-100 text-red-600",
     "bg-blue-100 text-blue-600",
