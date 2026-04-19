@@ -2,6 +2,7 @@ import { baseApi } from "@/api/baseApi";
 import { tokenService } from "@/services/tokenService";
 import { setCredentials } from "../auth/authSlice";
 import { toast } from "sonner";
+import { showError, showSuccess } from "@/components/toast/toast";
 
 export const userApi = baseApi.injectEndpoints({
     tagTypes: ["User"],
@@ -61,10 +62,34 @@ export const userApi = baseApi.injectEndpoints({
                 }
             },
         }),
+
+        /* ============== CHANGE PASSWORD =============== */
+        changePassword: builder.mutation({
+            query: (body) => ({
+                url: "/user/change-password",
+                method: "PUT",
+                body,
+            }),
+
+            async onQueryStarted(arg, { queryFulfilled }) {
+                try {
+                    await queryFulfilled;
+                    showSuccess("Password updated successfully");
+
+                } catch (err) {
+                    showError("Password update failed", {
+                        description:
+                            err?.error?.data?.message || "Something went wrong",
+                    });
+                }
+            },
+        }),
+
     }),
 });
 
 export const {
     useGetProfileQuery,
     useUpdateProfileMutation,
+    useChangePasswordMutation,
 } = userApi;

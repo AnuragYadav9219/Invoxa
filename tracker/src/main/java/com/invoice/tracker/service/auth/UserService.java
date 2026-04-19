@@ -2,9 +2,12 @@ package com.invoice.tracker.service.auth;
 
 import java.util.UUID;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.invoice.tracker.common.exception.BadRequestException;
 import com.invoice.tracker.common.exception.ResourceNotFoundException;
+import com.invoice.tracker.dto.auth.ChangePasswordRequest;
 import com.invoice.tracker.dto.user.UpdateProfileRequest;
 import com.invoice.tracker.dto.user.UserProfileResponse;
 import com.invoice.tracker.entity.auth.User;
@@ -18,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserService {
 
+    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
 
     public UUID getCurrentUserShopId() {
@@ -30,6 +34,7 @@ public class UserService {
         return user.getShop().getId();
     }
 
+    // ============== UPDATE PROFILE =================
     @Transactional
     public UserProfileResponse updateProfile(UpdateProfileRequest request) {
 
@@ -52,11 +57,12 @@ public class UserService {
             }
 
             if (request.getShopName() != null) {
-                user.getShop().setShopName(request.getShopName());; 
+                user.getShop().setShopName(request.getShopName());
+                ;
             }
 
             if (request.getOwnerName() != null) {
-                user.getShop().setOwnerName(request.getOwnerName()); 
+                user.getShop().setOwnerName(request.getOwnerName());
             }
         }
 
@@ -73,6 +79,7 @@ public class UserService {
                 .build();
     }
 
+    // ================== GET PROFILE ================
     public UserProfileResponse getProfile() {
 
         String email = SecurityUtils.getCurrentUserEmail();
@@ -90,5 +97,18 @@ public class UserService {
                 .ownerName(user.getShop() != null ? user.getShop().getOwnerName() : null)
                 .createdAt(user.getCreatedAt())
                 .build();
+    }
+
+    // ================== CHANGE PASSWORD ====================
+    public void changePassword(String email, ChangePasswordRequest request) {
+        User user = userRepository.findByEmailWithShop(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new BadRequestException("Old Password is incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 }

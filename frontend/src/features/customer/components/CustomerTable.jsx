@@ -15,10 +15,10 @@ export default function CustomerTable({
     navigate,
 }) {
     return (
-        <div className="p-[1.5px] rounded-3xl bg-linear-to-r from-indigo-200 via-purple-200 to-pink-200">
+        <div className="p-[1.5px] rounded-lg bg-linear-to-r from-indigo-200 via-purple-200 to-pink-200">
 
             {/* MAIN CARD */}
-            <div className="bg-white rounded-3xl shadow-sm overflow-hidden">
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
 
                 {/* DESKTOP TABLE */}
                 <div className="hidden lg:block p-3">

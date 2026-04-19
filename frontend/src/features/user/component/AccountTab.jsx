@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useGetProfileQuery } from "../userApi";
+import { DeleteAccountDialog } from "./DeleteAccountDialog";
+import { ChangePasswordDialog } from "./ChangePasswordDialog";
 
 export default function AccountTab() {
     const navigate = useNavigate();
@@ -19,7 +21,7 @@ export default function AccountTab() {
 
     const user = data?.data;
 
-    const initials = user.name
+    const initials = user?.name
         .split(" ")
         .map((n) => n[0])
         .join("");
@@ -38,7 +40,7 @@ export default function AccountTab() {
 
                     <div>
                         <CardTitle className="text-base font-semibold">
-                            {user.name}
+                            {user?.name}
                         </CardTitle>
                         <CardDescription>
                             Manage your account details and profile
@@ -48,8 +50,8 @@ export default function AccountTab() {
 
                 <CardContent className="space-y-5">
 
-                    <ProfileRow icon={<User size={16} />} label="Full Name" value={user.name} />
-                    <ProfileRow icon={<Mail size={16} />} label="Email Address" value={user.email} />
+                    <ProfileRow icon={<User size={16} />} label="Full Name" value={user?.name} />
+                    <ProfileRow icon={<Mail size={16} />} label="Email Address" value={user?.email} />
 
                     <Separator />
 
@@ -80,19 +82,7 @@ export default function AccountTab() {
                 </CardHeader>
 
                 <CardContent>
-                    <Button
-                        variant="ghost"
-                        className="cursor-pointer justify-between group"
-                    >
-                        <div className="flex items-center gap-2">
-                            <KeyRound size={16} />
-                            Change Password
-                        </div>
-                        <ArrowRight
-                            size={14}
-                            className="transition-transform group-hover:translate-x-1"
-                        />
-                    </Button>
+                    <ChangePasswordDialog />
                 </CardContent>
             </Card>
 
@@ -108,20 +98,7 @@ export default function AccountTab() {
                 </CardHeader>
 
                 <CardContent>
-                    <Button
-                        variant="ghost"
-                        className="cursor-pointer justify-between text-red-500 hover:text-red-600 hover:bg-red-100 group"
-                    >
-                        <div className="flex items-center gap-2">
-                            <Trash2 size={16} />
-                            Delete Account
-                        </div>
-
-                        <ArrowRight
-                            size={14}
-                            className="transition-transform group-hover:translate-x-1"
-                        />
-                    </Button>
+                    <DeleteAccountDialog />
                 </CardContent>
             </Card>
 

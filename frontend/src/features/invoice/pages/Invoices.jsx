@@ -10,7 +10,6 @@ import {
 
 import {
   Plus,
-  FileText,
   Filter,
   ArrowUpDown,
   Search,
@@ -98,15 +97,15 @@ export default function Invoices() {
 
         {/* BULK ACTION (future ready to write here) */}
         <div className="text-sm text-gray-400">
-          Select invoices to perform actions
+          
         </div>
       </div>
 
       {/* MAIN CARD */}
-      <div className="bg-white border rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-linear-to-r from-indigo-300 via-purple-300 to-pink-300 border rounded-2xl shadow-sm overflow-hidden gap-3">
 
         {/* CONTROLS */}
-        <div className="p-4 border-b flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+        <div className="p-4 border-b flex flex-col md:flex-row gap-6 md:items-center md:justify-between">
 
           {/* SEARCH */}
           <div className="relative w-full md:max-w-sm">

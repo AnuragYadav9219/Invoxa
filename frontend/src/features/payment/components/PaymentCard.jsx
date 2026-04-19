@@ -18,7 +18,7 @@ export default function PaymentCard({
     const handleNavigation = () => navigate(`/payments/${p.id}`);
 
     return (
-        <div className="group bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+        <div className="group bg-white rounded-lg border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
 
             {/* MAIN CLICK AREA */}
             <div

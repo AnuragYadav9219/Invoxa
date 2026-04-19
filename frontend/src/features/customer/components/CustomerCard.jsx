@@ -9,7 +9,7 @@ export default function CustomerCard({ customer, navigate, isMobile }) {
             onClick={() =>
                 navigate(`/customers/${encodeURIComponent(customer.name)}`)
             }
-            className="group cursor-pointer p-4 md:p-5 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all relative overflow-hidden"
+            className="group cursor-pointer p-4 md:p-5 rounded-lg bg-white border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all relative overflow-hidden"
         >
             {/* Hover Glow */}
             <div className="absolute inset-0 bg-linear-to-r from-indigo-100 to-purple-100 opacity-0 group-hover:opacity-40 transition"></div>

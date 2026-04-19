@@ -14,7 +14,6 @@ import {
     ArrowUpDown,
     Search,
     Calendar,
-    Check,
     IndianRupee,
 } from "lucide-react";
 
@@ -127,12 +126,12 @@ export default function Payments() {
                 </div>
 
                 <div className="text-sm text-gray-400">
-                    Select payments to perform actions
+                    {/* Select payments to perform actions */}
                 </div>
             </div>
 
             {/* MAIN CARD */}
-            <div className="bg-white border rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-linear-to-r from-indigo-300 via-purple-300 to-pink-300 border rounded-md shadow-sm overflow-hidden">
 
                 {/* CONTROLS */}
                 <div className="p-4 border-b flex flex-col md:flex-row gap-3 md:items-center md:justify-between">

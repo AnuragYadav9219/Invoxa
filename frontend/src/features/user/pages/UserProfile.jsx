@@ -126,14 +126,6 @@ export default function UserProfile() {
         )}
       </motion.div>
 
-      {/* ================= STATS ================= */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard title="Expenses" value="₹12,450" />
-        <StatCard title="Groups" value="5" />
-        <StatCard title="Settlements" value="18" />
-        <StatCard title="Activity" value="32 actions" />
-      </div>
-
       {/* ================= VIEW MODE ================= */}
       {!isEditing && (
         <>
@@ -171,17 +163,6 @@ export default function UserProfile() {
           </div>
         </>
       )}
-    </div>
-  );
-}
-
-/* ================= COMPONENTS ================= */
-
-function StatCard({ title, value }) {
-  return (
-    <div className="bg-white rounded-2xl shadow p-4 hover:shadow-lg transition">
-      <p className="text-xs text-gray-500">{title}</p>
-      <h3 className="text-lg font-semibold mt-1">{value}</h3>
     </div>
   );
 }
