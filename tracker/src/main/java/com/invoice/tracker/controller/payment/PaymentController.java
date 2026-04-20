@@ -139,7 +139,7 @@ public class PaymentController {
     }
 
     // ========================= FILTER PAYMENTS =============================
-    @PreAuthorize("hasRole('OWNER', 'STAFF')")
+    @PreAuthorize("hasAnyRole('OWNER', 'STAFF')")
     @PostMapping("/filter")
     public ResponseEntity<ApiResponse<PageResponse<PaymentResponse>>> filterPayments(
             @RequestBody PaymentFilterRequest filter,

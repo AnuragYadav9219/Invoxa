@@ -1,5 +1,6 @@
 package com.invoice.tracker.specification;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -13,63 +14,87 @@ import jakarta.persistence.criteria.Predicate;
 
 public class PaymentSpecification {
 
-        public static Specification<Payment> filterPayments(
-                        PaymentFilterRequest filter,
-                        UUID shopId) {
+        public static Specification<Payment> filterPayments(PaymentFilterRequest filter, UUID shopId) {
+
                 return (root, query, cb) -> {
 
-                        List<Predicate> predicates = new ArrayList<Predicate>();
+                        List<Predicate> predicates = new ArrayList<>();
 
-                        // Multi-tenant safety
+                        /* ================= MULTI-TENANT ================= */
                         predicates.add(
                                         cb.equal(root.get("invoice").get("shopId"), shopId));
 
+                        /* ================= 🗑 SOFT DELETE ================= */
                         predicates.add(
                                         cb.equal(root.get("deleted"), false));
 
-                        // Search (reference number)
-                        if (filter.getSearch() != null && !filter.getSearch().isBlank()) {
+                        /* ================= SEARCH ================= */
+                        if (filter != null &&
+                                        filter.getSearch() != null &&
+                                        !filter.getSearch().isBlank()) {
 
-                                String pattern = "%" + filter.getSearch().toLowerCase() + "%";
+                                String searchValue = filter.getSearch().trim().toLowerCase();
+                                String pattern = "%" + searchValue + "%";
+
+                                List<Predicate> searchPredicates = new ArrayList<>();
+
+                                // reference number
+                                searchPredicates.add(
+                                                cb.like(cb.lower(root.get("referenceNumber")), pattern));
+
+                                // customer name
+                                searchPredicates.add(
+                                                cb.like(cb.lower(root.get("invoice").get("customerName")), pattern));
+
+                                // customer phone
+                                searchPredicates.add(
+                                                cb.like(cb.lower(root.get("invoice").get("customerPhone")), pattern));
+
+                                /* ================= AMOUNT SEARCH ================= */
+                                try {
+                                        // If user typed a number -> match amount
+                                        BigDecimal amount = new BigDecimal(searchValue);
+
+                                        searchPredicates.add(
+                                                        cb.equal(root.get("amount"), amount));
+                                } catch (Exception ignored) {
+                                        // Not a number -> ignore amount filter
+                                }
 
                                 predicates.add(
-                                                cb.like(
-                                                                cb.lower(root.get("referenceNumber")),
-                                                                pattern));
-
+                                                cb.or(searchPredicates.toArray(new Predicate[0])));
                         }
 
-                        // Method filter
-                        if (filter.getMethod() != null) {
+                        /* ================= METHOD ================= */
+                        if (filter != null && filter.getMethod() != null) {
                                 predicates.add(
-                                                cb.equal(root.get("method"),
-                                                                filter.getMethod()));
+                                                cb.equal(root.get("method"), filter.getMethod()));
                         }
 
-                        // Date range
-                        if (filter.getFromDate() != null) {
+                        /* ================= DATE RANGE ================= */
+                        if (filter != null && filter.getFromDate() != null) {
                                 predicates.add(
                                                 cb.greaterThanOrEqualTo(
                                                                 root.get("createdAt"),
                                                                 filter.getFromDate().atStartOfDay()));
                         }
 
-                        if (filter.getToDate() != null) {
+                        if (filter != null && filter.getToDate() != null) {
                                 predicates.add(
                                                 cb.lessThanOrEqualTo(
                                                                 root.get("createdAt"),
                                                                 filter.getToDate().atTime(23, 59, 59)));
                         }
 
-                        // Amount range
-                        if (filter.getMinAmount() != null) {
+                        /* ================= AMOUNT RANGE ================= */
+                        if (filter != null && filter.getMinAmount() != null) {
                                 predicates.add(
                                                 cb.greaterThanOrEqualTo(
                                                                 root.get("amount"),
                                                                 filter.getMinAmount()));
                         }
 
-                        if (filter.getMaxAmount() != null) {
+                        if (filter != null && filter.getMaxAmount() != null) {
                                 predicates.add(
                                                 cb.lessThanOrEqualTo(
                                                                 root.get("amount"),

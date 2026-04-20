@@ -3,6 +3,7 @@ package com.invoice.tracker.service.payment;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -25,6 +26,7 @@ import com.invoice.tracker.entity.invoice.Invoice;
 import com.invoice.tracker.entity.invoice.InvoiceStatus;
 import com.invoice.tracker.entity.payment.Payment;
 import com.invoice.tracker.entity.payment.PaymentMethod;
+import com.invoice.tracker.entity.payment.PaymentSequence;
 import com.invoice.tracker.event.invoice.InvoiceFullyPaidEvent;
 import com.invoice.tracker.event.invoice.PartialPaymentEvent;
 import com.invoice.tracker.helper.invoice.InvoiceHelper;
@@ -33,6 +35,7 @@ import com.invoice.tracker.mapper.InvoiceMapper;
 import com.invoice.tracker.mapper.PaymentMapper;
 import com.invoice.tracker.repository.invoice.InvoiceRepository;
 import com.invoice.tracker.repository.payment.PaymentRepository;
+import com.invoice.tracker.repository.payment.PaymentSequenceRepository;
 import com.invoice.tracker.security.SecurityUtils;
 import com.invoice.tracker.specification.PaymentSpecification;
 
@@ -46,6 +49,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final InvoiceRepository invoiceRepository;
     private final InvoiceHelper invoiceHelper;
     private final PaymentHelper paymentHelper;
+    private final PaymentSequenceRepository paymentSequenceRepository;
     private final PaymentMapper paymentMapper;
     private final InvoiceMapper invoiceMapper;
     private final ApplicationEventPublisher eventPublisher;
@@ -55,6 +59,8 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     public PaymentResponse addPayment(CreatePaymentRequest request) {
 
+        UUID shopId = SecurityUtils.getCurrentUserShopId();
+
         validateRequest(request);
 
         // Secure invoice fetch
@@ -63,6 +69,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         // Create payment
         Payment payment = Payment.builder()
+                .paymentNumber(generatePaymentNumber(shopId))
                 .amount(request.getAmount())
                 .method(request.getMethod())
                 .referenceNumber(request.getReferenceNumber())
@@ -83,6 +90,8 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     public InvoiceResponse markInvoiceAsPaid(UUID invoiceId) {
 
+        UUID shopId = SecurityUtils.getCurrentUserShopId();
+
         Invoice invoice = invoiceHelper.getInvoiceOrThrow(invoiceId);
 
         // Already paid
@@ -98,6 +107,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         // Create CASH payment record
         Payment payment = Payment.builder()
+                .paymentNumber(generatePaymentNumber(shopId))
                 .amount(remaining)
                 .method(PaymentMethod.CASH)
                 .referenceNumber("CASH")
@@ -281,8 +291,14 @@ public class PaymentServiceImpl implements PaymentService {
 
         UUID shopId = SecurityUtils.getCurrentUserShopId();
 
+        if (filter == null) {
+            filter = new PaymentFilterRequest();
+        }
+
+        String sortKey = filter.getSort();
+
         // Sorting
-        Sort sort = switch (filter.getSort()) {
+        Sort sort = switch (sortKey != null ? sortKey : "date_desc") {
             case "amount_asc" -> Sort.by("amount").ascending();
             case "amount_desc" -> Sort.by("amount").descending();
             case "date_asc" -> Sort.by("createdAt").ascending();
@@ -305,6 +321,29 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     // ========================== HELPERS ===============================
+
+    @Transactional
+    private String generatePaymentNumber(UUID shopId) {
+
+        int year = Year.now().getValue();
+
+        PaymentSequence sequence = paymentSequenceRepository
+                .findByShopIdAndYear(shopId, year)
+                .orElseGet(() -> {
+                    PaymentSequence newSeq = new PaymentSequence();
+                    newSeq.setShopId(shopId);
+                    newSeq.setYear(year);
+                    newSeq.setLastNumber(0);
+                    return paymentSequenceRepository.save(newSeq);
+                });
+
+        long nextNumber = sequence.getLastNumber() + 1;
+        sequence.setLastNumber(nextNumber);
+
+        paymentSequenceRepository.saveAndFlush(sequence);
+
+        return String.format("PAY-%d-%04d", year, nextNumber);
+    }
 
     private void reverseInvoicePayment(Payment payment) {
 

@@ -24,14 +24,18 @@ public class InvoiceMapper {
                                 .status(invoice.getStatus().name())
                                 .dueDate(invoice.getDueDate())
                                 .items(
-                                                invoice.getItems().stream()
-                                                                .map(item -> InvoiceItemResponse.builder()
-                                                                                .itemName(item.getItemName())
-                                                                                .quantity(item.getQuantity())
-                                                                                .price(item.getPrice())
-                                                                                .total(item.getTotal())
-                                                                                .build())
-                                                                .toList())
+                                        invoice.getItems() != null
+                                                ? invoice.getItems().stream()
+                                                        .map(item -> InvoiceItemResponse.builder()
+                                                                .itemId(item.getItem() != null ? item.getItem().getId() : null)
+                                                                .itemName(item.getItemName())
+                                                                .quantity(item.getQuantity())
+                                                                .price(item.getPrice())
+                                                                .total(item.getTotal())
+                                                                .unit(item.getUnit() != null ? item.getUnit().name() : null)
+                                                                .build())
+                                                        .toList()
+                                                : null)
                                 .build();
         }
 
@@ -47,7 +51,7 @@ public class InvoiceMapper {
                                 .totalAmount(invoice.getTotalAmount())
                                 .paidAmount(invoice.getPaidAmount())
                                 .remainingAmount(invoice.getRemainingAmount())
-                                .status(invoice.getStatus().name())
+                                .status(invoice.getStatus() != null ? invoice.getStatus().name() : null)
                                 .dueDate(invoice.getDueDate())
                                 .build();
         }

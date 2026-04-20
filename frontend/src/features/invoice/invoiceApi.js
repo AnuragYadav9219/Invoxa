@@ -5,7 +5,7 @@ export const invoiceApi = baseApi.injectEndpoints({
 
     /* ================== GET / FILTER ================== */
     getInvoices: builder.query({
-      query: ({ page = 0, size = 10, search, status, fromDate, toDate, sort }) => ({
+      query: ({ page = 0, size = 50, search, status, fromDate, toDate, sort }) => ({
         url: "/invoices/filter",
         method: "POST",
         params: { page, size },
@@ -101,25 +101,85 @@ export const invoiceApi = baseApi.injectEndpoints({
 
     /* ================== CREATE ================= */
     createInvoice: builder.mutation({
-      query: (data) => ({
-        url: "/invoices",
-        method: "POST",
-        body: data,
-        meta: { feature: "invoice" },
-      }),
+      query: (data) => {
+
+        if (!data?.items?.length) {
+          throw new Error("Invoice must contain items");
+        }
+
+        const formattedItems = data.items.map((item) => {
+
+          if (!item.itemId) throw new Error("ItemId missing");
+          if (!item.quantity || item.quantity <= 0)
+            throw new Error("Invalid quantity");
+
+          return {
+            itemId: item.itemId,
+            quantity: Number(item.quantity),
+            unit: item.unit || null,
+            customPrice:
+              item.customPrice !== undefined &&
+                item.customPrice !== ""
+                ? Number(item.customPrice)
+                : null,
+          };
+        });
+
+        return {
+          url: "/invoices",
+          method: "POST",
+          body: {
+            customerName: data.customerName,
+            customerPhone: data.customerPhone,
+            customerEmail: data.customerEmail,
+            dueDate: data.dueDate,
+            items: formattedItems,
+          },
+          meta: { feature: "invoice" },
+        };
+      },
 
       transformResponse: (res) => res,
       invalidatesTags: [{ type: "Invoice", id: "LIST" }],
     }),
 
+
     /* ================== UPDATE ================= */
     updateInvoice: builder.mutation({
-      query: ({ id, body }) => ({
-        url: `/invoices/${id}`,
-        method: "PUT",
-        body,
-        meta: { feature: "invoice" },
-      }),
+      query: ({ id, body }) => {
+
+        if (!id) throw new Error("Invoice ID required");
+        if (!body?.items?.length)
+          throw new Error("Invoice must contain items");
+
+        const formattedItems = body.items.map((item) => {
+
+          if (!item.itemId) throw new Error("ItemId missing");
+          if (!item.quantity || item.quantity <= 0)
+            throw new Error("Invalid quantity");
+
+          return {
+            itemId: item.itemId,
+            quantity: Number(item.quantity),
+            unit: item.unit || null,
+            customPrice:
+              item.customPrice !== undefined &&
+                item.customPrice !== ""
+                ? Number(item.customPrice)
+                : null,
+          };
+        });
+
+        return {
+          url: `/invoices/${id}`,
+          method: "PUT",
+          body: {
+            ...body,
+            items: formattedItems,
+          },
+          meta: { feature: "invoice" },
+        };
+      },
 
       transformResponse: (res) => res,
       invalidatesTags: (result, error, { id }) => [
@@ -127,6 +187,8 @@ export const invoiceApi = baseApi.injectEndpoints({
         { type: "Invoice", id: "LIST" },
       ],
     }),
+
+
 
     /* ================== DELETE (SOFT) ================= */
     deleteInvoice: builder.mutation({

@@ -39,6 +39,9 @@ public class Payment extends AuditableEntity {
     @Column(nullable = false)
     private BigDecimal amount;
 
+    @Column(unique = true, nullable = false)
+    private String paymentNumber;
+
     @Enumerated(EnumType.STRING)
     private PaymentMethod method;
 

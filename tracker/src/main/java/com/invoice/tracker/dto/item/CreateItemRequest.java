@@ -1,5 +1,8 @@
 package com.invoice.tracker.dto.item;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,5 +12,9 @@ public class CreateItemRequest {
     
     private String name;
 
-    private Double price;
+    private BigDecimal price;
+
+    private String defaultUnit;
+
+    private List<String> allowedUnits;
 }

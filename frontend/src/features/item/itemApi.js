@@ -23,11 +23,21 @@ export const itemApi = baseApi.injectEndpoints({
 
     /* =========== CREATE ITEM ============ */
     createItem: builder.mutation({
-      query: (data) => ({
-        url: "/items",
-        method: "POST",
-        body: data,
-      }),
+      query: (data) => {
+
+        const formattedData = {
+          name: data.name,
+          price: Number(data.price),
+          defaultUnit: data.defaultUnit,
+          allowedUnits: data.allowedUnits || [],
+        };
+
+        return {
+          url: "/items",
+          method: "POST",
+          body: formattedData,
+        };
+      },
 
       transformResponse: (res) => res,
       invalidatesTags: [{ type: "Item", id: "LIST" }],
@@ -35,16 +45,36 @@ export const itemApi = baseApi.injectEndpoints({
 
     /* ============ UPDATE ITEM ============ */
     updateItem: builder.mutation({
-      query: ({ id, body }) => ({
-        url: `/items/${id}`,
-        method: "PUT",
-        body,
-      }),
+      query: ({ id, body }) => {
+
+        if (!id) {
+          throw new Error("Item ID required");
+        }
+
+        if (!body) {
+          console.error("Missing body in update:", { id, body });
+          throw new Error("Update body missing");
+        }
+
+        const formattedData = {
+          name: body.name,
+          price: Number(body.price),
+          defaultUnit: body.defaultUnit,
+          allowedUnits: body.allowedUnits || [],
+        };
+
+        return {
+          url: `/items/${id}`,
+          method: "PUT",
+          body: formattedData,
+        };
+      },
 
       transformResponse: (res) => res,
 
       invalidatesTags: (result, error, { id }) => [
         { type: "Item", id },
+        { type: "Item", id: "LIST" },
       ],
     }),
 

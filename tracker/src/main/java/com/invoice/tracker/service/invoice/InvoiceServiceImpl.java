@@ -30,8 +30,11 @@ import com.invoice.tracker.dto.invoice.InvoiceFilterRequest;
 import com.invoice.tracker.entity.invoice.Invoice;
 import com.invoice.tracker.entity.invoice.InvoiceItem;
 import com.invoice.tracker.entity.invoice.InvoiceStatus;
+import com.invoice.tracker.entity.item.Item;
+import com.invoice.tracker.entity.item.Unit;
 import com.invoice.tracker.event.invoice.InvoiceCreatedEvent;
 import com.invoice.tracker.helper.invoice.InvoiceHelper;
+import com.invoice.tracker.helper.item.ItemHelper;
 import com.invoice.tracker.mapper.InvoiceMapper;
 import com.invoice.tracker.repository.invoice.InvoiceRepository;
 import com.invoice.tracker.security.SecurityUtils;
@@ -47,6 +50,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         private final InvoiceRepository invoiceRepository;
         private final InvoiceMapper invoiceMapper;
         private final InvoiceHelper invoiceHelper;
+        private final ItemHelper itemHelper;
         private final PaymentService paymentService;
         private final InvoiceNumberGenerator invoiceNumberGenerator;
         private final ApplicationEventPublisher eventPublisher;
@@ -75,28 +79,47 @@ public class InvoiceServiceImpl implements InvoiceService {
 
                 for (InvoiceItemRequest itemRequest : request.getItems()) {
 
-                        if (itemRequest.getQuantity() <= 0) {
+                        if (itemRequest.getQuantity() == null ||
+                                        itemRequest.getQuantity().compareTo(BigDecimal.ZERO) <= 0) {
                                 throw new BadRequestException("Quantity must be greater than zero");
                         }
 
-                        if (itemRequest.getPrice() == null) {
-                                throw new BadRequestException("Item price is required");
+                        Item item = itemHelper.getItemOrThrow(itemRequest.getItemId());
+
+                        if (!item.getShop().getId().equals(shopId)) {
+                                throw new BadRequestException("Item does not belong to this shop");
                         }
 
-                        if (itemRequest.getItemName() == null || itemRequest.getItemName().isBlank()) {
-                                throw new BadRequestException("Item name is required");
+                        Unit unit;
+                        try {
+                                if (itemRequest.getUnit() != null) {
+                                        unit = Unit.valueOf(itemRequest.getUnit().toUpperCase());
+                                } else if (item.getDefaultUnit() != null) {
+                                        unit = item.getDefaultUnit();
+                                } else {
+                                        throw new BadRequestException("Unit is required");
+                                }
+                        } catch (Exception e) {
+                                throw new BadRequestException("Invalid unit");
                         }
 
-                        BigDecimal price = itemRequest.getPrice();
-                        BigDecimal quantity = BigDecimal.valueOf(itemRequest.getQuantity());
+                        if (!item.getAllowedUnits().contains(unit)) {
+                                throw new BadRequestException("Unit not allowed for item: " + item.getName());
+                        }
+
+                        BigDecimal quantity = itemRequest.getQuantity();
+
+                        BigDecimal price = resolvePrice(item, itemRequest);
 
                         BigDecimal itemTotal = price.multiply(quantity);
                         totalAmount = totalAmount.add(itemTotal);
 
                         InvoiceItem invoiceItem = InvoiceItem.builder()
-                                        .itemName(itemRequest.getItemName())
+                                        .item(item)
+                                        .itemName(item.getName())
+                                        .unit(unit)
                                         .price(price)
-                                        .quantity(itemRequest.getQuantity())
+                                        .quantity(quantity)
                                         .total(itemTotal)
                                         .build();
 
@@ -213,7 +236,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 }
 
                 for (Map<String, Object> data : map.values()) {
-                        
+
                         BigDecimal total = (BigDecimal) data.getOrDefault("totalAmount", BigDecimal.ZERO);
                         BigDecimal paid = (BigDecimal) data.getOrDefault("paidAmount", BigDecimal.ZERO);
 
@@ -230,8 +253,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         @Override
         @Transactional
         public InvoiceResponse updateInvoice(UUID invoiceId, CreateInvoiceRequest request) {
-
-                System.out.println("ITEMS: " + request.getItems());
 
                 UUID shopId = SecurityUtils.getCurrentUserShopId();
 
@@ -269,20 +290,46 @@ public class InvoiceServiceImpl implements InvoiceService {
                 // Rebuild items
                 for (InvoiceItemRequest itemRequest : request.getItems()) {
 
-                        if (itemRequest.getQuantity() <= 0) {
+                        if (itemRequest.getQuantity() == null ||
+                                        itemRequest.getQuantity().compareTo(BigDecimal.ZERO) <= 0) {
                                 throw new BadRequestException("Quantity must be greater than zero");
                         }
 
-                        BigDecimal price = itemRequest.getPrice();
-                        BigDecimal quantity = BigDecimal.valueOf(itemRequest.getQuantity());
+                        Item item = itemHelper.getItemOrThrow(itemRequest.getItemId());
+
+                        if (!item.getShop().getId().equals(shopId)) {
+                                throw new BadRequestException("Item does not belong to this shop");
+                        }
+
+                        Unit unit;
+                        try {
+                                if (itemRequest.getUnit() != null) {
+                                        unit = Unit.valueOf(itemRequest.getUnit().toUpperCase());
+                                } else if (item.getDefaultUnit() != null) {
+                                        unit = item.getDefaultUnit();
+                                } else {
+                                        throw new BadRequestException("Unit is required");
+                                }
+                        } catch (Exception e) {
+                                throw new BadRequestException("Invalid unit");
+                        }
+
+                        if (!item.getAllowedUnits().contains(unit)) {
+                                throw new BadRequestException("Unit not allowed for item: " + item.getName());
+                        }
+
+                        BigDecimal quantity = itemRequest.getQuantity();
+                        BigDecimal price = resolvePrice(item, itemRequest);
 
                         BigDecimal itemTotal = price.multiply(quantity);
                         totalAmount = totalAmount.add(itemTotal);
 
                         InvoiceItem invoiceItem = InvoiceItem.builder()
-                                        .itemName(itemRequest.getItemName())
+                                        .item(item)
+                                        .itemName(item.getName())
+                                        .unit(unit)
                                         .price(price)
-                                        .quantity(itemRequest.getQuantity())
+                                        .quantity(quantity)
                                         .total(itemTotal)
                                         .invoice(invoice)
                                         .build();
@@ -408,5 +455,27 @@ public class InvoiceServiceImpl implements InvoiceService {
                                 pageData.getTotalElements(),
                                 pageData.getTotalPages(),
                                 pageData.isLast());
+        }
+
+        // ========================= PRIVATE METHODS =======================
+
+        private BigDecimal resolvePrice(Item item, InvoiceItemRequest request) {
+
+                BigDecimal basePrice = item.getPrice();
+
+                if (request.getCustomPrice() != null) {
+
+                        if (request.getCustomPrice().compareTo(BigDecimal.ZERO) <= 0) {
+                                throw new BadRequestException("Invalid custom price");
+                        }
+
+                        if (request.getCustomPrice().compareTo(basePrice.multiply(BigDecimal.valueOf(2))) > 0) {
+                                throw new BadRequestException("Custom price too high");
+                        }
+
+                        return request.getCustomPrice();
+                }
+
+                return basePrice;
         }
 }

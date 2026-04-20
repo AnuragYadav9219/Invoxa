@@ -19,9 +19,12 @@ export default function useInvoiceForm(invoice, open, setOpen, itemsData = []) {
 
     const createItemObj = () => ({
         id: crypto.randomUUID(),
+        itemId: "",
         name: "",
         quantity: 1,
         price: 0,
+        unit: "",
+        allowedUnits: [],
     });
 
     const [newItem, setNewItem] = useState(createItemObj());
@@ -54,9 +57,11 @@ export default function useInvoiceForm(invoice, open, setOpen, itemsData = []) {
             setItems(
                 (invoice.items || []).map((item) => ({
                     id: crypto.randomUUID(),
+                    itemId: item.itemId,
                     name: item.itemName,
                     quantity: item.quantity,
                     price: item.price,
+                    unit: item.unit,
                 }))
             );
         } else {
@@ -101,8 +106,9 @@ export default function useInvoiceForm(invoice, open, setOpen, itemsData = []) {
                 id: crypto.randomUUID(),
                 itemId: newItem.itemId,
                 name: newItem.name.trim(),
-                quantity,
-                price,
+                quantity: newItem.quantity,
+                price: newItem.price,
+                unit: newItem.unit,
             },
         ]);
 
@@ -152,11 +158,23 @@ export default function useInvoiceForm(invoice, open, setOpen, itemsData = []) {
 
     /* =============== FORMAT ================= */
     const formatItems = () =>
-        items.map((item) => ({
-            itemName: item.name,
-            price: toNumber(item.price),
-            quantity: toNumber(item.quantity),
-        }));
+        items.map((item) => {
+
+            if (!item.itemId) {
+                console.error("Invalid item:", item);
+                throw new Error("ItemId missing in item");
+            }
+
+            return {
+                itemId: item.itemId,
+                quantity: toNumber(item.quantity),
+                unit: item.unit || null,
+                customPrice:
+                    item.price !== undefined && item.price !== ""
+                        ? toNumber(item.price)
+                        : null,
+            };
+        });
 
     /* ================= SUBMIT ================ */
     const handleSubmit = async () => {

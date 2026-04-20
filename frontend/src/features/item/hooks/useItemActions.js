@@ -10,8 +10,8 @@ export function useItemActions() {
     const [permanentDeleteItem] = usePermanentDeleteItemMutation();
 
     return useCrudActions({
-        createFn: createItem,
-        updateFn: updateItem,
+        createFn: (data) => createItem(data),
+        updateFn: (data) => updateItem(data),
         deleteFn: deleteItem,
         restoreFn: restoreItem,
         permanentDeleteFn: permanentDeleteItem,

@@ -13,6 +13,13 @@ public class ItemMapper {
                 .id(item.getId())
                 .name(item.getName())
                 .price(item.getPrice())
+                .defaultUnit(item.getDefaultUnit() != null ? item.getDefaultUnit().name() : null)
+                .allowedUnits(
+                        item.getAllowedUnits() != null
+                                ? item.getAllowedUnits().stream()
+                                        .map((Enum::name))
+                                        .toList()
+                                : null)
                 .build();
     }
 }

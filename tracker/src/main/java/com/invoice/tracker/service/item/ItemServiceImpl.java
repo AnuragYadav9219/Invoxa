@@ -8,11 +8,13 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.invoice.tracker.common.exception.BadRequestException;
 import com.invoice.tracker.common.exception.ResourceNotFoundException;
 import com.invoice.tracker.dto.item.CreateItemRequest;
 import com.invoice.tracker.dto.item.ItemResponse;
 import com.invoice.tracker.entity.auth.Shop;
 import com.invoice.tracker.entity.item.Item;
+import com.invoice.tracker.entity.item.Unit;
 import com.invoice.tracker.helper.item.ItemHelper;
 import com.invoice.tracker.helper.shop.ShopHelper;
 import com.invoice.tracker.mapper.ItemMapper;
@@ -37,9 +39,24 @@ public class ItemServiceImpl implements ItemService {
 
         Shop shop = shopHelper.getCurrentShopOrThrow();
 
+        List<Unit> allowedUnits = itemHelper.parseUnits(request.getAllowedUnits());
+
+        Unit defaultUnit;
+        try {
+            defaultUnit = Unit.valueOf(request.getDefaultUnit().toUpperCase());
+        } catch (Exception e) {
+            throw new BadRequestException("Invalid default unit");
+        }
+
+        if (!allowedUnits.contains(defaultUnit)) {
+            throw new BadRequestException("Default unit must be in allowed units");
+        }
+
         Item item = Item.builder()
                 .name(request.getName())
                 .price(request.getPrice())
+                .defaultUnit(defaultUnit)
+                .allowedUnits(allowedUnits)
                 .shop(shop)
                 .build();
 
@@ -77,6 +94,25 @@ public class ItemServiceImpl implements ItemService {
 
         item.setName(request.getName());
         item.setPrice(request.getPrice());
+
+        if (request.getAllowedUnits() != null) {
+
+            List<Unit> allowedUnits = itemHelper.parseUnits(request.getAllowedUnits());
+
+            Unit defaultUnit;
+            try {
+                defaultUnit = Unit.valueOf(request.getDefaultUnit().toUpperCase());
+            } catch (Exception e) {
+                throw new BadRequestException("Invalid default unit");
+            }
+
+            if (!allowedUnits.contains(defaultUnit)) {
+                throw new BadRequestException("Default unit must be in allowed units");
+            }
+
+            item.setAllowedUnits(allowedUnits);
+            item.setDefaultUnit(defaultUnit);
+        }
 
         itemRepository.save(item);
 

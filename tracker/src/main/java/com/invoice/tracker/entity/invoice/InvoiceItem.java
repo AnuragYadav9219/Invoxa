@@ -3,7 +3,12 @@ package com.invoice.tracker.entity.invoice;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import com.invoice.tracker.entity.item.Item;
+import com.invoice.tracker.entity.item.Unit;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -32,11 +37,18 @@ public class InvoiceItem {
 
     private String itemName;
 
-    private int quantity;
+    private BigDecimal quantity;
 
     private BigDecimal price;
 
     private BigDecimal total;
+
+    @Enumerated(EnumType.STRING)
+    private Unit unit;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "item_id")
+    private Item item;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "invoice_id")

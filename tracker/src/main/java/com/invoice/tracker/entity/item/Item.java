@@ -1,12 +1,20 @@
 package com.invoice.tracker.entity.item;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import com.invoice.tracker.entity.AuditableEntity;
 import com.invoice.tracker.entity.auth.Shop;
 
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,7 +42,16 @@ public class Item extends AuditableEntity {
 
     private String name;
 
-    private Double price;
+    private BigDecimal price;
+
+    @Enumerated(EnumType.STRING)
+    private Unit defaultUnit;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "item_units", joinColumns = @JoinColumn(name = "item_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "unit")
+    private List<Unit> allowedUnits;
 
     @ManyToOne
     @JoinColumn(name = "shop_id")

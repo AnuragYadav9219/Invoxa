@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   page: 0,
-  pageSize: 10,
+  pageSize: 50,
   filters: {
     search: "",
     status: "ALL",

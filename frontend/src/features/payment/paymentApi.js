@@ -74,7 +74,7 @@ export const paymentApi = baseApi.injectEndpoints({
 
         /* ================= FILTER PAYMENTS ==================== */
         filterPayments: builder.mutation({
-            query: ({ filter, page = 0, size = 10 }) => ({
+            query: ({ filter, page = 0, size = 50 }) => ({
                 url: `/payments/filter?page=${page}&size=${size}`,
                 method: "POST",
                 body: filter,

@@ -5,7 +5,6 @@ import {
     Phone,
     Calendar,
     Download,
-    Printer,
     Eye,
 } from "lucide-react";
 import { useDownloadInvoicePDFMutation, useGetInvoiceByIdQuery } from "@/features/invoice/invoiceApi";
@@ -13,7 +12,6 @@ import PageLoader from "@/components/loaders/PageLoader";
 import { useSelector } from "react-redux";
 import { formatCurrency, formatDate } from "@/utils/formatters";
 import { useGetShopQuery } from "@/features/shop/shopApi";
-import { tokenService } from "@/services/tokenService";
 
 export default function InvoiceDetails() {
     const { id } = useParams();
@@ -22,7 +20,6 @@ export default function InvoiceDetails() {
     const [downloadPDF, { isLoading: isDownloading }] = useDownloadInvoicePDFMutation();
 
     const user = useSelector((state) => state.auth.user);
-    const token = useSelector((state) => state.auth.token);
 
     const { data: shopData } = useGetShopQuery(user?.shopId, {
         skip: !user?.shopId,

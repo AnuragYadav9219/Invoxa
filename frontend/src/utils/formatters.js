@@ -20,14 +20,14 @@ export const formatDate = (date) => {
 };
 
 export function formatDateInMonth(dateString) {
-  if (!dateString) return "—";
+    if (!dateString) return "—";
 
-  const date = new Date(dateString);
+    const date = new Date(dateString);
 
-  return date.toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
+    return date.toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+    });
 }
 
 export function formatTime(time) {
@@ -46,3 +46,18 @@ export const COLORS = [
     "bg-green-100 text-green-600",
     "bg-purple-100 text-purple-600",
 ];
+
+/* ============= UNIT FORMATTOR ============= */
+export const formatUnit = (u) => {
+    return {
+        G: "g",
+        KG: "kg",
+        TON: "ton",
+        BAG: "bag",
+        PIECE: "pc",
+        CUBIC_FEET: "ft³",
+        CUBIC_METER: "m³",
+        SQUARE_FEET: "ft²",
+        SQUARE_METER: "m²",
+    }[u] || u;
+};

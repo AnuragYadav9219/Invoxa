@@ -1,5 +1,7 @@
 package com.invoice.tracker.dto.item;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 import lombok.Builder;
@@ -11,5 +13,7 @@ public class ItemResponse {
     
     private UUID id;
     private String name;
-    private Double price;
+    private BigDecimal price;
+    private String defaultUnit;
+    private List<String> allowedUnits;
 }

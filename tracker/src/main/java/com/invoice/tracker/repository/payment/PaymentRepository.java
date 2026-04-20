@@ -29,4 +29,6 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID>, JpaSpec
     List<Payment> findByDeletedTrueAndDeletedAtBefore(LocalDateTime cutoff);
 
     Optional<Payment> findByIdAndInvoiceShopIdAndDeletedFalse(UUID id, UUID shopId);
+
+    long countByInvoiceShopId(UUID shopId);
 }

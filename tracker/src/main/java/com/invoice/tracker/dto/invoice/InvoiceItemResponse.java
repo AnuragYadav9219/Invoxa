@@ -12,7 +12,8 @@ public class InvoiceItemResponse {
     
     private UUID itemId;
     private String itemName;
-    private int quantity;
+    private BigDecimal quantity;
     private BigDecimal price;
     private BigDecimal total;
+    private String unit;
 }

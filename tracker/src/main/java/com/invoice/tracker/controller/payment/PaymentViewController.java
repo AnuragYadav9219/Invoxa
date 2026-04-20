@@ -12,14 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/pay")
 public class PaymentViewController {
 
-    // @GetMapping("/{invoiceId}")
-    // public String paymentPage(@PathVariable UUID invoiceId, Model model) {
-
-    // model.addAttribute("invoiceId", invoiceId);
-
-    // return "payment-placeholder";
-    // }
-
     @GetMapping("/{invoiceId}")
     public String paymentPage(@PathVariable UUID invoiceId, Model model) {
 

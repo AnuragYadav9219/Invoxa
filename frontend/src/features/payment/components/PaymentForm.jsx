@@ -139,13 +139,13 @@ export default function PaymentForm({ open, setOpen, payment = null }) {
                             Payment Method
                         </label>
 
-                        <div className="grid grid-cols-3 gap-2">
-                            {["CASH", "UPI", "BANK"].map((method) => (
+                        <div className="grid grid-cols-4 gap-2">
+                            {["CASH", "UPI", "CARD", "BANK"].map((method) => (
                                 <button
                                     key={method}
                                     type="button"
                                     onClick={() => setForm({ ...form, method })}
-                                    className={`border rounded-lg py-2 text-sm font-semibold transition ${form.method === method
+                                    className={`border cursor-pointer rounded-lg py-2 text-sm font-semibold transition ${form.method === method
                                             ? "bg-black text-white"
                                             : "bg-white text-gray-600 hover:bg-gray-100"
                                         }`}

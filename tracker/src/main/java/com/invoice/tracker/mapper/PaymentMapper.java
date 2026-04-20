@@ -15,6 +15,7 @@ public class PaymentMapper {
 
                 return PaymentResponse.builder()
                                 .id(payment.getId())
+                                .paymentNumber(payment.getPaymentNumber())
                                 .amount(payment.getAmount())
                                 .method(payment.getMethod())
                                 .referenceNumber(payment.getReferenceNumber())
