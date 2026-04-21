@@ -10,4 +10,5 @@ import lombok.Getter;
 public class InvoiceCreatedEvent {
     private final UUID invoiceId;
     private final UUID shopId;
+    private String email;
 }

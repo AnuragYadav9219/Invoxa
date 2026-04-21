@@ -9,7 +9,7 @@ import com.invoice.tracker.entity.invoice.Invoice;
 public interface NotificationService {
 
     // ================= EVENT METHODS =================
-    void sendInvoiceCreatedNotification(Invoice invoice, UUID shopId);
+    void sendInvoiceCreatedNotification(Invoice invoice, UUID shopId, String email);
 
     void sendPartialPaymentNotification(Invoice invoice, UUID shopId);
 

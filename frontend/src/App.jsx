@@ -21,9 +21,26 @@ import CustomerDetailsPage from "./features/customer/CustomerDetailsPage";
 import AdminPage from "./features/admin/AdminPage";
 
 import { useAutoLogout } from "./hooks/useAutoLogout";
+import { useEffect } from "react";
 
 export default function App() {
   useAutoLogout();
+
+  useEffect(() => {
+    const handleWheel = (event) => {
+      const active = document.activeElement;
+
+      if (active && active.type === "number") {
+        active.blur();
+      }
+    };
+
+    document.addEventListener("wheel", handleWheel, { passive: false });
+
+    return () => {
+      document.removeEventListener("wheel", handleWheel);
+    };
+  }, []);
 
   return (
     <>

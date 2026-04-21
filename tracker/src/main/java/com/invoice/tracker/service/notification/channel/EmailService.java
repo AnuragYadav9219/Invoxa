@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import com.invoice.tracker.common.exception.BadRequestException;
 import com.invoice.tracker.entity.invoice.Invoice;
 
 import jakarta.mail.internet.MimeMessage;
@@ -78,7 +79,11 @@ public class EmailService {
         sendHtml(email, "Verify Yor Email - OTP", html);
     }
 
-    public void sendInvoiceCreated(Invoice invoice, byte[] pdf) {
+    public void sendInvoiceCreated(String email, Invoice invoice, byte[] pdf) {
+
+        if (email == null || email.isBlank()) {
+            throw new BadRequestException("Recipient email is required");
+        }
 
         Context context = new Context();
         context.setVariable("invoice", invoice);
@@ -89,7 +94,7 @@ public class EmailService {
         String html = templateEngine.process("email/invoice-email", context);
 
         sendHtmlWithAttachment(
-                invoice.getCustomerEmail(),
+                email,
                 "Invoice #" + invoice.getInvoiceNumber(),
                 html,
                 pdf,

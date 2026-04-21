@@ -1,9 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { useInvoiceActions } from './useInvoiceActions';
 import { showWarning } from '@/components/toast/toast';
+import { useGetInvoicesQuery } from '../invoiceApi';
 
 export default function useInvoiceForm(invoice, open, setOpen, itemsData = []) {
     const isEditMode = !!invoice;
+
+    const filters = {
+        page: 0,
+        size: 50,
+    };
+
+    const { refetch } = useGetInvoicesQuery(filters);
 
     const { handleCreate, handleUpdate, isCreating, isUpdating } = useInvoiceActions();
 
@@ -11,6 +19,7 @@ export default function useInvoiceForm(invoice, open, setOpen, itemsData = []) {
         customerName: "",
         customerEmail: "",
         customerPhone: "",
+        customerAddress: "",
         dueDate: null,
     };
 
@@ -51,6 +60,7 @@ export default function useInvoiceForm(invoice, open, setOpen, itemsData = []) {
                 customerName: invoice.customerName || "",
                 customerEmail: invoice.customerEmail || "",
                 customerPhone: invoice.customerPhone || "",
+                customerAddress: invoice.customerAddress || "",
                 dueDate: invoice.dueDate || null,
             });
 
@@ -186,10 +196,15 @@ export default function useInvoiceForm(invoice, open, setOpen, itemsData = []) {
         };
 
         if (isEditMode) {
-            await handleUpdate(invoice.id, payload);
+            await handleUpdate({
+                id: invoice.id,
+                body: payload
+            });
         } else {
             await handleCreate(payload);
         }
+
+        refetch();
 
         setOpen(false);
     }

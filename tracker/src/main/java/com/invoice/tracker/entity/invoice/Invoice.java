@@ -47,6 +47,8 @@ public class Invoice extends BaseEntity {
     @Column(nullable = false)
     private UUID shopId; // tenantId
 
+    @Column(length = 150)
+    private String customerAddress;
     private String customerName;
     private String customerEmail;
     private String customerPhone;

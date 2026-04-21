@@ -1,7 +1,9 @@
 package com.invoice.tracker.service.invoice;
 
 import com.invoice.tracker.service.payment.PaymentService;
+import com.invoice.tracker.service.pdf.InvoiceHtmlBuilder;
 import com.invoice.tracker.service.pdf.PdfService;
+import com.invoice.tracker.service.shop.ShopService;
 import com.invoice.tracker.specification.InvoiceSpecification;
 
 import java.math.BigDecimal;
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.invoice.tracker.dto.invoice.InvoiceItemRequest;
 import com.invoice.tracker.dto.invoice.InvoiceResponse;
+import com.invoice.tracker.dto.shop.ShopResponse;
 import com.invoice.tracker.common.exception.BadRequestException;
 import com.invoice.tracker.common.exception.ResourceNotFoundException;
 import com.invoice.tracker.dto.common.PageResponse;
@@ -46,7 +49,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class InvoiceServiceImpl implements InvoiceService {
 
+        private final ShopService shopService;
         private final PdfService pdfService;
+        private final InvoiceHtmlBuilder htmlBuilder;
         private final InvoiceRepository invoiceRepository;
         private final InvoiceMapper invoiceMapper;
         private final InvoiceHelper invoiceHelper;
@@ -134,6 +139,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                                 .customerName(request.getCustomerName())
                                 .customerPhone(request.getCustomerPhone())
                                 .customerEmail(request.getCustomerEmail())
+                                .customerAddress(request.getCustomerAddress())
                                 .status(InvoiceStatus.PENDING)
                                 .totalAmount(totalAmount)
                                 .paidAmount(BigDecimal.ZERO)
@@ -146,7 +152,12 @@ public class InvoiceServiceImpl implements InvoiceService {
 
                 Invoice savedInvoice = invoiceRepository.saveAndFlush(invoice);
 
-                eventPublisher.publishEvent(new InvoiceCreatedEvent(savedInvoice.getId(), shopId));
+                String email = SecurityUtils.getCurrentUserEmail() != null
+                                ? request.getCustomerEmail()
+                                : SecurityUtils.getCurrentUserEmail();
+
+                eventPublisher.publishEvent(
+                                new InvoiceCreatedEvent(savedInvoice.getId(), shopId, email));
 
                 return invoiceMapper.toResponse(savedInvoice);
         }
@@ -279,6 +290,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 invoice.setCustomerName(request.getCustomerName());
                 invoice.setCustomerEmail(request.getCustomerEmail());
                 invoice.setCustomerPhone(request.getCustomerPhone());
+                invoice.setCustomerAddress(request.getCustomerAddress());
                 invoice.setDueDate(request.getDueDate());
 
                 // Remove old items
@@ -407,11 +419,20 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
 
         // ====================== PDF GENERATION =========================
-        public byte[] getInvoicePdf(UUID invoiceId, UUID shopId) {
+        @Override
+        public byte[] getInvoicePdf(UUID invoiceId, UUID shopId, String email) {
 
                 Invoice invoice = invoiceHelper.getInvoiceOrThrow(invoiceId);
 
-                return pdfService.generateInvoicePdf(invoice);
+                if (!invoice.getShopId().equals(shopId)) {
+                        throw new BadRequestException("Invoice does not belong to this shop");
+                }
+
+                ShopResponse shop = shopService.getShopById(shopId);
+
+                String html = htmlBuilder.build(invoice, shop, email);
+
+                return pdfService.generatePdfFromHtml(html);
         }
 
         // ====================== GET RECENT INVOICES ====================

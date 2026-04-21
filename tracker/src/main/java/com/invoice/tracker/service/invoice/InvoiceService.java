@@ -31,7 +31,7 @@ public interface InvoiceService {
 
     List<InvoiceResponse> getDeletedInvoices();
 
-    byte[] getInvoicePdf(UUID invoiceId, UUID shopId);
+    byte[] getInvoicePdf(UUID invoiceId, UUID shopId, String email);
 
     List<InvoiceResponse> getRecentInvoices(int limit);
 

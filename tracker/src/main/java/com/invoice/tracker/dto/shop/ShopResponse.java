@@ -15,4 +15,5 @@ public class ShopResponse {
     private String ownername;
     private String phone;
     private String address;
+    private String email;
 }

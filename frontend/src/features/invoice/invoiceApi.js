@@ -132,6 +132,7 @@ export const invoiceApi = baseApi.injectEndpoints({
             customerName: data.customerName,
             customerPhone: data.customerPhone,
             customerEmail: data.customerEmail,
+            customerAddress: data.customerAddress,
             dueDate: data.dueDate,
             items: formattedItems,
           },
@@ -216,7 +217,10 @@ export const invoiceApi = baseApi.injectEndpoints({
         }
       },
 
-      invalidatesTags: [{ type: "Invoice", id: "TRASH" }],
+      invalidatesTags: [
+        { type: "Invoice", id: "LIST" },
+        { type: "Invoice", id: "TRASH" }
+      ],
     }),
 
     /* ================= RESTORE ================= */
@@ -259,7 +263,7 @@ export const invoiceApi = baseApi.injectEndpoints({
 
     /* ================= DOWNLOAD PDF ================= */
     downloadInvoicePDF: builder.mutation({
-      async queryFn(id) {
+      async queryFn({ id }) {
         try {
           const token = localStorage.getItem("token");
           const user = JSON.parse(localStorage.getItem("user"));
@@ -269,28 +273,45 @@ export const invoiceApi = baseApi.injectEndpoints({
             throw new Error("Auth missing");
           }
 
-          const res = await fetch(
-            `http://localhost:8080/api/invoices/${id}/pdf`,
-            {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "X-Shop-Id": shopId,
-              },
-            }
-          );
+          const element = document.getElementById("invoice-root");
 
-          if (!res.ok) throw new Error("Failed to fetch PDF");
+          if (!element) {
+            throw new Error("Invoice DOM not found");
+          }
+
+          const html = `
+        <html>
+          <head>
+            <meta charset="UTF-8" />
+            <script src="https://cdn.tailwindcss.com"></script>
+          </head>
+          <body>
+            ${element.outerHTML}
+          </body>
+        </html>
+      `;
+
+          const res = await fetch(`http://localhost:8080/api/invoices/pdf`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "text/html",
+              Authorization: `Bearer ${token}`,
+              "X-Shop-Id": shopId,
+            },
+            body: html,
+          });
+
+          if (!res.ok) {
+            throw new Error("Unauthorized or PDF failed");
+          }
 
           const blob = await res.blob();
 
-          if (blob.type !== "application/pdf") {
-            const text = await blob.text();
-            console.error("Invalid response:", text);
-            throw new Error("Invalid PDF response");
-          }
+          const url = URL.createObjectURL(blob);
+          window.open(url, "_blank");
 
-          return { data: blob };
+          return { data: true };
+
         } catch (error) {
           return { error: error.message };
         }

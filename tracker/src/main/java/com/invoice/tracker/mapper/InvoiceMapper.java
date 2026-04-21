@@ -1,5 +1,7 @@
 package com.invoice.tracker.mapper;
 
+import java.time.LocalDate;
+
 import org.springframework.stereotype.Component;
 
 import com.invoice.tracker.dto.invoice.InvoiceItemResponse;
@@ -18,10 +20,12 @@ public class InvoiceMapper {
                                 .customerName(invoice.getCustomerName())
                                 .customerPhone(invoice.getCustomerPhone())
                                 .customerEmail(invoice.getCustomerEmail())
+                                .customerAddress(invoice.getCustomerAddress())
                                 .totalAmount(invoice.getTotalAmount())
                                 .paidAmount(invoice.getPaidAmount())
                                 .remainingAmount(invoice.getRemainingAmount())
                                 .status(invoice.getStatus().name())
+                                .createdAt(LocalDate.now())
                                 .dueDate(invoice.getDueDate())
                                 .items(
                                         invoice.getItems() != null
@@ -48,10 +52,12 @@ public class InvoiceMapper {
                                 .customerName(invoice.getCustomerName())
                                 .customerPhone(invoice.getCustomerPhone())
                                 .customerEmail(invoice.getCustomerEmail())
+                                .customerAddress(invoice.getCustomerAddress())
                                 .totalAmount(invoice.getTotalAmount())
                                 .paidAmount(invoice.getPaidAmount())
                                 .remainingAmount(invoice.getRemainingAmount())
                                 .status(invoice.getStatus() != null ? invoice.getStatus().name() : null)
+                                .createdAt(LocalDate.now())
                                 .dueDate(invoice.getDueDate())
                                 .build();
         }

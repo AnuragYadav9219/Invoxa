@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +26,7 @@ import com.invoice.tracker.dto.invoice.CreateInvoiceRequest;
 import com.invoice.tracker.dto.invoice.InvoiceFilterRequest;
 import com.invoice.tracker.dto.invoice.InvoiceResponse;
 import com.invoice.tracker.service.invoice.InvoiceService;
+import com.invoice.tracker.service.pdf.PdfService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 public class InvoiceController {
 
         private final InvoiceService invoiceService;
+        private final PdfService pdfService;
 
         // ========================= GET INVOICE TRASH =======================
         @PreAuthorize("hasRole('OWNER')")
@@ -153,23 +154,16 @@ public class InvoiceController {
                 return ResponseBuilder.success(null, "Invoice deleted permanently");
         }
 
-        // ==================== VIEW + DOWNLOAD INVOICE ====================
-        @PreAuthorize("hasAnyRole('OWNER','STAFF')")
-        @GetMapping("/{invoiceId}/pdf")
-        public ResponseEntity<byte[]> downloadInvoicePdf(
-                        @PathVariable UUID invoiceId,
-                        @RequestHeader("X-Shop-Id") UUID shopId,
-                        @RequestParam(defaultValue = "false") boolean download) {
+        // ======================= VIEW + DOWNLOAD INVOICE ========================
+        @PreAuthorize("hasAnyRole('OWNER', 'STAFF')")
+        @PostMapping("/pdf")
+        public ResponseEntity<byte[]> generatePdf(@RequestBody String html) {
 
-                byte[] pdf = invoiceService.getInvoicePdf(invoiceId, shopId);
-
-                String disposition = download ? "attachment" : "inline";
+                byte[] pdf = pdfService.generatePdfFromHtml(html);
 
                 return ResponseEntity.ok()
                                 .contentType(MediaType.APPLICATION_PDF)
-                                .contentLength(pdf.length)
-                                .header(HttpHeaders.CONTENT_DISPOSITION,
-                                                disposition + "; filename=invoice-" + invoiceId + ".pdf")
+                                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=invoice.pdf")
                                 .body(pdf);
         }
 

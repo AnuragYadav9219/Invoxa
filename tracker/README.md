@@ -170,3 +170,15 @@ PUT    /api/notifications/read/{id}
 // ===================================
 Invoice Lifecycle
 PENDING → PAID → OVERDUE
+
+
+
+
+
+
+
+
+
+
+// INSTALL CHROMIUM
+mvn exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install"

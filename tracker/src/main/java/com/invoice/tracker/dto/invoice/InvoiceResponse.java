@@ -19,11 +19,13 @@ public class InvoiceResponse {
     private String customerName;
     private String customerPhone;
     private String customerEmail;
+    private String customerAddress;
 
     private BigDecimal totalAmount;
     private BigDecimal paidAmount;
     private BigDecimal remainingAmount;
     private String status;
+    private LocalDate createdAt;
     private LocalDate dueDate;
 
     private List<InvoiceItemResponse> items;

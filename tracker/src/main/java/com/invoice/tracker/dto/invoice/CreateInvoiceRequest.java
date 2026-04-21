@@ -11,10 +11,9 @@ import lombok.Setter;
 public class CreateInvoiceRequest {
     
     private String customerName;
-
     private String customerPhone;
-
     private String customerEmail;
+    private String customerAddress;
 
     private LocalDate dueDate;
 

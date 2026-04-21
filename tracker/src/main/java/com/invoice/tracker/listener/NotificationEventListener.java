@@ -32,7 +32,7 @@ public class NotificationEventListener {
                 .findById(event.getInvoiceId())
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice Not found: " + event.getInvoiceId()));
 
-        notificationService.sendInvoiceCreatedNotification(invoice, event.getShopId());
+        notificationService.sendInvoiceCreatedNotification(invoice, event.getShopId(), event.getEmail());
     }
 
     @Async
