@@ -20,108 +20,110 @@ import com.invoice.tracker.entity.invoice.Invoice;
 
 public interface InvoiceRepository extends JpaRepository<Invoice, UUID>, JpaSpecificationExecutor<Invoice> {
 
-    // ===================== BASIC =====================
-    @EntityGraph(attributePaths = { "items" })
-    Page<Invoice> findByShopId(UUID shopId, Pageable pageable);
+        // ===================== BASIC =====================
+        @EntityGraph(attributePaths = { "items" })
+        Page<Invoice> findByShopId(UUID shopId, Pageable pageable);
 
-    Optional<Invoice> findByIdAndShopId(UUID id, UUID shopId);
+        Optional<Invoice> findByIdAndShopId(UUID id, UUID shopId);
 
-    List<Invoice> findByShopIdAndCustomerNameIgnoreCase(UUID shopId, String customerName);
+        List<Invoice> findByShopIdAndCustomerNameIgnoreCase(UUID shopId, String customerName);
 
-    List<Invoice> findByShopIdAndDeletedFalse(UUID shopId);
+        List<Invoice> findByShopIdAndDeletedFalse(UUID shopId);
 
-    List<Invoice> findByShopIdAndDeletedTrue(UUID shopId);
+        List<Invoice> findByShopIdAndDeletedTrue(UUID shopId);
 
-    List<Invoice> findByDeletedTrueAndDeletedAtBefore(LocalDateTime cutoff);
+        List<Invoice> findByDeletedTrueAndDeletedAtBefore(LocalDateTime cutoff);
 
-    Optional<Invoice> findByIdAndShopIdAndDeletedFalse(UUID id, UUID shopId);
+        Optional<Invoice> findByIdAndShopIdAndDeletedFalse(UUID id, UUID shopId);
 
-    @Query("""
-            SELECT i FROM Invoice i
-            LEFT JOIN FETCH i.items
-            WHERE i.shopId = :shopId AND i.deleted = true
-            """)
-    List<Invoice> findDeletedInvoicesWithItems(UUID shopId);
+        @Query("""
+                        SELECT i FROM Invoice i
+                        LEFT JOIN FETCH i.items
+                        WHERE i.shopId = :shopId AND i.deleted = true
+                        """)
+        List<Invoice> findDeletedInvoicesWithItems(UUID shopId);
 
-    @EntityGraph(attributePaths = "items")
-    Optional<Invoice> findById(UUID id);
+        @EntityGraph(attributePaths = "items")
+        Optional<Invoice> findById(UUID id);
 
-    @Query("""
-                SELECT i FROM Invoice i
-                LEFT JOIN FETCH i.items
-                WHERE i.id = :id AND i.shopId = :shopId
-            """)
-    Optional<Invoice> findByIdWithItems(UUID id, UUID shopId);
+        @Query("""
+                            SELECT i FROM Invoice i
+                            LEFT JOIN FETCH i.items
+                            WHERE i.id = :id AND i.shopId = :shopId
+                        """)
+        Optional<Invoice> findByIdWithItems(UUID id, UUID shopId);
 
-    @EntityGraph(attributePaths = { "items" })
-    Page<Invoice> findAll(
-            org.springframework.data.jpa.domain.Specification<Invoice> spec,
-            Pageable pageable);
+        @EntityGraph(attributePaths = { "items" })
+        Page<Invoice> findAll(
+                        org.springframework.data.jpa.domain.Specification<Invoice> spec,
+                        Pageable pageable);
 
-    @Query("""
-                SELECT i FROM Invoice i
-                LEFT JOIN FETCH i.items
-                ORDER BY i.createdAt DESC
-            """)
-    List<Invoice> findRecentInvoicesWithItems(Pageable pageable);
+        @Query("""
+                            SELECT i FROM Invoice i
+                            LEFT JOIN FETCH i.items
+                            WHERE i.shopId = :shopId
+                            AND i.deleted = false
+                            ORDER BY i.createdAt DESC
+                        """)
+        List<Invoice> findRecentInvoicesWithItems(UUID shopId, Pageable pageable);
 
-    // ===================== BULK UPDATE =========================
-    @Modifying
-    @Transactional
-    @Query("""
-            UPDATE Invoice i
-            SET i.status = 'OVERDUE'
-            WHERE i.dueDate < :today
-            AND i.remainingAmount > 0
-            AND i.status != 'PAID'
-            """)
-    int markAllOverdue(LocalDate today);
+        // ===================== BULK UPDATE =========================
+        @Modifying
+        @Transactional
+        @Query("""
+                        UPDATE Invoice i
+                        SET i.status = 'OVERDUE'
+                        WHERE i.dueDate < :today
+                        AND i.remainingAmount > 0
+                        AND i.status != 'PAID'
+                        """)
+        int markAllOverdue(LocalDate today);
 
-    // ====================== DASHBOARD ===================
+        // ====================== DASHBOARD ===================
 
-    // Total Revenue
-    @Query("""
-            SELECT COALESCE(SUM(i.paidAmount), 0)
-            FROM Invoice i
-            WHERE i.shopId = :shopId
-            """)
-    BigDecimal getTotalRevenue(UUID shopId);
+        // Total Revenue
+        @Query("""
+                        SELECT COALESCE(SUM(i.paidAmount), 0)
+                        FROM Invoice i
+                        WHERE i.shopId = :shopId
+                        """)
+        BigDecimal getTotalRevenue(UUID shopId);
 
-    // Total Pending Amount
-    @Query("""
-            SELECT COALESCE(SUM(i.remainingAmount), 0)
-            FROM Invoice i
-            WHERE i.shopId = :shopId
-            AND i.status IN ('PENDING', 'PARTIALLY_PAID')
-            """)
-    BigDecimal getTotalPending(UUID shopId);
+        // Total Pending Amount
+        @Query("""
+                        SELECT COALESCE(SUM(i.remainingAmount), 0)
+                        FROM Invoice i
+                        WHERE i.shopId = :shopId
+                        AND i.status IN ('PENDING', 'PARTIALLY_PAID')
+                        """)
+        BigDecimal getTotalPending(UUID shopId);
 
-    // Total Overdue Amount
-    @Query("""
-            SELECT COALESCE(SUM(i.remainingAmount), 0)
-            FROM Invoice i
-            WHERE i.shopId = :shopId
-            AND i.status = 'OVERDUE'
-            """)
-    BigDecimal getTotalOverdue(UUID shopId);
+        // Total Overdue Amount
+        @Query("""
+                        SELECT COALESCE(SUM(i.remainingAmount), 0)
+                        FROM Invoice i
+                        WHERE i.shopId = :shopId
+                        AND i.status = 'OVERDUE'
+                        """)
+        BigDecimal getTotalOverdue(UUID shopId);
 
-    // Count by status
-    @Query("""
-            SELECT i.status, COUNT(i)
-            FROM Invoice i
-            WHERE i.shopId = :shopId
-            GROUP BY i.status
-            """)
-    List<Object[]> getInvoiceStatusCounts(UUID shopId);
+        // Count by status
+        @Query("""
+                        SELECT i.status, COUNT(i)
+                        FROM Invoice i
+                        WHERE i.shopId = :shopId
+                        GROUP BY i.status
+                        """)
+        List<Object[]> getInvoiceStatusCounts(UUID shopId);
 
-    // Monthly Revenue (PAID only)
-    @Query("""
-            SELECT FUNCTION('DATE_FORMAT', i.createdAt, '%Y-%m'), SUM(i.totalAmount)
-            FROM Invoice i
-            WHERE i.shopId = :shopId
-            AND i.status = 'PAID'
-            GROUP BY FUNCTION('DATE_FORMAT', i.createdAt, '%Y-%m')
-            ORDER BY FUNCTION('DATE_FORMAT', i.createdAt, '%Y-%m')
-            """)
-    List<Object[]> getMonthlyRevenue(UUID shopId);
+        // Monthly Revenue (PAID only)
+        @Query("""
+                        SELECT FUNCTION('DATE_FORMAT', i.createdAt, '%Y-%m'), SUM(i.totalAmount)
+                        FROM Invoice i
+                        WHERE i.shopId = :shopId
+                        AND i.status = 'PAID'
+                        GROUP BY FUNCTION('DATE_FORMAT', i.createdAt, '%Y-%m')
+                        ORDER BY FUNCTION('DATE_FORMAT', i.createdAt, '%Y-%m')
+                        """)
+        List<Object[]> getMonthlyRevenue(UUID shopId);
 }

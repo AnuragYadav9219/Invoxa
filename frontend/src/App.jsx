@@ -22,6 +22,7 @@ import AdminPage from "./features/admin/AdminPage";
 
 import { useAutoLogout } from "./hooks/useAutoLogout";
 import { useEffect } from "react";
+import AuthOtpPage from "./pages/AuthOtpPage";
 
 export default function App() {
   useAutoLogout();
@@ -50,6 +51,7 @@ export default function App() {
           {/* PUBLIC */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/auth-otp" element={<AuthOtpPage />} />
 
           {/* PROTECTED */}
           <Route path="/dashboard" element={<AppLayoutRoute><Dashboard /></AppLayoutRoute>} />

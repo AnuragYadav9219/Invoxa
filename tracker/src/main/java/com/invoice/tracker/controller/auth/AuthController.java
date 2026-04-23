@@ -19,7 +19,10 @@ import com.invoice.tracker.common.response.ResponseBuilder;
 import com.invoice.tracker.dto.auth.AuthResponse;
 import com.invoice.tracker.dto.auth.LoginRequest;
 import com.invoice.tracker.dto.auth.OtpRequest;
+import com.invoice.tracker.dto.auth.OtpVerificationResponse;
 import com.invoice.tracker.dto.auth.RegisterRequest;
+import com.invoice.tracker.dto.auth.ResetPasswordRequest;
+import com.invoice.tracker.dto.auth.SendOtpRequest;
 import com.invoice.tracker.dto.auth.SessionResponse;
 import com.invoice.tracker.service.auth.AuthService;
 import com.invoice.tracker.service.auth.OtpService;
@@ -29,10 +32,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
+@Slf4j
 public class AuthController {
 
     private final AuthService authService;
@@ -72,36 +77,61 @@ public class AuthController {
                 authResponse.getRefreshToken(),
                 REFRESH_TOKEN_AGE);
 
-        authResponse.setRefreshToken(null); // 🔥 IMPORTANT
+        authResponse.setRefreshToken(null);
 
         return ResponseBuilder.success(authResponse, "Login successful");
     }
 
     /* ================= OTP SEND ================= */
     @PostMapping("/send-otp")
-    public ResponseEntity<ApiResponse<Void>> sendOtp(@RequestParam String email) {
+    public ResponseEntity<ApiResponse<Void>> sendOtp(@Valid @RequestBody SendOtpRequest request) {
 
-        otpService.sendOtp(email);
+        otpService.sendOtp(request.getEmail(), request.getPurpose());
 
         return ResponseBuilder.success(null, "OTP sent successfully");
     }
 
     /* ================= OTP VERIFY ================= */
     @PostMapping("/verify-otp")
-    public ResponseEntity<ApiResponse<AuthResponse>> verifyOtp(
+    public ResponseEntity<ApiResponse<OtpVerificationResponse>> verifyOtp(
             @Valid @RequestBody OtpRequest request,
             HttpServletResponse response) {
 
-        AuthResponse authResponse = authService.verifyOtpLoginOrRegister(request);
+        log.info("OTP verification attemp for {}", request.getEmail());
 
-        cookieUtil.addRefreshTokenCookie(
-                response,
-                authResponse.getRefreshToken(),
-                REFRESH_TOKEN_AGE);
+        OtpVerificationResponse result = authService.verifyOtp(request);
 
-        authResponse.setRefreshToken(null);
+        if (!result.isNewUser()) {
 
-        return ResponseBuilder.success(authResponse, "OTP verified successfully");
+            cookieUtil.addRefreshTokenCookie(
+                    response,
+                    result.getAuth().getRefreshToken(),
+                    REFRESH_TOKEN_AGE);
+
+            result.getAuth().setRefreshToken(null);
+        }
+
+        return ResponseBuilder.success(result, "OTP verified successfully");
+    }
+
+    // ================= FORGOT PASSWORD - SEND OTP ==================
+    @PostMapping("/forgot-password/send-otp")
+    public ResponseEntity<ApiResponse<Void>> forgotPasswordSendOtp(
+            @Valid @RequestBody SendOtpRequest request) {
+
+        otpService.sendOtp(request.getEmail(), request.getPurpose());
+
+        return ResponseBuilder.success(null, "OTP sent successfully");
+    }
+
+    // ================ RESET PASSWORD ==================
+    @PostMapping("/forgot-password/reset")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
+
+        authService.resetPassword(request);
+
+        return ResponseBuilder.success(null, "Password reset successful");
     }
 
     /* ================= REFRESH ================= */

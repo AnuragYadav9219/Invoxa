@@ -5,45 +5,81 @@ import java.time.LocalDateTime;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.invoice.tracker.common.exception.BadRequestException;
-import com.invoice.tracker.common.exception.ResourceNotFoundException;
 import com.invoice.tracker.entity.auth.Otp;
+import com.invoice.tracker.entity.auth.OtpPurpose;
 import com.invoice.tracker.repository.auth.OtpRepository;
+import com.invoice.tracker.repository.auth.UserRepository;
 import com.invoice.tracker.service.notification.channel.EmailService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OtpService {
 
     private final OtpRepository otpRepository;
+    private final UserRepository userRepository; 
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
     private static final int MAX_ATTEMPTS = 3;
     private static final int OTP_EXPIRY_MINUTES = 5;
+    private static final int RESEND_COOLDOWN_SECONDS = 30;
 
     private final SecureRandom random = new SecureRandom();
 
     // ====================== SEND OTP =========================
-    public void sendOtp(String email) {
+    @Transactional
+    public void sendOtp(String email, OtpPurpose purpose) {
 
-        // Rate Limiting
-        otpRepository.findTopByEmailOrderByExpiryTimeDesc(email)
+        email = normalizeEmail(email);
+
+        boolean userExists = userRepository.existsByEmail(email);
+
+        // PURPOSE VALIDATION
+        switch (purpose) {
+
+            case REGISTER:
+                if (userExists) {
+                    throw new BadRequestException("User already exists");
+                }
+                break;
+
+            case LOGIN:
+            case RESET:
+                if (!userExists) {
+                    // Do NOT reveal user existence
+                    log.warn("OTP requested for non-existing email: {}", email);
+                    return;
+                }
+                break;
+        }
+
+        // ⏱ Rate limiting per purpose
+        otpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc(email, purpose)
                 .ifPresent(existing -> {
-                    if (existing.getExpiryTime().isAfter(LocalDateTime.now().minusSeconds(30))) {
+                    if (existing.getCreatedAt()
+                            .isAfter(LocalDateTime.now().minusSeconds(RESEND_COOLDOWN_SECONDS))) {
                         throw new BadRequestException("Please wait before requesting another OTP");
                     }
                 });
 
-        // 6-digit OTP
-        String otp = String.valueOf(100000 + random.nextInt());
+        // Generate 6-digit OTP
+        String otp = String.valueOf(100000 + random.nextInt(900000));
+
+        // Invalidate old OTPs for same purpose
+        otpRepository.invalidateAllByEmailAndPurpose(email, purpose);
 
         Otp entity = Otp.builder()
                 .email(email)
+                .purpose(purpose)
                 .otpHash(passwordEncoder.encode(otp))
+                .createdAt(LocalDateTime.now())
                 .expiryTime(LocalDateTime.now().plusMinutes(OTP_EXPIRY_MINUTES))
                 .attempts(0)
                 .used(false)
@@ -51,26 +87,44 @@ public class OtpService {
 
         otpRepository.save(entity);
 
-        emailService.sendOtpEmail(email, otp);;
+        emailService.sendOtpEmail(email, otp);
+
+        log.info("OTP sent to {} [{}]", email, purpose);
     }
 
     // ========================== VERIFY OTP =============================
-    public void verifyOtp(String email, String otp) {
+    @Transactional
+    public void verifyOtp(String email, String otp, OtpPurpose purpose) {
 
-        Otp savedOtp = otpRepository.findTopByEmailOrderByExpiryTimeDesc(email)
-                .orElseThrow(() -> new ResourceNotFoundException("OTP not found"));
+        email = normalizeEmail(email);
+
+        Otp savedOtp = otpRepository
+                .findTopByEmailAndPurposeAndUsedFalseOrderByCreatedAtDesc(email, purpose)
+                .orElseThrow(() -> new BadRequestException("Invalid OTP or expired"));
 
         validateOtp(savedOtp);
 
-        savedOtp.setAttempts(savedOtp.getAttempts() + 1);
-
+        // Wrong OTP
         if (!passwordEncoder.matches(otp, savedOtp.getOtpHash())) {
+
+            savedOtp.setAttempts(savedOtp.getAttempts() + 1);
+
+            // Lock OTP if max attempts reached
+            if (savedOtp.getAttempts() >= MAX_ATTEMPTS) {
+                savedOtp.setUsed(true);
+            }
+
             otpRepository.save(savedOtp);
+
+            log.warn("Invalid OTP attempt for {}", email);
+
             throw new BadRequestException("Invalid OTP");
         }
 
         savedOtp.setUsed(true);
         otpRepository.save(savedOtp);
+
+        log.info("OTP verified successfully for {} [{}]", email, purpose);
     }
 
     // ========================== VALIDATION ==============================
@@ -81,11 +135,16 @@ public class OtpService {
         }
 
         if (savedOtp.getExpiryTime().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("OTP Expired");
+            throw new BadRequestException("OTP expired. Please request a new one.");
         }
 
         if (savedOtp.getAttempts() >= MAX_ATTEMPTS) {
-            throw new BadRequestException("Too many Attempts");
+            throw new BadRequestException("Too many incorrect attempts. Request a new OTP.");
         }
+    }
+
+    // ========================== UTIL ==============================
+    private String normalizeEmail(String email) {
+        return email.trim().toLowerCase();
     }
 }

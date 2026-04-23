@@ -439,10 +439,12 @@ public class InvoiceServiceImpl implements InvoiceService {
         @Transactional(readOnly = true)
         public List<InvoiceResponse> getRecentInvoices(int limit) {
 
+                UUID shopId = SecurityUtils.getCurrentUserShopId();
+
                 Pageable pageable = PageRequest.of(0, limit);
 
                 return invoiceRepository
-                                .findRecentInvoicesWithItems(pageable)
+                                .findRecentInvoicesWithItems(shopId, pageable)
                                 .stream()
                                 .map(invoiceMapper::toResponse)
                                 .toList();

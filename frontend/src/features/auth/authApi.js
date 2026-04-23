@@ -4,6 +4,7 @@ import { logout as logoutAction, setCredentials } from "./authSlice";
 import { toast } from "sonner";
 import { scheduleSilentRefresh, stopSilentRefresh } from "@/services/refreshScheduler";
 import { deviceService } from "@/services/deviceService";
+import { showError, showSuccess } from "@/components/toast/toast";
 
 export const authApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -34,11 +35,10 @@ export const authApi = baseApi.injectEndpoints({
 
                     scheduleSilentRefresh();
 
+                    showSuccess("Login successful");
+
                 } catch (err) {
-                    toast.error("Login failed", {
-                        description:
-                            err?.error?.data?.message || "Invalid credentials",
-                    });
+                    showError(err?.error?.data?.message || "Login failed");
                 }
             },
         }),
@@ -69,11 +69,10 @@ export const authApi = baseApi.injectEndpoints({
 
                     scheduleSilentRefresh();
 
+                    showSuccess("Account created successfully");
+
                 } catch (err) {
-                    toast.error("Account Creation failed", {
-                        description:
-                            err?.error?.data?.message || "Please try again later",
-                    });
+                    showError(err?.error?.data?.message || "Registration failed");
                 }
             },
         }),
@@ -114,6 +113,82 @@ export const authApi = baseApi.injectEndpoints({
                 method: "GET",
             }),
             providesTags: ["Auth"],
+        }),
+
+        /* =============== SEND OTP ================ */
+        sendOtp: builder.mutation({
+            query: ({ email, purpose }) => ({
+                url: "/auth/send-otp",
+                method: "POST",
+                body: { email, purpose },
+            }),
+
+            async onQueryStarted(arg, { queryFulfilled }) {
+                try {
+                    await queryFulfilled;
+                    showSuccess("OTP sent successfully");
+                } catch (err) {
+                    showError(err?.error?.data?.message || "Failed to send OTP");
+                }
+            },
+        }),
+
+        /* =============== VERIFY OTP =============== */
+        verifyOtp: builder.mutation({
+            query: (data) => ({
+                url: "/auth/verify-otp",
+                method: "POST",
+                body: {
+                    ...data,
+                    deviceId: deviceService.getDeviceId(),
+                    deviceName: deviceService.getDeviceName(),
+                },
+            }),
+
+            async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+                try {
+                    const { data } = await queryFulfilled;
+                    const res = data.data;
+
+                    if (!res.isNewUser) {
+                        const auth = res.auth;
+
+                        console.log("AUTH: ", auth);
+
+                        tokenService.setToken(auth.accessToken);
+                        tokenService.setUser(auth.user);
+
+                        localStorage.setItem("shopId", auth.user.shopId);
+
+                        dispatch(setCredentials(auth.user));
+
+                        scheduleSilentRefresh();
+
+                        showSuccess("Login successful");
+                    }
+
+                } catch (err) {
+                    showError(err?.error?.data?.message || "OTP verification failed");
+                }
+            }
+        }),
+
+        /* ============== RESET PASSWORD ============== */
+        resetPassword: builder.mutation({
+            query: (data) => ({
+                url: "auth/forgot-password/reset",
+                method: "POST",
+                body: data,
+            }),
+
+            async onQueryStarted(arg, { queryFulfilled }) {
+                try {
+                    await queryFulfilled;
+                    showSuccess("Password reset successful");
+                } catch (err) {
+                    showError(err?.error?.data?.message || "Reset failed");
+                }
+            }
         }),
 
         /* ================= LOGOUT ================= */
@@ -186,6 +261,9 @@ export const {
     useLoginMutation,
     useRegisterMutation,
     useRefreshMutation,
+    useSendOtpMutation,
+    useVerifyOtpMutation,
+    useResetPasswordMutation,
     useLogoutMutation,
     useLogoutAllMutation,
     useLogoutDeviceMutation,

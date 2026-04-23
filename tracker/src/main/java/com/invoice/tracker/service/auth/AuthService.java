@@ -1,6 +1,7 @@
 package com.invoice.tracker.service.auth;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,8 +16,11 @@ import com.invoice.tracker.common.exception.ResourceNotFoundException;
 import com.invoice.tracker.dto.auth.AuthResponse;
 import com.invoice.tracker.dto.auth.LoginRequest;
 import com.invoice.tracker.dto.auth.OtpRequest;
+import com.invoice.tracker.dto.auth.OtpVerificationResponse;
 import com.invoice.tracker.dto.auth.RegisterRequest;
+import com.invoice.tracker.dto.auth.ResetPasswordRequest;
 import com.invoice.tracker.dto.auth.SessionResponse;
+import com.invoice.tracker.entity.auth.OtpPurpose;
 import com.invoice.tracker.entity.auth.RefreshToken;
 import com.invoice.tracker.entity.auth.Role;
 import com.invoice.tracker.entity.auth.Shop;
@@ -155,44 +159,61 @@ public class AuthService {
                 return AuthMapper.buildAuthResponse(user, accessToken, refreshToken.getToken());
         }
 
-        // =================== VERIFY OTP LOGIN ==========================
-        public AuthResponse verifyOtpLoginOrRegister(OtpRequest request) {
+        // =================== VERIFY OTP =============================
+        @Transactional
+        public OtpVerificationResponse verifyOtp(OtpRequest request) {
 
-                otpService.verifyOtp(request.getEmail(), request.getOtp());
+                otpService.verifyOtp(request.getEmail(), request.getOtp(), request.getPurpose());
 
-                User user = userRepository.findByEmail(request.getEmail())
-                                .orElseGet(() -> {
-                                        Shop shop = shopRepository.save(
-                                                        Shop.builder()
-                                                                        .shopName("New Shop")
-                                                                        .ownerName(request.getEmail())
-                                                                        .build());
+                Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
 
-                                        return userRepository.save(
-                                                        User.builder()
-                                                                        .email(request.getEmail())
-                                                                        .role(Role.OWNER)
-                                                                        .shop(shop)
-                                                                        .tokenVersion(0)
-                                                                        .build());
-                                });
+                if (optionalUser.isPresent()) {
 
-                String accessToken = jwtUtil.generateToken(
-                                user.getId(),
-                                user.getShop().getId(),
-                                user.getRole().name(),
-                                user.getEmail(),
-                                getTokenVersion(user));
+                        User user = optionalUser.get();
 
-                String deviceId = deviceHelper.getDeviceId(request.getDeviceId());
-                String deviceName = deviceHelper.getDeviceName(request.getDeviceName());
+                        String accessToken = jwtUtil.generateToken(
+                                        user.getId(),
+                                        user.getShop().getId(),
+                                        user.getRole().name(),
+                                        user.getEmail(),
+                                        getTokenVersion(user));
 
-                RefreshToken refreshToken = refreshTokenService.createRefreshToken(
-                                user,
-                                deviceId,
-                                deviceName);
+                        String deviceId = deviceHelper.getDeviceId(request.getDeviceId());
+                        String deviceName = deviceHelper.getDeviceName(request.getDeviceName());
 
-                return AuthMapper.buildAuthResponse(user, accessToken, refreshToken.getToken());
+                        RefreshToken refreshToken = refreshTokenService.createRefreshToken(
+                                        user,
+                                        deviceId,
+                                        deviceName);
+
+                        AuthResponse authResponse = AuthMapper.buildAuthResponse(
+                                        user,
+                                        accessToken,
+                                        refreshToken.getToken());
+
+                        return OtpVerificationResponse.builder()
+                                        .isNewUser(false)
+                                        .auth(authResponse)
+                                        .build();
+                }
+
+                return OtpVerificationResponse.builder()
+                                .isNewUser(true)
+                                .auth(null)
+                                .build();
+        }
+
+        // ==================== RESET PASSWORD =====================
+        public void resetPassword(ResetPasswordRequest request) {
+
+                otpService.verifyOtp(request.getEmail(), request.getOtp(),  OtpPurpose.RESET);
+
+                User user = userRepository.findByEmailWithShop(request.getEmail())
+                                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+                user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+
+                userRepository.save(user);
         }
 
         // ================= REFRESH TOKEN (ROTATION) =================
