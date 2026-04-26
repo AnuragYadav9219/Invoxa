@@ -23,7 +23,6 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       : "text-gray-600 hover:bg-white/60 hover:text-gray-900"
     }`;
 
-  // scalable nav config
   const NAV_ITEMS = [
     { to: "/dashboard", label: "Dashboard", icon: Home },
     { to: "/items", label: "Items", icon: Package },

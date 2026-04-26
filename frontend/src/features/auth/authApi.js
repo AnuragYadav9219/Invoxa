@@ -33,6 +33,12 @@ export const authApi = baseApi.injectEndpoints({
           const { data } = await queryFulfilled;
           handleAuthSuccess(dispatch, data.data);
 
+          dispatch(
+            userApi.endpoints.getProfile.initiate(undefined, {
+              forceRefetch: true,
+            })
+          );
+
           showSuccess("Login successful");
 
         } catch (err) {
@@ -41,7 +47,7 @@ export const authApi = baseApi.injectEndpoints({
           if (code === "ACCOUNT_DELETED") {
             showError("Your account is deleted. Please recover it.");
           } else {
-            showError(err?.error?.data?.message || "Login failed");
+            showError(err?.error?.data?.message);
           }
         }
       },
@@ -63,6 +69,12 @@ export const authApi = baseApi.injectEndpoints({
         try {
           const { data } = await queryFulfilled;
           handleAuthSuccess(dispatch, data.data);
+
+          dispatch(
+            userApi.endpoints.getProfile.initiate(undefined, {
+              forceRefetch: true,
+            })
+          );
 
           showSuccess("Account created successfully");
 
@@ -229,7 +241,7 @@ export const authApi = baseApi.injectEndpoints({
 export const {
   useLoginMutation,
   useRegisterMutation,
-//   useRefreshMutation,
+  //   useRefreshMutation,
   useSendOtpMutation,
   useVerifyOtpMutation,
   useResetPasswordMutation,

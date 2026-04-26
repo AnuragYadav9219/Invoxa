@@ -1,6 +1,9 @@
 package com.invoice.tracker.service.auth;
 
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -264,13 +267,31 @@ public class AuthService {
 
                 List<RefreshToken> tokens = refreshTokenService.getUserTokens(user);
 
-                return tokens.stream().map(token -> SessionResponse.builder()
-                                .id(token.getId().toString())
-                                .deviceId(token.getDeviceId())
-                                .deviceName(token.getDeviceName())
-                                .lastActive(token.getUpdatedAt())
-                                .current(token.getDeviceId().equals(currentDeviceId))
-                                .build()).toList();
+                Map<String, RefreshToken> latestSessions = new HashMap<>();
+
+                for (RefreshToken token : tokens) {
+
+                        String deviceId = token.getDeviceId();
+
+                        RefreshToken existing = latestSessions.get(deviceId);
+
+                        if (existing == null ||
+                                        token.getUpdatedAt().isAfter(existing.getUpdatedAt())) {
+
+                                latestSessions.put(deviceId, token);
+                        }
+                }
+
+                return latestSessions.values().stream()
+                                .map(token -> SessionResponse.builder()
+                                                .id(token.getId().toString())
+                                                .deviceId(token.getDeviceId())
+                                                .deviceName(token.getDeviceName())
+                                                .lastActive(token.getUpdatedAt())
+                                                .current(token.getDeviceId().equals(currentDeviceId))
+                                                .build())
+                                .sorted(Comparator.comparing(SessionResponse::getLastActive).reversed()) // latest first
+                                .toList();
         }
 
         // ================= LOGOUT (CURRENT DEVICE) =================
