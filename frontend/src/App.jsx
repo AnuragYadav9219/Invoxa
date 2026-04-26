@@ -23,6 +23,9 @@ import AdminPage from "./features/admin/AdminPage";
 import { useAutoLogout } from "./hooks/useAutoLogout";
 import { useEffect } from "react";
 import AuthOtpPage from "./pages/AuthOtpPage";
+import RecoverPage from "./features/user/component/RecoveryPage";
+import Notifications from "./features/notification/pages/Notifications";
+import NotificationDetail from "./features/notification/components/NotificationDetail";
 
 export default function App() {
   useAutoLogout();
@@ -52,6 +55,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/auth-otp" element={<AuthOtpPage />} />
+          <Route path="/recover" element={<RecoverPage />} />
 
           {/* PROTECTED */}
           <Route path="/dashboard" element={<AppLayoutRoute><Dashboard /></AppLayoutRoute>} />
@@ -69,6 +73,9 @@ export default function App() {
 
           <Route path="/customers" element={<AppLayoutRoute><CustomerPage /></AppLayoutRoute>} />
           <Route path="/customers/:name" element={<AppLayoutRoute><CustomerDetailsPage /></AppLayoutRoute>} />
+
+          <Route path="/notifications" element={<AppLayoutRoute><Notifications /></AppLayoutRoute>} />
+          <Route path="/notifications/:id" element={<AppLayoutRoute><NotificationDetail /></AppLayoutRoute>} />
 
           {/* ROLE BASED */}
           <Route

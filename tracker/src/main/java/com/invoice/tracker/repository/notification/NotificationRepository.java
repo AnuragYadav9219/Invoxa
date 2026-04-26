@@ -8,11 +8,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.invoice.tracker.entity.notification.Notification;
 import com.invoice.tracker.entity.notification.NotificationStatus;
 
-public interface NotificationRepository extends JpaRepository<Notification, UUID>  {
-    
-    List<Notification> findByInvoice_ShopIdOrderBySentAtDesc(UUID shopId);
+public interface NotificationRepository extends JpaRepository<Notification, UUID> {
 
-    List<Notification> findBySentFalseAndRetryCountLessThan(int maxRetry);
+        List<Notification> findByInvoice_ShopIdOrderBySentAtDesc(UUID shopId);
 
-    List<Notification> findByStatusAndInvoice_ShopIdOrderBySentAtDesc(NotificationStatus status, UUID shopId);
+        List<Notification> findByStatusAndInvoice_ShopIdOrderBySentAtDesc(
+                        NotificationStatus status,
+                        UUID shopId);
+
+        List<Notification> findBySentFalseAndRetryCountLessThan(int maxRetry);
+
+        List<Notification> findByInvoice_ShopIdAndIsReadFalse(UUID shopId);
+
+        long countByInvoice_ShopIdAndIsReadFalse(UUID shopId);
 }

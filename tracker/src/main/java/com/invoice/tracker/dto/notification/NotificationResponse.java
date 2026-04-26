@@ -19,6 +19,9 @@ public class NotificationResponse {
     private boolean sent;
     private String recipient; 
     private String invoiceNumber; 
-    private LocalDateTime sentAt;
 
+    private LocalDateTime sentAt;
+    private LocalDateTime lastTriedAt;
+
+    private boolean isRead;
 }

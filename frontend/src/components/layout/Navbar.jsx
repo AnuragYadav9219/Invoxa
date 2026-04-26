@@ -17,6 +17,7 @@ import { useLogoutMutation } from "@/features/auth/authApi";
 import ConfirmDialog from "../common/ConfirmDialog";
 import Spinner from "../loaders/Spinner";
 import { useEffect } from "react";
+import NotificationBell from "@/features/notification/components/NotificationBell";
 
 export default function Navbar({ isOpen, setIsOpen }) {
     const navigate = useNavigate();
@@ -40,12 +41,10 @@ export default function Navbar({ isOpen, setIsOpen }) {
 
     return (
         <div className="fixed top-0 left-0 w-full z-50">
-            <div className="relative h-14 flex items-center justify-between px-4 pr-6 backdrop-blur-xl bg-white/70 border-b border-white/40 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+            <div className="relative h-14 flex items-center justify-between px-2 pr-2 backdrop-blur-xl bg-white/70 border-b border-white/40 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
 
-                {/* subtle gradient overlay */}
                 <div className="absolute inset-0 bg-linear-to-b from-white/40 to-transparent pointer-events-none" />
 
-                {/* LEFT */}
                 <div className="flex items-center gap-3 relative z-10">
                     <button
                         onClick={() => setIsOpen((prev) => !prev)}
@@ -54,7 +53,6 @@ export default function Navbar({ isOpen, setIsOpen }) {
                         {isOpen ? <X size={20} /> : <Menu size={20} />}
                     </button>
 
-                    {/* Logo + Brand */}
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-lg bg-linear-to-br from-emerald-500 to-green-400 flex items-center justify-center text-white font-bold text-sm shadow">
                             I
@@ -65,21 +63,12 @@ export default function Navbar({ isOpen, setIsOpen }) {
                     </div>
                 </div>
 
-                {/* RIGHT */}
-                <div className="flex items-center gap-3 relative z-10">
+                <div className="flex items-center gap-1 relative z-10">
 
-                    {/* Notifications */}
-                    <div className="relative cursor-pointer group p-2 rounded-lg hover:bg-white/60 transition">
-                        <Bell size={18} className="transition group-hover:scale-110 text-gray-700" />
+                    <NotificationBell />
 
-                        {/* notification dot */}
-                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
-                    </div>
-
-                    {/* Divider */}
                     <div className="h-6 w-px bg-gray-200/60" />
 
-                    {/* PROFILE */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <div className="flex items-center gap-2 cursor-pointer px-2 py-1.5 rounded-lg hover:bg-white/60 transition">
@@ -97,7 +86,6 @@ export default function Navbar({ isOpen, setIsOpen }) {
                             className="w-56 mt-2 backdrop-blur-xl bg-white/90 border border-white/40 shadow-xl rounded-xl p-1"
                         >
 
-                            {/* User Info */}
                             <div className="px-3 py-2">
                                 <p className="text-sm font-medium text-gray-800">
                                     {user?.name || "User"}
@@ -109,7 +97,6 @@ export default function Navbar({ isOpen, setIsOpen }) {
 
                             <DropdownMenuSeparator />
 
-                            {/* Logout */}
                             <ConfirmDialog
                                 type="logout"
                                 description="Are you sure you want to logout?"

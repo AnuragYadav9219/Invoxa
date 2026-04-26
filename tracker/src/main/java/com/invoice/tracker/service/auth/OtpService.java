@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.invoice.tracker.common.exception.BadRequestException;
 import com.invoice.tracker.entity.auth.Otp;
 import com.invoice.tracker.entity.auth.OtpPurpose;
+import com.invoice.tracker.entity.auth.User;
 import com.invoice.tracker.repository.auth.OtpRepository;
 import com.invoice.tracker.repository.auth.UserRepository;
 import com.invoice.tracker.service.notification.channel.EmailService;
@@ -23,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 public class OtpService {
 
     private final OtpRepository otpRepository;
-    private final UserRepository userRepository; 
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
@@ -44,30 +45,54 @@ public class OtpService {
         // PURPOSE VALIDATION
         switch (purpose) {
 
-            case REGISTER:
+            case REGISTER -> {
                 if (userExists) {
                     throw new BadRequestException("User already exists");
                 }
-                break;
+            }
 
-            case LOGIN:
-            case RESET:
+            case LOGIN, RESET -> {
                 if (!userExists) {
-                    // Do NOT reveal user existence
                     log.warn("OTP requested for non-existing email: {}", email);
                     return;
                 }
-                break;
+            }
+
+            case RECOVER -> {
+                User user = userRepository.findByEmail(email)
+                        .orElseThrow(() -> new BadRequestException("Invalid request"));
+
+                if (!user.isDeleted()) {
+                    throw new BadRequestException("Account is not deleted");
+                }
+
+                if (user.getDeletedAt() != null &&
+                        user.getDeletedAt().isBefore(LocalDateTime.now().minusDays(30))) {
+                    throw new BadRequestException("Recovery period expired");
+                }
+            }
+
+            case DELETE_ACCOUNT -> {
+                User user = userRepository.findByEmail(email)
+                        .orElseThrow(() -> new BadRequestException("Invalid request"));
+
+                if (user.isDeleted()) {
+                    throw new BadRequestException("Account already deleted");
+                }
+            }
+
+            default -> throw new BadRequestException("Invalid OTP purpose");
         }
 
-        // ⏱ Rate limiting per purpose
-        otpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc(email, purpose)
-                .ifPresent(existing -> {
-                    if (existing.getCreatedAt()
-                            .isAfter(LocalDateTime.now().minusSeconds(RESEND_COOLDOWN_SECONDS))) {
-                        throw new BadRequestException("Please wait before requesting another OTP");
-                    }
-                });
+        // Rate limiting per purpose
+        otpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc(email, purpose).ifPresent(existing ->
+
+        {
+            if (existing.getCreatedAt()
+                    .isAfter(LocalDateTime.now().minusSeconds(RESEND_COOLDOWN_SECONDS))) {
+                throw new BadRequestException("Please wait before requesting another OTP");
+            }
+        });
 
         // Generate 6-digit OTP
         String otp = String.valueOf(100000 + random.nextInt(900000));
@@ -112,11 +137,12 @@ public class OtpService {
             // Lock OTP if max attempts reached
             if (savedOtp.getAttempts() >= MAX_ATTEMPTS) {
                 savedOtp.setUsed(true);
+                log.warn("OTP locked due to max attempts: {}", email);
             }
 
             otpRepository.save(savedOtp);
 
-            log.warn("Invalid OTP attempt for {}", email);
+            log.warn("Invalid OTP attempt {} for {}", savedOtp.getAttempts(), email);
 
             throw new BadRequestException("Invalid OTP");
         }

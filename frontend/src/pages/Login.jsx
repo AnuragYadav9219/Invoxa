@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Loader2, 
-  Eye, 
-  EyeOff, 
-  Mail, 
-  Lock, 
+import {
+  Loader2,
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
   ArrowRight,
 } from "lucide-react";
 
@@ -34,16 +34,30 @@ export default function Login() {
     e.preventDefault();
     try {
       await login(form).unwrap();
+
       showSuccess("Welcome back!");
       navigate("/dashboard");
+
     } catch (err) {
+      const code = err?.data?.code;
+
+      if (code === "ACCOUNT_DELETED") {
+        showError("Your account is deleted. Please recover it.")
+
+        navigate("/recover", {
+          state: { email: form.email },
+        });
+        
+        return;
+      }
+
       showError(err?.data?.message || "Invalid credentials");
     }
   };
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center bg-[#f8fafc] overflow-hidden px-4">
-      
+
       {/* BACKGROUND DECORATION */}
       <div className="absolute top-0 -left-4 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob" />
       <div className="absolute top-0 -right-4 w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000" />
@@ -56,10 +70,10 @@ export default function Login() {
         className="z-10 w-full max-w-md"
       >
         <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white">
-          
+
           {/* HEADER */}
           <div className="text-center mb-10">
-            <motion.div 
+            <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 260, damping: 20 }}
@@ -76,7 +90,7 @@ export default function Login() {
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
-            
+
             {/* EMAIL */}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-bold text-slate-700 ml-1">

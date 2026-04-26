@@ -9,7 +9,12 @@ export function scheduleSilentRefresh() {
     if (timer) clearTimeout(timer);
 
     const token = tokenService.getToken();
-    if (!token) return;
+    const user = tokenService.getUser();
+
+    if (!token || !user || user.deleted) {
+        stopSilentRefresh();
+        return;
+    }
 
     const exp = getExpiryMs(token);
     const now = Date.now();
@@ -18,10 +23,18 @@ export function scheduleSilentRefresh() {
 
     timer = setTimeout(async () => {
         try {
-            await store.dispatch(authApi.endpoints.refresh.initiate()).unwrap();
-            scheduleSilentRefresh();
+            const result = await store
+                .dispatch(authApi.endpoints.refresh.initiate())
+                .unwrap();
+
+            if (result?.data?.accessToken) {
+                scheduleSilentRefresh();
+            } else {
+                stopSilentRefresh();
+            }
+
         } catch {
-            // refresh failed -> authSlice will handle logout
+            stopSilentRefresh();
         }
     }, delay);
 }

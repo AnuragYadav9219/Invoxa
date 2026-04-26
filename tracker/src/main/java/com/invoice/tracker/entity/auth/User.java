@@ -1,5 +1,6 @@
 package com.invoice.tracker.entity.auth;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.invoice.tracker.entity.AuditableEntity;
@@ -48,7 +49,13 @@ public class User extends AuditableEntity {
     @JoinColumn(name = "shop_id")
     private Shop shop;
 
-    @Column(nullable = false)
     @Builder.Default
+    @Column(nullable = false)
+    private boolean deleted = false;
+
+    private LocalDateTime deletedAt;
+
+    @Builder.Default
+    @Column(nullable = false)
     private Integer tokenVersion = 0;
 }

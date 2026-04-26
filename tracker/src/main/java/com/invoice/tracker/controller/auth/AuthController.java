@@ -24,6 +24,7 @@ import com.invoice.tracker.dto.auth.RegisterRequest;
 import com.invoice.tracker.dto.auth.ResetPasswordRequest;
 import com.invoice.tracker.dto.auth.SendOtpRequest;
 import com.invoice.tracker.dto.auth.SessionResponse;
+import com.invoice.tracker.entity.auth.OtpPurpose;
 import com.invoice.tracker.service.auth.AuthService;
 import com.invoice.tracker.service.auth.OtpService;
 import com.invoice.tracker.util.CookieUtil;
@@ -82,13 +83,22 @@ public class AuthController {
         return ResponseBuilder.success(authResponse, "Login successful");
     }
 
-    /* ================= OTP SEND ================= */
-    @PostMapping("/send-otp")
-    public ResponseEntity<ApiResponse<Void>> sendOtp(@Valid @RequestBody SendOtpRequest request) {
+    /* ================= REGISTER OTP ================= */
+    @PostMapping("/register/send-otp")
+    public ResponseEntity<ApiResponse<Void>> sendRegisterOtp(
+            @Valid @RequestBody SendOtpRequest request) {
 
-        otpService.sendOtp(request.getEmail(), request.getPurpose());
+        otpService.sendOtp(request.getEmail(), OtpPurpose.REGISTER);
+        return ResponseBuilder.success(null, "OTP sent");
+    }
 
-        return ResponseBuilder.success(null, "OTP sent successfully");
+    /* ================= LOGIN OTP ================= */
+    @PostMapping("/login/send-otp")
+    public ResponseEntity<ApiResponse<Void>> sendLoginOtp(
+            @Valid @RequestBody SendOtpRequest request) {
+
+        otpService.sendOtp(request.getEmail(), OtpPurpose.LOGIN);
+        return ResponseBuilder.success(null, "OTP sent");
     }
 
     /* ================= OTP VERIFY ================= */
@@ -119,7 +129,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> forgotPasswordSendOtp(
             @Valid @RequestBody SendOtpRequest request) {
 
-        otpService.sendOtp(request.getEmail(), request.getPurpose());
+        otpService.sendOtp(request.getEmail(), OtpPurpose.RESET);
 
         return ResponseBuilder.success(null, "OTP sent successfully");
     }

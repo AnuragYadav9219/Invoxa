@@ -5,6 +5,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.invoice.tracker.common.exception.AccountDeletedException;
 import com.invoice.tracker.entity.auth.User;
 import com.invoice.tracker.repository.auth.UserRepository;
 import com.invoice.tracker.security.UserPrincipal;
@@ -22,6 +23,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Invalid email or password"));
+
+        if (user.isDeleted()) {
+            throw new AccountDeletedException("ACCOUNT_DELETED");
+        }
 
         return new UserPrincipal(user);
     }

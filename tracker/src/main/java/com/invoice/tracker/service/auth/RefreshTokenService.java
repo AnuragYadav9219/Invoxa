@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.invoice.tracker.common.exception.AccountDeletedException;
 import com.invoice.tracker.common.exception.BadRequestException;
 import com.invoice.tracker.common.exception.ResourceNotFoundException;
 import com.invoice.tracker.common.exception.UnauthorizedException;
@@ -50,6 +51,13 @@ public class RefreshTokenService {
 
         RefreshToken token = refreshTokenRepository.findByToken(tokenValue)
                 .orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
+
+        User user = token.getUser();
+
+        if (user.isDeleted()) {
+            revokeUserTokens(user);
+            throw new AccountDeletedException("ACCOUNT_DELETED");
+        }
 
         // Expiry check
         if (token.getExpiryDate().isBefore(Instant.now())) {

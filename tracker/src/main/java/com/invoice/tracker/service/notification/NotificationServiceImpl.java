@@ -18,7 +18,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.invoice.tracker.common.exception.ResourceNotFoundException;
 import com.invoice.tracker.dto.notification.NotificationResponse;
 import com.invoice.tracker.dto.shop.ShopResponse;
 import com.invoice.tracker.entity.invoice.Invoice;
@@ -205,6 +207,30 @@ public class NotificationServiceImpl implements NotificationService {
                 .findByStatusAndInvoice_ShopIdOrderBySentAtDesc(NotificationStatus.SENT, shopId));
     }
 
+    @Override
+    public void markAsRead(UUID id) {
+        Notification n = notificationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Notification not found"));
+
+        n.setRead(true);
+        notificationRepository.save(n);
+    }
+
+    @Override
+    @Transactional
+    public void markAllAsRead(UUID shopId) {
+
+        List<Notification> list = notificationRepository.findByInvoice_ShopIdAndIsReadFalse(shopId);
+
+        list.forEach(n -> n.setRead(true));
+    }
+
+    @Override
+    public long getUnreadCount() {
+        UUID shopId = SecurityUtils.getCurrentUserShopId();
+        return notificationRepository.countByInvoice_ShopIdAndIsReadFalse(shopId);
+    }
+
     // ================== COMMON EMAIL HANDLER ==========================
 
     private boolean sendEmailSafely(Runnable emailAction, Invoice invoice) {
@@ -220,41 +246,64 @@ public class NotificationServiceImpl implements NotificationService {
     // ================== MESSAGE BUILDERS ==========================
 
     private String buildInvoiceCreatedMessage(Invoice invoice) {
-        return "Hi " + getCustomerName(invoice) + ",\n"
-                + "Your invoice " + invoice.getInvoiceNumber()
-                + " of ₹" + formatAmount(invoice.getTotalAmount())
-                + " has been created.\n"
-                + "Due date: " + invoice.getDueDate() + ".";
+        return String.format(
+                "Hi %s,%n%n"
+                        + "Your invoice %s for ₹%s has been successfully created.%n"
+                        + "Due date: %s%n%n"
+                        + "Please review and make the payment on or before the due date.%n%n"
+                        + "Thank you for your business.",
+                getCustomerName(invoice),
+                invoice.getInvoiceNumber(),
+                formatAmount(invoice.getTotalAmount()),
+                invoice.getDueDate());
     }
 
     private String buildPartialPaymentMessage(Invoice invoice) {
-        return "Hi " + getCustomerName(invoice) + ",\n"
-                + "We received ₹" + formatAmount(invoice.getPaidAmount())
-                + " for invoice " + invoice.getInvoiceNumber() + ".\n"
-                + "Remaining amount: ₹" + formatAmount(invoice.getRemainingAmount()) + ".";
+        return String.format(
+                "Hi %s,%n%n"
+                        + "We’ve received a payment of ₹%s for invoice %s.%n"
+                        + "Remaining balance: ₹%s%n%n"
+                        + "Please complete the remaining payment at your convenience.%n%n"
+                        + "Thank you.",
+                getCustomerName(invoice),
+                formatAmount(invoice.getPaidAmount()),
+                invoice.getInvoiceNumber(),
+                formatAmount(invoice.getRemainingAmount()));
     }
 
     private String buildFullPaymentMessage(Invoice invoice) {
-        return "Hi " + getCustomerName(invoice) + ",\n"
-                + "Invoice " + invoice.getInvoiceNumber()
-                + " has been fully paid.\n"
-                + "Thank you for your payment!";
+        return String.format(
+                "Hi %s,%n%n"
+                        + "We’re pleased to inform you that invoice %s has been fully paid.%n%n"
+                        + "Thank you for your prompt payment.%n"
+                        + "We appreciate your business!",
+                getCustomerName(invoice),
+                invoice.getInvoiceNumber());
     }
 
     private String buildDueReminderMessage(Invoice invoice) {
-        return "Hi " + getCustomerName(invoice) + ",\n"
-                + "Reminder: Invoice " + invoice.getInvoiceNumber()
-                + " of ₹" + formatAmount(invoice.getTotalAmount())
-                + " is due on " + invoice.getDueDate() + ".\n"
-                + "Please ensure timely payment.";
+        return String.format(
+                "Hi %s,%n%n"
+                        + "This is a friendly reminder that invoice %s for ₹%s is due on %s.%n%n"
+                        + "We kindly request you to ensure the payment is made by the due date to avoid any delays.%n%n"
+                        + "Thank you.",
+                getCustomerName(invoice),
+                invoice.getInvoiceNumber(),
+                formatAmount(invoice.getTotalAmount()),
+                invoice.getDueDate());
     }
 
     private String buildOverdueMessage(Invoice invoice) {
-        return "Hi " + getCustomerName(invoice) + ",\n"
-                + "Invoice " + invoice.getInvoiceNumber()
-                + " is overdue.\n"
-                + "Outstanding amount: ₹" + formatAmount(invoice.getRemainingAmount()) + ".\n"
-                + "Kindly make the payment as soon as possible.";
+        return String.format(
+                "Hi %s,%n%n"
+                        + "We would like to inform you that invoice %s is now overdue.%n"
+                        + "Outstanding amount: ₹%s%n%n"
+                        + "We kindly request you to make the payment at the earliest to avoid further action.%n%n"
+                        + "If you’ve already made the payment, please disregard this message.%n%n"
+                        + "Thank you.",
+                getCustomerName(invoice),
+                invoice.getInvoiceNumber(),
+                formatAmount(invoice.getRemainingAmount()));
     }
 
     // ============= HELPERS ===============

@@ -10,7 +10,7 @@ const axiosInstance = axios.create({
   timeout: 10000,
 });
 
-/* ================= HELPER: FORCE LOGOUT ================= */
+/* ================= FORCE LOGOUT ================= */
 function forceLogout() {
   tokenService.clear();
   localStorage.removeItem("shopId");
@@ -27,7 +27,6 @@ export const axiosBaseQuery =
   () =>
   async ({ url, method, body, params, responseType, meta }) => {
     if (!url) {
-      console.error("Missing URL in API call");
       return { error: { status: 400, data: "Invalid API URL" } };
     }
 
@@ -52,18 +51,63 @@ export const axiosBaseQuery =
 
     } catch (error) {
       const status = error.response?.status;
+      const errorData = error.response?.data;
+      const code = errorData?.code;
 
-      /* ================= HANDLE 401 & 403 ================= */
+      /* ================= SAFETY: NO URL ================= */
+      if (!url) {
+        return {
+          error: {
+            status,
+            data: errorData || "Invalid request",
+          },
+        };
+      }
+
+      /* ================= ACCOUNT DELETED ================= */
+      if (code === "ACCOUNT_DELETED") {
+        return {
+          error: {
+            status: 403,
+            data: errorData,
+          },
+        };
+      }
+
+      /* ================= SKIP REFRESH (AUTH FLOWS) ================= */
+      const isAuthFlow =
+        url.includes("/auth/") ||
+        url.includes("/recover") ||
+        url.includes("/send-otp") ||
+        url.includes("/verify-otp") ||
+        url.includes("/delete");
+
+      if (isAuthFlow || meta?.skipAuth) {
+        return {
+          error: {
+            status,
+            data: errorData || error.message,
+          },
+        };
+      }
+
+      /* ================= REFRESH (ONLY PROTECTED APIs) ================= */
       if ((status === 401 || status === 403) && !meta?.retry) {
         try {
           const refreshResponse = await axiosInstance.post("/auth/refresh");
 
           const res = refreshResponse.data?.data;
 
+          if (!res?.accessToken) {
+            throw new Error("Invalid refresh response");
+          }
+
+          // Save new tokens
           tokenService.setToken(res.accessToken);
           tokenService.setUser(res.user);
           localStorage.setItem("shopId", res.user.shopId);
 
+          // Retry original request
           const retryResult = await axiosInstance({
             url,
             method,
@@ -97,7 +141,7 @@ export const axiosBaseQuery =
       const message = getErrorMessage(
         status,
         feature,
-        error.response?.data?.message
+        errorData?.message
       );
 
       showError(message, { id: message });
@@ -105,7 +149,7 @@ export const axiosBaseQuery =
       return {
         error: {
           status,
-          data: error.response?.data || error.message,
+          data: errorData || error.message,
         },
       };
     }

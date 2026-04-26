@@ -27,6 +27,7 @@ public class NotificationMapper {
                 .recipient(notification.getRecipient())
                 .invoiceNumber(notification.getInvoice().getInvoiceNumber()) 
                 .sentAt(notification.getSentAt())
+                .lastTriedAt(notification.getLastTriedAt())
                 .build();
     }
 }

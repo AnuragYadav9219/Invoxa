@@ -26,7 +26,6 @@ import com.invoice.tracker.entity.invoice.Invoice;
 import com.invoice.tracker.entity.invoice.InvoiceStatus;
 import com.invoice.tracker.entity.payment.Payment;
 import com.invoice.tracker.entity.payment.PaymentMethod;
-import com.invoice.tracker.entity.payment.PaymentSequence;
 import com.invoice.tracker.event.invoice.InvoiceFullyPaidEvent;
 import com.invoice.tracker.event.invoice.PartialPaymentEvent;
 import com.invoice.tracker.helper.invoice.InvoiceHelper;
@@ -327,22 +326,11 @@ public class PaymentServiceImpl implements PaymentService {
 
         int year = Year.now().getValue();
 
-        PaymentSequence sequence = paymentSequenceRepository
-                .findByShopIdAndYear(shopId, year)
-                .orElseGet(() -> {
-                    PaymentSequence newSeq = new PaymentSequence();
-                    newSeq.setShopId(shopId);
-                    newSeq.setYear(year);
-                    newSeq.setLastNumber(0);
-                    return paymentSequenceRepository.save(newSeq);
-                });
+        paymentSequenceRepository.upsertAndIncrement(shopId, year);
 
-        long nextNumber = sequence.getLastNumber() + 1;
-        sequence.setLastNumber(nextNumber);
+        long number = paymentSequenceRepository.getLastInsertedNumber();
 
-        paymentSequenceRepository.saveAndFlush(sequence);
-
-        return String.format("PAY-%d-%04d", year, nextNumber);
+        return String.format("PAY-%d-%04d", year, number);
     }
 
     private void reverseInvoicePayment(Payment payment) {

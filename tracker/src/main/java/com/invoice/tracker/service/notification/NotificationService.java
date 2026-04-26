@@ -30,4 +30,10 @@ public interface NotificationService {
     List<NotificationResponse> getRetryingNotifications();
 
     List<NotificationResponse> getSentNotifications();
+
+    void markAsRead(UUID id);
+
+    void markAllAsRead(UUID shopId);
+
+    long getUnreadCount();
 }

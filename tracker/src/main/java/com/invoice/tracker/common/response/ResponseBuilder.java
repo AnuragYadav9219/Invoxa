@@ -37,4 +37,17 @@ public class ResponseBuilder {
 
         return ResponseEntity.status(status).body(response);
     }
+
+    public static ResponseEntity<ApiResponse<Object>> errorWithCode(
+            String message,
+            String code,
+            HttpStatus status) {
+
+        ApiResponse<Object> response = new ApiResponse<>();
+        response.setSuccess(false);
+        response.setMessage(message);
+        response.setCode(code);
+
+        return new ResponseEntity<>(response, status);
+    }
 }

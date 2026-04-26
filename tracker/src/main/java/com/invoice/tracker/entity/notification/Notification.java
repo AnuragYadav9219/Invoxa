@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.invoice.tracker.entity.invoice.Invoice;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -35,7 +36,7 @@ public class Notification {
 
     private String type;
 
-    private String recipient;      // phone/email
+    private String recipient;     
 
     private String message;
 
@@ -47,6 +48,10 @@ public class Notification {
     private NotificationStatus status;
 
     private LocalDateTime sentAt;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean isRead = false;
 
     @ManyToOne
     @JoinColumn(name = "invoice_id", nullable = false)

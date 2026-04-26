@@ -1,5 +1,6 @@
 package com.invoice.tracker.service.auth;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -8,8 +9,10 @@ import org.springframework.stereotype.Service;
 import com.invoice.tracker.common.exception.BadRequestException;
 import com.invoice.tracker.common.exception.ResourceNotFoundException;
 import com.invoice.tracker.dto.auth.ChangePasswordRequest;
+import com.invoice.tracker.dto.user.DeleteAccountRequest;
 import com.invoice.tracker.dto.user.UpdateProfileRequest;
 import com.invoice.tracker.dto.user.UserProfileResponse;
+import com.invoice.tracker.entity.auth.OtpPurpose;
 import com.invoice.tracker.entity.auth.User;
 import com.invoice.tracker.repository.auth.UserRepository;
 import com.invoice.tracker.security.SecurityUtils;
@@ -23,6 +26,8 @@ public class UserService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final RefreshTokenService refreshTokenService;
+    private final OtpService otpService;
 
     public UUID getCurrentUserShopId() {
 
@@ -109,6 +114,65 @@ public class UserService {
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
+
+    // =================== DELETE ACCOUNT ====================
+    @Transactional
+    public void deleteAccount(DeleteAccountRequest request) {
+
+        UUID userId = SecurityUtils.getCurrentUserId();
+        String email = SecurityUtils.getCurrentUserEmail();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (user.isDeleted()) {
+            throw new BadRequestException("Account already deleted");
+        }
+
+        otpService.verifyOtp(email, request.getOtp(), OtpPurpose.DELETE_ACCOUNT);
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new BadRequestException("Invalid password");
+        }
+
+        refreshTokenService.revokeUserTokens(user);
+
+        user.setDeleted(true);
+        user.setDeletedAt(LocalDateTime.now());
+
+        user.setTokenVersion(user.getTokenVersion() + 1);
+
+        userRepository.save(user);
+    }
+
+    // ================ RECOVER ==============
+    @Transactional
+    public void recoverAccount(String email, String otp) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (!user.isDeleted()) {
+            throw new BadRequestException("Account is already active");
+        }
+
+        if (user.getDeletedAt() == null) {
+            throw new BadRequestException("Invalid deletion state");
+        }
+
+        if (user.getDeletedAt().isBefore(LocalDateTime.now().minusDays(30))) {
+            throw new BadRequestException("Recovery period expired");
+        }
+
+        otpService.verifyOtp(email, otp, OtpPurpose.RECOVER);
+
+        user.setDeleted(false);
+        user.setDeletedAt(null);
+
+        user.setTokenVersion(user.getTokenVersion() + 1);
+
         userRepository.save(user);
     }
 }

@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EmailService {
 
-    @Value("${app.frontend.url")
+    @Value("${app.frontend.url}")
     private String frontendUrl;
 
     private final JavaMailSender mailSender;
@@ -76,7 +76,7 @@ public class EmailService {
 
         String html = templateEngine.process("email/otp-email", context);
 
-        sendHtml(email, "Verify Yor Email - OTP", html);
+        sendHtml(email, "Verify your email address", html);
     }
 
     public void sendInvoiceCreated(String email, Invoice invoice, byte[] pdf) {
@@ -95,7 +95,7 @@ public class EmailService {
 
         sendHtmlWithAttachment(
                 email,
-                "Invoice #" + invoice.getInvoiceNumber(),
+                "Invoice " + invoice.getInvoiceNumber() + " is ready",
                 html,
                 pdf,
                 "invoice-" + invoice.getInvoiceNumber() + ".pdf");
@@ -104,8 +104,13 @@ public class EmailService {
     public void sendPaymentReceived(Invoice invoice) {
         sendText(
                 invoice.getCustomerEmail(),
-                "Payment Received",
-                "Payment received for Invoice #" + invoice.getInvoiceNumber());
+                "Payment received for Invoice " + invoice.getInvoiceNumber(),
+                "Hello,\n\n" +
+                        "We have successfully received your payment for invoice " + invoice.getInvoiceNumber() + ".\n\n"
+                        +
+                        "Thank you for your business!\n\n" +
+                        "If you have any questions, feel free to contact us.\n\n" +
+                        "Best regards,\nYour Team");
     }
 
     public void sendReminder(Invoice invoice) {
@@ -120,7 +125,7 @@ public class EmailService {
 
         sendHtml(
                 invoice.getCustomerEmail(),
-                "Payment Reminder",
+                "Reminder: Invoice " + invoice.getInvoiceNumber() + " is due soon",
                 html);
     }
 
@@ -136,7 +141,7 @@ public class EmailService {
 
         sendHtml(
                 invoice.getCustomerEmail(),
-                "Invoice Overdue",
+                "Action required: Invoice " + invoice.getInvoiceNumber() + " is overdue",
                 html);
     }
 

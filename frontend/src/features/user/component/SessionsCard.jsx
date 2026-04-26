@@ -37,7 +37,7 @@ export default function SessionsCard() {
             setIsTabActive(active);
 
             if (active) {
-                refetch(); // instant sync when user returns
+                refetch(); 
             }
         };
 
@@ -92,7 +92,7 @@ export default function SessionsCard() {
                         description="Logout from all devices?"
                         onConfirm={async () => {
                             await logoutAll();
-                            refetch(); // instant sync
+                            refetch(); 
                         }}
                     >
                         <Button
@@ -166,7 +166,7 @@ export default function SessionsCard() {
                                     }
                                     onConfirm={async () => {
                                         await logoutDevice(s.deviceId);
-                                        refetch(); // instant update
+                                        refetch();
                                     }}
                                 >
                                     <Button 

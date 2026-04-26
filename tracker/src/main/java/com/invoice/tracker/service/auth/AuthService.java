@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.invoice.tracker.common.exception.AccountDeletedException;
 import com.invoice.tracker.common.exception.BadRequestException;
 import com.invoice.tracker.common.exception.ResourceNotFoundException;
 import com.invoice.tracker.dto.auth.AuthResponse;
@@ -122,7 +123,15 @@ public class AuthService {
                                         new UsernamePasswordAuthenticationToken(
                                                         request.getEmail(),
                                                         request.getPassword()));
+
+                } catch (AccountDeletedException e) {
+                        throw e;
                 } catch (Exception e) {
+
+                        if (e.getCause() instanceof AccountDeletedException) {
+                                throw (AccountDeletedException) e.getCause();
+                        }
+
                         log.warn("Login failed | email={}", request.getEmail());
                         throw new BadRequestException("Invalid email or password");
                 }
@@ -206,7 +215,7 @@ public class AuthService {
         // ==================== RESET PASSWORD =====================
         public void resetPassword(ResetPasswordRequest request) {
 
-                otpService.verifyOtp(request.getEmail(), request.getOtp(),  OtpPurpose.RESET);
+                otpService.verifyOtp(request.getEmail(), request.getOtp(), OtpPurpose.RESET);
 
                 User user = userRepository.findByEmailWithShop(request.getEmail())
                                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -224,6 +233,10 @@ public class AuthService {
                 RefreshToken oldToken = refreshTokenService.verifyToken(refreshTokenValue);
 
                 User user = oldToken.getUser();
+
+                if (user.isDeleted()) {
+                        throw new AccountDeletedException("ACCOUNT_DELETED");
+                }
 
                 // Rotate token
                 RefreshToken newToken = refreshTokenService.rotateToken(oldToken);
