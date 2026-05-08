@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -83,5 +84,23 @@ public class NotificationController {
     @GetMapping("/unread-count")
     public ResponseEntity<ApiResponse<Long>> getUnreadCount() {
         return ResponseBuilder.success(notificationService.getUnreadCount(), "Unread count");
+    }
+
+    // ================ DELETE SINGLE ================
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteNotification(@PathVariable UUID id) {
+
+        notificationService.deleteNotification(id);
+
+        return ResponseBuilder.success(null, "Notification deleted successfully");
+    }
+
+    // ================ DELETE ALL ================
+    @DeleteMapping("/delete-all")
+    public ResponseEntity<ApiResponse<Void>> deleteAllNotification() {
+
+        notificationService.deleteAllNotifications();
+
+        return ResponseBuilder.success(null, "All notifications deleted successfully");
     }
 }

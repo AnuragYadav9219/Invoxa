@@ -116,6 +116,73 @@ export const notificationApi = baseApi.injectEndpoints({
             transformResponse: (res) => res.data,
         }),
 
+        /* ============ DELETE SINGLE ============ */
+        deleteNotification: builder.mutation({
+            query: (id) => ({
+                url: `/notifications/${id}`,
+                method: "DELETE",
+            }),
+
+            async onQueryStarted(id, { dispatch, queryFulfilled }) {
+
+                const patchResult = dispatch(
+                    notificationApi.util.updateQueryData(
+                        "getNotifications",
+                        undefined,
+                        (draft) => {
+
+                            const index = draft.findIndex((n) => n.id === id);
+
+                            if (index !== -1) {
+                                draft.splice(index, 1);
+                            }
+                        }
+                    )
+                );
+
+                try {
+                    await queryFulfilled;
+                } catch {
+                    patchResult.undo();
+                }
+            },
+
+            invalidatesTags: [
+                { type: "Notification", id: "COUNT" },
+                { type: "Notification", id: "LIST" },
+            ],
+        }),
+
+        /* ============ DELETE ALL ============ */
+        deleteAllNotifications: builder.mutation({
+            query: () => ({
+                url: "/notifications/delete-all",
+                method: "DELETE",
+            }),
+
+            async onQueryStarted(_, { dispatch, queryFulfilled }) {
+
+                const patchResult = dispatch(
+                    notificationApi.util.updateQueryData(
+                        "getNotifications",
+                        undefined,
+                        () => []
+                    )
+                );
+
+                try {
+                    await queryFulfilled;
+                } catch {
+                    patchResult.undo();
+                }
+            },
+
+            invalidatesTags: [
+                { type: "Notification", id: "COUNT" },
+                { type: "Notification", id: "LIST" },
+            ],
+        }),
+
     }),
 });
 
@@ -127,4 +194,8 @@ export const {
     useGetFailedNotificationsQuery,
     useGetRetryingNotificationsQuery,
     useGetSentNotificationsQuery,
+
+    useDeleteNotificationMutation,
+    useDeleteAllNotificationsMutation,
+
 } = notificationApi;

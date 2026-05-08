@@ -36,4 +36,9 @@ public interface NotificationService {
     void markAllAsRead(UUID shopId);
 
     long getUnreadCount();
+
+    // ================== DELETE METHODS =================
+    void deleteNotification(UUID id);
+
+    void deleteAllNotifications();
 }

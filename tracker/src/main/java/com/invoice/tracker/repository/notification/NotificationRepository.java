@@ -21,4 +21,10 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
         List<Notification> findByInvoice_ShopIdAndIsReadFalse(UUID shopId);
 
         long countByInvoice_ShopIdAndIsReadFalse(UUID shopId);
+
+        void deleteByIdAndInvoice_ShopId(UUID id, UUID shopId);
+
+        long countByIdAndInvoice_ShopId(UUID id, UUID shopId);
+
+        void deleteAllByInvoice_ShopId(UUID shopId);
 }

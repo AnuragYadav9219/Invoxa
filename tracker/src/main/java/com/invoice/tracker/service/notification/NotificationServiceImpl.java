@@ -231,6 +231,32 @@ public class NotificationServiceImpl implements NotificationService {
         return notificationRepository.countByInvoice_ShopIdAndIsReadFalse(shopId);
     }
 
+    @Override
+    @Transactional
+    public void deleteNotification(UUID id) {
+
+        UUID shopId = SecurityUtils.getCurrentUserShopId();
+
+        long exists = notificationRepository.countByIdAndInvoice_ShopId(id, shopId);
+
+        if (exists == 0) {
+            throw new ResourceNotFoundException("Notification not found");
+        }
+
+        notificationRepository.deleteByIdAndInvoice_ShopId(id, shopId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteAllNotifications() {
+
+        UUID shopId = SecurityUtils.getCurrentUserShopId();
+
+        List<Notification> notifications = notificationRepository.findByInvoice_ShopIdOrderBySentAtDesc(shopId);
+
+        notificationRepository.deleteAll(notifications);
+    }
+
     // ================== COMMON EMAIL HANDLER ==========================
 
     private boolean sendEmailSafely(Runnable emailAction, Invoice invoice) {
