@@ -14,6 +14,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.invoice.tracker.entity.invoice.Invoice;
@@ -45,6 +46,16 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID>, JpaSpec
 
         @EntityGraph(attributePaths = "items")
         Optional<Invoice> findById(UUID id);
+
+        @Query("""
+                            SELECT COUNT(DISTINCT LOWER(i.customerName))
+                            FROM Invoice i
+                            WHERE i.shopId = :shopId
+                              AND i.deleted = false
+                              AND i.customerName IS NOT NULL
+                              AND TRIM(i.customerName) <> ''
+                        """)
+        long countDistinctCustomers(@Param("shopId") UUID shopId);
 
         @Query("""
                             SELECT i FROM Invoice i
@@ -86,6 +97,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID>, JpaSpec
                         SELECT COALESCE(SUM(i.paidAmount), 0)
                         FROM Invoice i
                         WHERE i.shopId = :shopId
+                        AND i.deleted = false
                         """)
         BigDecimal getTotalRevenue(UUID shopId);
 
@@ -94,6 +106,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID>, JpaSpec
                         SELECT COALESCE(SUM(i.remainingAmount), 0)
                         FROM Invoice i
                         WHERE i.shopId = :shopId
+                        AND i.deleted  = false
                         AND i.status IN ('PENDING', 'PARTIALLY_PAID')
                         """)
         BigDecimal getTotalPending(UUID shopId);
@@ -103,6 +116,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID>, JpaSpec
                         SELECT COALESCE(SUM(i.remainingAmount), 0)
                         FROM Invoice i
                         WHERE i.shopId = :shopId
+                        AND i.deleted = false
                         AND i.status = 'OVERDUE'
                         """)
         BigDecimal getTotalOverdue(UUID shopId);
@@ -112,18 +126,34 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID>, JpaSpec
                         SELECT i.status, COUNT(i)
                         FROM Invoice i
                         WHERE i.shopId = :shopId
+                        AND i.deleted = false
                         GROUP BY i.status
                         """)
         List<Object[]> getInvoiceStatusCounts(UUID shopId);
 
         // Monthly Revenue (PAID only)
         @Query("""
-                        SELECT FUNCTION('DATE_FORMAT', i.createdAt, '%Y-%m'), SUM(i.totalAmount)
+                        SELECT FUNCTION('DATE_FORMAT', i.createdAt,'%Y-%m'),
+                               SUM(i.paidAmount)
                         FROM Invoice i
-                        WHERE i.shopId = :shopId
-                        AND i.status = 'PAID'
-                        GROUP BY FUNCTION('DATE_FORMAT', i.createdAt, '%Y-%m')
-                        ORDER BY FUNCTION('DATE_FORMAT', i.createdAt, '%Y-%m')
+                        WHERE i.shopId=:shopId
+                          AND i.deleted=false
+                          AND i.status='PAID'
+                        GROUP BY FUNCTION('DATE_FORMAT', i.createdAt,'%Y-%m')
+                        ORDER BY FUNCTION('DATE_FORMAT', i.createdAt,'%Y-%m')
                         """)
         List<Object[]> getMonthlyRevenue(UUID shopId);
+
+        @Query("""
+                        SELECT COALESCE(SUM(i.paidAmount), 0)
+                        FROM Invoice i
+                        WHERE i.shopId = :shopId
+                          AND i.deleted = false
+                          AND i.createdAt >= :start
+                          AND i.createdAt < :end
+                        """)
+        BigDecimal getRevenueBetween(
+                        @Param("shopId") UUID shopId,
+                        @Param("start") LocalDateTime start,
+                        @Param("end") LocalDateTime end);
 }

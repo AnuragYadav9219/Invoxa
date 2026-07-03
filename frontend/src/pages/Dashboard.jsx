@@ -14,6 +14,7 @@ import {
     IndianRupee,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import DashboardHero from "./DashboardHero";
 
 export default function Dashboard() {
     const { data: dashboardData, isLoading: dashboardLoading } = useGetDashboardQuery();
@@ -35,22 +36,15 @@ export default function Dashboard() {
     return (
         <div className="relative min-h-screen w-full overflow-hidden">
 
-            {/* 🌈 BACKGROUND GRADIENT (FIXED) */}
             <div className="fixed inset-0 -z-10 bg-linear-to-br from-indigo-100 via-white to-white" />
 
-            {/* ✨ Glow Effects */}
             <div className="fixed top-0 right-0 w-96 h-96 bg-indigo-300 opacity-20 blur-3xl rounded-full -z-10" />
             <div className="fixed bottom-0 left-0 w-96 h-96 bg-green-300 opacity-20 blur-3xl rounded-full -z-10" />
 
             {/* CONTENT */}
             <div className="p-4 space-y-6">
                 {/* HEADER */}
-                <div>
-                    <h1 className="text-2xl font-bold">Dashboard</h1>
-                    <p className="text-sm text-gray-500">
-                        Overview of your business performance
-                    </p>
-                </div>
+                <DashboardHero stats={stats} />
 
                 {/* STATS */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">

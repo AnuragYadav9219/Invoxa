@@ -20,4 +20,6 @@ public class DashboardResponse {
     private long overdueInvoices;
 
     private Map<String, BigDecimal> monthlyRevenue;
+
+    private Double revenueChangePercent;
 }

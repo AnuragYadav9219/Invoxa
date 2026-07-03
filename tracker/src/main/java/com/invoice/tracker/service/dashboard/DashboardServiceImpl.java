@@ -1,6 +1,8 @@
 package com.invoice.tracker.service.dashboard;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +31,50 @@ public class DashboardServiceImpl implements DashboardService {
         BigDecimal totalRevenue = invoiceRepository.getTotalRevenue(shopId);
         BigDecimal totalPending = invoiceRepository.getTotalPending(shopId);
         BigDecimal totalOverdue = invoiceRepository.getTotalOverdue(shopId);
+
+        LocalDateTime currentMonthStart = LocalDate.now()
+                .withDayOfMonth(1)
+                .atStartOfDay();
+
+        LocalDateTime nextMonthStart = currentMonthStart.plusMonths(1);
+
+        LocalDateTime lastMonthStart = currentMonthStart.minusMonths(1);
+
+        BigDecimal currentMonthRevenue = invoiceRepository.getRevenueBetween(
+                shopId,
+                currentMonthStart,
+                nextMonthStart);
+
+        BigDecimal lastMonthRevenue = invoiceRepository.getRevenueBetween(
+                shopId,
+                lastMonthStart,
+                currentMonthStart);
+
+        if (totalRevenue == null)
+            totalRevenue = BigDecimal.ZERO;
+
+        if (totalPending == null)
+            totalPending = BigDecimal.ZERO;
+
+        if (totalOverdue == null)
+            totalOverdue = BigDecimal.ZERO;
+
+        if (currentMonthRevenue == null)
+            currentMonthRevenue = BigDecimal.ZERO;
+
+        if (lastMonthRevenue == null)
+            lastMonthRevenue = BigDecimal.ZERO;
+
+        double revenueChangePercent = 0.0;
+
+        if (lastMonthRevenue.compareTo(BigDecimal.ZERO) > 0) {
+
+            revenueChangePercent = currentMonthRevenue
+                    .subtract(lastMonthRevenue)
+                    .multiply(BigDecimal.valueOf(100))
+                    .divide(lastMonthRevenue, 2, java.math.RoundingMode.HALF_UP)
+                    .doubleValue();
+        }
 
         // Status counts
         List<Object[]> results = invoiceRepository.getInvoiceStatusCounts(shopId);
@@ -67,6 +113,7 @@ public class DashboardServiceImpl implements DashboardService {
                 .pendingInvoices(pending)
                 .overdueInvoices(overdue)
                 .monthlyRevenue(monthlyRevenue)
+                .revenueChangePercent(revenueChangePercent)
                 .build();
     }
 
