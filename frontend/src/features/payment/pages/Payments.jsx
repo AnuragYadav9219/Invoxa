@@ -146,6 +146,7 @@ export default function Payments() {
                 </div>
 
                 <Button
+                    className='cursor-pointer'
                     onClick={() => {
                         setSelectedPayment(null);
                         setOpen(true);
