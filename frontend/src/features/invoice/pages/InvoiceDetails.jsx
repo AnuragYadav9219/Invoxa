@@ -4,6 +4,7 @@ import InvoiceRenderer from "./InvoiceRenderer";
 import PageLoader from "@/components/loaders/PageLoader";
 import useInvoiceData from "../useInvoiceData";
 import { mapInvoice } from "../invoiceMapper";
+import InvoiceToolbar from "./InvoiceToolbar";
 
 export default function InvoiceDetails() {
   const { id } = useParams();
@@ -14,6 +15,8 @@ export default function InvoiceDetails() {
     user,
     isLoading,
     error,
+    downloadPDF,
+    isDownloading,
   } = useInvoiceData(id);
 
   if (isLoading) {
@@ -35,12 +38,26 @@ export default function InvoiceDetails() {
   const data = mapInvoice(invoice, shop, user);
 
   // Later this can come from user settings/API
-  const selectedTemplate = "corporate";
+  const selectedTemplate = shop?.invoiceTemplate || "classic";
 
   return (
-    <InvoiceRenderer
-      template={selectedTemplate}
-      data={data}
-    />
+    <div className="bg-slate-100 py-5">
+
+      <InvoiceToolbar
+        invoice={invoice}
+        downloadPDF={downloadPDF}
+        isDownloading={isDownloading}
+      />
+
+      <div id="invoice-root">
+
+        <InvoiceRenderer
+          template={selectedTemplate}
+          data={data}
+        />
+
+      </div>
+
+    </div>
   );
 }

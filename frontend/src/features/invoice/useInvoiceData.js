@@ -14,7 +14,7 @@ export default function useInvoiceData(id) {
 
     const {
         data: shopData
-    } = useGetShopQuery(user?.shopid, {
+    } = useGetShopQuery(user?.shopId, {
         skip: !user?.shopid
     });
 

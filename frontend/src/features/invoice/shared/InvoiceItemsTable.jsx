@@ -8,33 +8,8 @@ import {
 } from "@/components/ui/table";
 
 import { formatCurrency, formatUnit } from "@/utils/formatters";
+import { variants } from "@/utils/invoiceTableVarients";
 import clsx from "clsx";
-
-const variants = {
-    classic: {
-        header: "bg-[#e0f2f1]",
-        headText: "text-[#0e8388]",
-        row: "hover:bg-slate-50",
-    },
-
-    modern: {
-        header: "bg-slate-900",
-        headText: "text-white",
-        row: "hover:bg-slate-100 transition-colors",
-    },
-
-    minimal: {
-        header: "bg-gray-100",
-        headText: "text-gray-700",
-        row: "hover:bg-gray-50",
-    },
-
-    corporate: {
-        header: "bg-blue-600",
-        headText: "text-white",
-        row: "hover:bg-blue-50",
-    },
-};
 
 export default function InvoiceItemsTable({
 
@@ -56,7 +31,7 @@ export default function InvoiceItemsTable({
                     <TableRow>
 
                         <TableHead className={clsx(style.headText)}>
-                            NO
+                            NO.
                         </TableHead>
 
                         <TableHead className={clsx(style.headText)}>
