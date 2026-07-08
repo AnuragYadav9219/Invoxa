@@ -7,7 +7,7 @@ import RoleRoute from "./routes/RoleRoute";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import SettingsPage from "./features/user/component/SettingsPage";
+import SettingsPage from "./features/user/component/tabs/SettingsPage";
 import UserProfile from "./features/user/pages/UserProfile";
 
 import Invoices from "./features/invoice/pages/Invoices";
@@ -26,6 +26,7 @@ import AuthOtpPage from "./pages/AuthOtpPage";
 import RecoverPage from "./features/user/component/RecoveryPage";
 import Notifications from "./features/notification/pages/Notifications";
 import NotificationDetail from "./features/notification/components/NotificationDetail";
+import InvoicePdfPage from "./features/invoice/pages/InvoicePdfPage";
 
 export default function App() {
   useAutoLogout();
@@ -56,6 +57,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/auth-otp" element={<AuthOtpPage />} />
           <Route path="/recover" element={<RecoverPage />} />
+          <Route path="/pdf/:invoiceId" element={<InvoicePdfPage />} />
 
           {/* PROTECTED */}
           <Route path="/dashboard" element={<AppLayoutRoute><Dashboard /></AppLayoutRoute>} />

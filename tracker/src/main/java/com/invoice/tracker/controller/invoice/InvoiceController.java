@@ -25,6 +25,8 @@ import com.invoice.tracker.dto.common.PageResponse;
 import com.invoice.tracker.dto.invoice.CreateInvoiceRequest;
 import com.invoice.tracker.dto.invoice.InvoiceFilterRequest;
 import com.invoice.tracker.dto.invoice.InvoiceResponse;
+import com.invoice.tracker.entity.invoice.InvoiceTemplate;
+import com.invoice.tracker.security.SecurityUtils;
 import com.invoice.tracker.service.invoice.InvoiceService;
 import com.invoice.tracker.service.pdf.PdfService;
 
@@ -156,10 +158,14 @@ public class InvoiceController {
 
         // ======================= VIEW + DOWNLOAD INVOICE ========================
         @PreAuthorize("hasAnyRole('OWNER', 'STAFF')")
-        @PostMapping("/pdf")
-        public ResponseEntity<byte[]> generatePdf(@RequestBody String html) {
+        @PostMapping("/pdf/{invoiceId}")
+        public ResponseEntity<byte[]> generateInvoicePdf(
+                @PathVariable UUID invoiceId,
+                @RequestParam(defaultValue = "classic") InvoiceTemplate template) {
 
-                byte[] pdf = pdfService.generatePdfFromHtml(html);
+                UUID shopId = SecurityUtils.getCurrentUserShopId();
+
+                byte[] pdf = pdfService.generateInvoicePdf(invoiceId, shopId, template);
 
                 return ResponseEntity.ok()
                                 .contentType(MediaType.APPLICATION_PDF)

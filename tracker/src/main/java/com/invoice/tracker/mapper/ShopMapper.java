@@ -17,6 +17,10 @@ public class ShopMapper {
                 .ownername(shop.getOwnerName())
                 .phone(shop.getPhone())
                 .address(shop.getAddress())
+                .invoiceTemplate(
+                        shop.getInvoiceTemplate() != null
+                                ? shop.getInvoiceTemplate().name()
+                                : "CLASSIC")
                 .build();
     }
 

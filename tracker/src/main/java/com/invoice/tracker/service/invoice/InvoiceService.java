@@ -36,4 +36,6 @@ public interface InvoiceService {
     List<InvoiceResponse> getRecentInvoices(int limit);
 
     PageResponse<InvoiceResponse> filterInvoices(InvoiceFilterRequest filter, int page, int size);
+
+    InvoiceResponse getInvoiceForPrint(UUID invoiceId, UUID shopId);
 }

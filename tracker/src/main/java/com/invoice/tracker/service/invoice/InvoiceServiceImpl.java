@@ -1,9 +1,7 @@
 package com.invoice.tracker.service.invoice;
 
 import com.invoice.tracker.service.payment.PaymentService;
-import com.invoice.tracker.service.pdf.InvoiceHtmlBuilder;
 import com.invoice.tracker.service.pdf.PdfService;
-import com.invoice.tracker.service.shop.ShopService;
 import com.invoice.tracker.specification.InvoiceSpecification;
 
 import java.math.BigDecimal;
@@ -24,12 +22,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.invoice.tracker.dto.invoice.InvoiceItemRequest;
 import com.invoice.tracker.dto.invoice.InvoiceResponse;
-import com.invoice.tracker.dto.shop.ShopResponse;
 import com.invoice.tracker.common.exception.BadRequestException;
 import com.invoice.tracker.common.exception.ResourceNotFoundException;
 import com.invoice.tracker.dto.common.PageResponse;
 import com.invoice.tracker.dto.invoice.CreateInvoiceRequest;
 import com.invoice.tracker.dto.invoice.InvoiceFilterRequest;
+import com.invoice.tracker.entity.auth.Shop;
 import com.invoice.tracker.entity.invoice.Invoice;
 import com.invoice.tracker.entity.invoice.InvoiceItem;
 import com.invoice.tracker.entity.invoice.InvoiceStatus;
@@ -40,6 +38,7 @@ import com.invoice.tracker.helper.invoice.InvoiceHelper;
 import com.invoice.tracker.helper.item.ItemHelper;
 import com.invoice.tracker.mapper.InvoiceMapper;
 import com.invoice.tracker.repository.invoice.InvoiceRepository;
+import com.invoice.tracker.repository.shop.ShopRepository;
 import com.invoice.tracker.security.SecurityUtils;
 import com.invoice.tracker.util.InvoiceNumberGenerator;
 
@@ -49,10 +48,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class InvoiceServiceImpl implements InvoiceService {
 
-        private final ShopService shopService;
         private final PdfService pdfService;
-        private final InvoiceHtmlBuilder htmlBuilder;
         private final InvoiceRepository invoiceRepository;
+        private final ShopRepository shopRepository;
         private final InvoiceMapper invoiceMapper;
         private final InvoiceHelper invoiceHelper;
         private final ItemHelper itemHelper;
@@ -133,6 +131,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 
                 String invoiceNumber = invoiceNumberGenerator.generate();
 
+                Shop shop = shopRepository.findById(shopId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Shop not found"));
+
                 Invoice invoice = Invoice.builder()
                                 .invoiceNumber(invoiceNumber)
                                 .shopId(shopId)
@@ -141,6 +142,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                                 .customerEmail(request.getCustomerEmail())
                                 .customerAddress(request.getCustomerAddress())
                                 .status(InvoiceStatus.PENDING)
+                                .template(shop.getInvoiceTemplate())
                                 .totalAmount(totalAmount)
                                 .paidAmount(BigDecimal.ZERO)
                                 .remainingAmount(totalAmount)
@@ -428,11 +430,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                         throw new BadRequestException("Invoice does not belong to this shop");
                 }
 
-                ShopResponse shop = shopService.getShopById(shopId);
-
-                String html = htmlBuilder.build(invoice, shop, email);
-
-                return pdfService.generatePdfFromHtml(html);
+                return pdfService.generateInvoicePdf(invoiceId, shopId, invoice.getTemplate());
         }
 
         // ====================== GET RECENT INVOICES ====================
@@ -500,5 +498,13 @@ public class InvoiceServiceImpl implements InvoiceService {
                 }
 
                 return basePrice;
+        }
+
+        @Override
+        public InvoiceResponse getInvoiceForPrint(UUID invoiceId, UUID shopId) {
+
+                Invoice invoice = invoiceHelper.getInvoiceOrThrow(invoiceId, shopId);
+
+                return invoiceMapper.toResponse(invoice);
         }
 }

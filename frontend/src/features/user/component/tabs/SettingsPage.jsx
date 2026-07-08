@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import SessionsCard from "./SessionsCard";
-import { Shield, User } from "lucide-react";
+import SessionsCard from "../SessionsCard";
+import { LayoutTemplate, Shield, User } from "lucide-react";
 import AccountTab from "./AccountTab";
+import InvoiceTemplateTab from "./InvoiceTemplateTab";
 
 /* ================= CONFIG ================= */
 
 const SETTINGS_TABS = [
   { key: "security", label: "Security", icon: Shield, component: SecurityTab },
   { key: "account", label: "Account", icon: User, component: AccountTab },
+  { key: "templates", label: "Templates", icon: LayoutTemplate, component: InvoiceTemplateTab },
 ];
 
 const SECURITY_TIPS = [
@@ -44,7 +46,7 @@ export default function SettingsPage() {
       </motion.div>
 
       {/* TABS */}
-      <div className="flex gap-2 border-b pb-2 overflow-x-auto">
+      <div className="flex gap-2 border-b pb-1 overflow-x-auto">
         {SETTINGS_TABS.map((t) => {
           const Icon = t.icon;
           return (
@@ -61,7 +63,12 @@ export default function SettingsPage() {
       </div>
 
       {/* CONTENT */}
-      <motion.div key={tab} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <motion.div
+        key={tab}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="rounded-2xl border border-primary/10 bg-primary/5 p-3"
+      >
         <ActiveComponent />
       </motion.div>
     </div>
@@ -113,8 +120,8 @@ function TabButton({ children, icon, active, ...props }) {
     <button
       {...props}
       className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition ${active
-          ? "bg-gray-900 text-white"
-          : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+        ? "bg-gray-900 text-white"
+        : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
         }`}
     >
       {icon}

@@ -24,4 +24,10 @@ public class InvoiceHelper {
         return invoiceRepository.findByIdWithItems(invoiceId, shopId)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
     }
+
+    public Invoice getInvoiceOrThrow(UUID invoiceId, UUID shopId) {
+
+        return invoiceRepository.findByIdWithItems(invoiceId, shopId)
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
+    }
 }

@@ -17,14 +17,23 @@ public class InvoiceMapper {
                                 .id(invoice.getId())
                                 .invoiceNumber(invoice.getInvoiceNumber())
                                 .shopId(invoice.getShopId())
+
                                 .customerName(invoice.getCustomerName())
                                 .customerPhone(invoice.getCustomerPhone())
                                 .customerEmail(invoice.getCustomerEmail())
                                 .customerAddress(invoice.getCustomerAddress())
+
                                 .totalAmount(invoice.getTotalAmount())
                                 .paidAmount(invoice.getPaidAmount())
                                 .remainingAmount(invoice.getRemainingAmount())
+
                                 .status(invoice.getStatus().name())
+                                .template(
+                                        invoice.getTemplate() != null 
+                                                ? invoice.getTemplate().name()
+                                                : null
+                                )
+
                                 .createdAt(LocalDate.now())
                                 .dueDate(invoice.getDueDate())
                                 .items(
@@ -49,14 +58,19 @@ public class InvoiceMapper {
                                 .id(invoice.getId())
                                 .invoiceNumber(invoice.getInvoiceNumber())
                                 .shopId(invoice.getShopId())
+
                                 .customerName(invoice.getCustomerName())
                                 .customerPhone(invoice.getCustomerPhone())
                                 .customerEmail(invoice.getCustomerEmail())
                                 .customerAddress(invoice.getCustomerAddress())
+
                                 .totalAmount(invoice.getTotalAmount())
                                 .paidAmount(invoice.getPaidAmount())
                                 .remainingAmount(invoice.getRemainingAmount())
+
                                 .status(invoice.getStatus() != null ? invoice.getStatus().name() : null)
+                                .template(invoice.getTemplate().name())
+                                
                                 .createdAt(LocalDate.now())
                                 .dueDate(invoice.getDueDate())
                                 .build();

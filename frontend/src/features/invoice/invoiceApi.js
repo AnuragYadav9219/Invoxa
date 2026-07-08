@@ -262,58 +262,89 @@ export const invoiceApi = baseApi.injectEndpoints({
     }),
 
     /* ================= DOWNLOAD PDF ================= */
+    //   downloadInvoicePDF: builder.mutation({
+    //     async queryFn({ id }) {
+    //       try {
+    //         const token = localStorage.getItem("token");
+    //         const user = JSON.parse(localStorage.getItem("user"));
+    //         const shopId = user?.shopId;
+
+    //         if (!token || !shopId) {
+    //           throw new Error("Authentication required");
+    //         }
+
+    //         const res = await fetch(`http://localhost:8080/api/invoices/pdf/${id}`, {
+    //           method: "POST",
+    //           headers: {
+    //             Authorization: `Bearer ${token}`,
+    //             "X-Shop-Id": shopId,
+    //           },
+    //         });
+
+    //         if (!res.ok) {
+    //           throw new Error("Unauthorized or PDF failed");
+    //         }
+
+    //         const blob = await res.blob();
+
+    //         const url = URL.createObjectURL(blob);
+    //         window.open(url, "_blank");
+
+    //         window.URL.revokeObjectURL(url);
+
+    //         return { data: true };
+
+    //       } catch (error) {
+    //         return { error: error.message };
+    //       }
+    //     },
+    //   }),
+    // }),
+
+
     downloadInvoicePDF: builder.mutation({
-      async queryFn({ id }) {
+      async queryFn({ id, template, preview = false }) {
         try {
           const token = localStorage.getItem("token");
           const user = JSON.parse(localStorage.getItem("user"));
           const shopId = user?.shopId;
 
           if (!token || !shopId) {
-            throw new Error("Auth missing");
+            throw new Error("Authentication required");
           }
 
-          const element = document.getElementById("invoice-root");
-
-          if (!element) {
-            throw new Error("Invoice DOM not found");
-          }
-
-          const html = `
-        <html>
-          <head>
-            <meta charset="UTF-8" />
-            <script src="https://cdn.tailwindcss.com"></script>
-          </head>
-          <body>
-            ${element.outerHTML}
-          </body>
-        </html>
-      `;
-
-          const res = await fetch(`http://localhost:8080/api/invoices/pdf`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "text/html",
-              Authorization: `Bearer ${token}`,
-              "X-Shop-Id": shopId,
-            },
-            body: html,
-          });
+          const res = await fetch(
+            `http://localhost:8080/api/invoices/pdf/${id}?template=${encodeURIComponent(template)}`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "X-Shop-Id": shopId,
+              },
+            }
+          );
 
           if (!res.ok) {
-            throw new Error("Unauthorized or PDF failed");
+            throw new Error("PDF generation failed");
           }
 
           const blob = await res.blob();
 
-          const url = URL.createObjectURL(blob);
-          window.open(url, "_blank");
+          if (preview) {
+            const url = URL.createObjectURL(blob);
+            window.open(url, "_blank");
+            return { data: { blob } };
+          }
 
-          return { data: true };
+          return { data: { blob } };
 
         } catch (error) {
-          return { error: error.message };
+          return {
+            error: {
+              status: 500,
+              data: error.message,
+            },
+          };
         }
       },
     }),

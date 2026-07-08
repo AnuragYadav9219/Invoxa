@@ -47,6 +47,11 @@ public class Invoice extends BaseEntity {
     @Column(nullable = false)
     private UUID shopId; // tenantId
 
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private InvoiceTemplate template = InvoiceTemplate.CLASSIC;
+
     @Column(length = 150)
     private String customerAddress;
     private String customerName;

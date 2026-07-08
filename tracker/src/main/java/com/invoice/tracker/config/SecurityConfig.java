@@ -29,6 +29,7 @@ public class SecurityConfig {
     private final CustomAuthEntryPoint customAuthEntryPoint;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService userDetailsService;
+    private final PrintTokenAuthenticationFilter printTokenAuthenticationFilter;
 
     // Password encoder for hashing passwords
     @Bean
@@ -60,7 +61,9 @@ public class SecurityConfig {
                         .ignoringRequestMatchers("/api/**"))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/internal/**").permitAll()
 
                         .requestMatchers(
                                 "/api/users/recover/send-otp",
@@ -80,7 +83,8 @@ public class SecurityConfig {
                         .authenticationEntryPoint(customAuthEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler))
 
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(printTokenAuthenticationFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }

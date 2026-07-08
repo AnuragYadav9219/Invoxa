@@ -10,9 +10,9 @@ import {
     Trash2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useGetProfileQuery } from "../userApi";
-import { DeleteAccountDialog } from "./DeleteAccountDialog";
-import { ChangePasswordDialog } from "./ChangePasswordDialog";
+import { DeleteAccountDialog } from "../DeleteAccountDialog";
+import { ChangePasswordDialog } from "../ChangePasswordDialog";
+import { useGetProfileQuery } from "../../userApi";
 
 export default function AccountTab() {
     const navigate = useNavigate();

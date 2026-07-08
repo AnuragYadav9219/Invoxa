@@ -3,9 +3,7 @@ package com.invoice.tracker.service.notification;
 import com.invoice.tracker.repository.notification.NotificationRepository;
 import com.invoice.tracker.security.SecurityUtils;
 import com.invoice.tracker.service.notification.channel.EmailService;
-import com.invoice.tracker.service.pdf.InvoiceHtmlBuilder;
 import com.invoice.tracker.service.pdf.PdfService;
-import com.invoice.tracker.service.shop.ShopService;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -22,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.invoice.tracker.common.exception.ResourceNotFoundException;
 import com.invoice.tracker.dto.notification.NotificationResponse;
-import com.invoice.tracker.dto.shop.ShopResponse;
 import com.invoice.tracker.entity.invoice.Invoice;
 import com.invoice.tracker.entity.notification.Notification;
 import com.invoice.tracker.entity.notification.NotificationStatus;
@@ -34,11 +31,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
 
-    private final ShopService shopService;
     private final NotificationRepository notificationRepository;
     private final EmailService emailService;
     private final PdfService pdfService;
-    private final InvoiceHtmlBuilder htmlBuilder;
     private final NotificationMapper notificationMapper;
 
     private static final Logger log = LoggerFactory.getLogger(NotificationServiceImpl.class);
@@ -57,11 +52,11 @@ public class NotificationServiceImpl implements NotificationService {
 
         String message = buildInvoiceCreatedMessage(invoice);
 
-        ShopResponse shop = shopService.getShopById(shopId);
-
-        String html = htmlBuilder.build(invoice, shop, email);
-
-        byte[] pdf = pdfService.generatePdfFromHtml(html);
+        byte[] pdf = pdfService.generateInvoicePdf(
+            invoice.getId(), 
+            invoice.getShopId(),
+            invoice.getTemplate()
+        );
 
         boolean sent = sendEmailSafely(() -> {
             emailService.sendInvoiceCreated(email, invoice, pdf);

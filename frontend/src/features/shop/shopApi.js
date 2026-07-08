@@ -23,10 +23,24 @@ export const shopApi = baseApi.injectEndpoints({
 
             invalidatesTags: ["Shop"],
         }),
+
+        /* =========== UPDATE INVOICE TEMPLATE ============ */
+        updateInvoiceTemplate: builder.mutation({
+            query: ({shopId, invoiceTemplate}) => ({
+                url: `/shops/${shopId}/template`,
+                method: "PATCH",
+                body: {
+                    invoiceTemplate,
+                },
+            }),
+
+            invalidatesTags: ["Shop"],
+        }),
     }),
 });
 
 export const {
     useGetShopQuery,
     useUpdateShopMutation,
+    useUpdateInvoiceTemplateMutation,
 } = shopApi;

@@ -1,187 +1,33 @@
-// package com.invoice.tracker.service.pdf;
-
-// import java.awt.Color;
-// import java.io.ByteArrayOutputStream;
-// import java.time.format.DateTimeFormatter;
-
-// import org.springframework.stereotype.Service;
-
-// import com.invoice.tracker.entity.invoice.Invoice;
-// import com.invoice.tracker.entity.invoice.InvoiceItem;
-// import com.lowagie.text.Document;
-// import com.lowagie.text.Element;
-// import com.lowagie.text.Font;
-// import com.lowagie.text.PageSize;
-// import com.lowagie.text.Paragraph;
-// import com.lowagie.text.Phrase;
-// import com.lowagie.text.pdf.ColumnText;
-// import com.lowagie.text.pdf.PdfContentByte;
-// import com.lowagie.text.pdf.PdfGState;
-// import com.lowagie.text.pdf.PdfPCell;
-// import com.lowagie.text.pdf.PdfPTable;
-// import com.lowagie.text.pdf.PdfWriter;
-
-// @Service
-// public class PdfService {
-
-//     // ==================== GENERATE PDF ========================
-//     public byte[] generateInvoicePdf(Invoice invoice) {
-
-//         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-
-//             Document document = new Document(PageSize.A4, 36, 36, 54, 36);
-//             PdfWriter writer = PdfWriter.getInstance(document, out);
-
-//             document.open();
-
-//             // Title
-//             Font titleFont = new Font(Font.HELVETICA, 20, Font.BOLD);
-//             Paragraph title = new Paragraph("INVOICE", titleFont);
-//             title.setAlignment(Element.ALIGN_CENTER);
-//             title.setSpacingAfter(10);
-//             document.add(title);
-
-//             // Invoice Details
-//             document.add(new Paragraph("Invoice No: " + invoice.getInvoiceNumber()));
-//             document.add(new Paragraph("Customer: " + invoice.getCustomerName()));
-//             document.add(new Paragraph("Phone: " + invoice.getCustomerPhone()));
-//             document.add(new Paragraph("Status: " + invoice.getStatus()));
-//             document.add(new Paragraph("Due Date: " +
-//                     (invoice.getDueDate() != null
-//                             ? invoice.getDueDate().format(DateTimeFormatter.ISO_DATE)
-//                             : "N/A")));
-
-//             document.add(new Paragraph("\n"));
-
-//             // Table
-//             PdfPTable table = new PdfPTable(4);
-//             table.setWidthPercentage(100);
-//             table.setSpacingBefore(10);
-//             table.setSpacingAfter(10);
-
-//             table.setWidths(new float[] { 3, 1, 2, 2 });
-
-//             // Headers
-//             addHeader(table, "Item");
-//             addHeader(table, "Qty");
-//             addHeader(table, "Price");
-//             addHeader(table, "Total");
-
-//             // Rows
-//             boolean isEven = true;
-
-//             for (InvoiceItem item : invoice.getItems()) {
-
-//                 Color bgColor = isEven ? new Color(245, 245, 245) : Color.WHITE;
-
-//                 table.addCell(createCell(item.getItemName(), bgColor));
-//                 table.addCell(createCell(String.valueOf(item.getQuantity()), bgColor));
-//                 table.addCell(createCell("₹ " + item.getPrice(), bgColor));
-//                 table.addCell(createCell("₹ " + item.getTotal(), bgColor));
-
-//                 isEven = !isEven;
-//             }
-
-//             document.add(table);
-
-//             // Total
-//             Font totalFont = new Font(Font.HELVETICA, 14, Font.BOLD);
-//             Paragraph total = new Paragraph("Total Amount: ₹ " + invoice.getTotalAmount(), totalFont);
-//             total.setAlignment(Element.ALIGN_RIGHT);
-//             total.setSpacingBefore(10);
-//             document.add(total);
-
-//             // Watermark
-//             if (invoice.getStatus() != null) {
-//                 switch (invoice.getStatus()) {
-//                     case PAID:
-//                         addWatermark(writer, "PAID", new Color(46, 204, 113));
-//                         break;
-
-//                     case OVERDUE:
-//                         addWatermark(writer, "OVERDUE", new Color(231, 76, 60));
-//                         break;
-
-//                     default:
-//                         break;
-//                 }
-//             }
-
-//             document.close();
-
-//             return out.toByteArray();
-
-//         } catch (Exception e) {
-//             throw new RuntimeException("Error generating PDF", e);
-//         }
-//     }
-
-//     // =================== HEADER ======================
-//     private void addHeader(PdfPTable table, String title) {
-
-//         Font font = new Font(Font.HELVETICA, 12, Font.BOLD, Color.WHITE);
-
-//         PdfPCell header = new PdfPCell(new Phrase(title, font));
-
-//         // blue color
-//         header.setBackgroundColor(new Color(52, 152, 219));
-
-//         header.setBackgroundColor(new Color(52, 152, 219));
-//         header.setHorizontalAlignment(Element.ALIGN_CENTER);
-//         header.setVerticalAlignment(Element.ALIGN_MIDDLE);
-//         header.setPadding(8);
-
-//         table.addCell(header);
-//     }
-
-//     // ====================== CELL =========================
-//     private PdfPCell createCell(String text, Color bgColor) {
-
-//         PdfPCell cell = new PdfPCell(new Phrase(text));
-//         cell.setBackgroundColor(bgColor);
-//         cell.setPadding(6);
-//         cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-
-//         return cell;
-//     }
-
-//     // ==================== WATERMARK =======================
-//     private void addWatermark(PdfWriter writer, String text, Color color) {
-
-//         PdfContentByte canvas = writer.getDirectContent();
-
-//         PdfGState gs = new PdfGState();
-//         gs.setFillOpacity(0.3f);
-//         canvas.setGState(gs);
-
-//         Font font = new Font(Font.HELVETICA, 70, Font.BOLD, color);
-//         Phrase watermark = new Phrase(text, font);
-
-//         ColumnText.showTextAligned(
-//                 canvas,
-//                 Element.ALIGN_CENTER,
-//                 watermark,
-//                 297,
-//                 421,
-//                 45);
-//     }
-// }
-
 package com.invoice.tracker.service.pdf;
 
+import com.invoice.tracker.entity.invoice.InvoiceTemplate;
+import com.invoice.tracker.security.PrintTokenUtil;
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.WaitUntilState;
+import com.microsoft.playwright.options.LoadState;
 import com.microsoft.playwright.options.Margin;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import lombok.RequiredArgsConstructor;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class PdfService {
 
     private Playwright playwright;
     private Browser browser;
+    private final PrintTokenUtil printTokenUtil;
+
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
 
     @PostConstruct
     public void init() {
@@ -189,40 +35,92 @@ public class PdfService {
 
         browser = playwright.chromium().launch(
                 new BrowserType.LaunchOptions()
-                        .setHeadless(true)
-        );
+                        .setHeadless(true));
     }
 
     @PreDestroy
     public void shutdown() {
-        if (browser != null) browser.close();
-        if (playwright != null) playwright.close();
+        if (browser != null)
+            browser.close();
+        if (playwright != null)
+            playwright.close();
     }
 
     // ================= PDF GENERATION =================
-    public byte[] generatePdfFromHtml(String html) {
+    public byte[] generateInvoicePdf(UUID invoiceId, UUID shopId, InvoiceTemplate template) {
+
+        BrowserContext context = browser.newContext(
+                new Browser.NewContextOptions()
+                        .setViewportSize(1440, 2000));
+
+        Page page = context.newPage();
 
         try {
-            Page page = browser.newPage();
 
-            page.setContent(html, new Page.SetContentOptions()
-                    .setWaitUntil(WaitUntilState.NETWORKIDLE));
+            String token = printTokenUtil.generateToken(invoiceId, shopId);
 
-            byte[] pdf = page.pdf(new Page.PdfOptions()
-                    .setFormat("A4")
-                    .setPrintBackground(true)
-                    .setMargin(new Margin()
-                            .setTop("20px")
-                            .setBottom("20px")
-                            .setLeft("20px")
-                            .setRight("20px")));
+            String url = frontendUrl
+                    + "/pdf/"
+                    + invoiceId
+                    + "?token="
+                    + URLEncoder.encode(token, StandardCharsets.UTF_8)
+                    + "&template="
+                    + URLEncoder.encode(template.name().toLowerCase(), StandardCharsets.UTF_8);
 
-            page.close();
+            System.out.println("=================================================");
+            System.out.println("Generating PDF");
+            System.out.println("Invoice : " + invoiceId);
+            System.out.println("Shop    : " + shopId);
+            System.out.println("URL     : " + url);
+            System.out.println("=================================================");
+
+            page.onConsoleMessage(msg -> System.out.println("[CONSOLE] " + msg.type() + " : " + msg.text()));
+
+            page.onPageError(err -> System.err.println("[PAGE ERROR] " + err));
+
+            page.onRequestFailed(request -> System.err.println("[REQUEST FAILED] "
+                    + request.url()
+                    + " -> "
+                    + request.failure()));
+
+            page.navigate(
+                    url,
+                    new Page.NavigateOptions()
+                            .setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
+
+            page.waitForLoadState(LoadState.NETWORKIDLE);
+
+            // Wait until React explicitly says it's ready
+            page.waitForFunction("() => window.__PDF_READY__ === true");
+
+            System.out.println("PDF READY");
+
+            byte[] pdf = page.pdf(
+                    new Page.PdfOptions()
+                            .setFormat("A4")
+                            .setPrintBackground(true)
+                            .setPreferCSSPageSize(true)
+                            .setMargin(
+                                    new Margin()
+                                            .setTop("20px")
+                                            .setBottom("20px")
+                                            .setLeft("20px")
+                                            .setRight("20px")));
 
             return pdf;
 
-        } catch (Exception e) {
-            throw new RuntimeException("Playwright PDF failed", e);
+        } catch (Exception ex) {
+
+            System.err.println("========== PAGE HTML ==========");
+            System.err.println(page.content());
+            System.err.println("================================");
+
+            throw new RuntimeException("Failed to generate invoice PDF", ex);
+
+        } finally {
+
+            page.close();
+            context.close();
         }
     }
 }

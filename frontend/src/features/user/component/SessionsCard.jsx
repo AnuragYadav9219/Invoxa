@@ -37,7 +37,7 @@ export default function SessionsCard() {
             setIsTabActive(active);
 
             if (active) {
-                refetch(); 
+                refetch();
             }
         };
 
@@ -55,6 +55,11 @@ export default function SessionsCard() {
             const stillLoggedIn = sessions.some(
                 (s) => s.deviceId === currentDeviceId
             );
+
+
+            if (window.location.pathname.startsWith("/pdf")) {
+                return;
+            }
 
             if (!stillLoggedIn) {
                 tokenService.clear();
@@ -92,7 +97,7 @@ export default function SessionsCard() {
                         description="Logout from all devices?"
                         onConfirm={async () => {
                             await logoutAll();
-                            refetch(); 
+                            refetch();
                         }}
                     >
                         <Button
@@ -124,8 +129,8 @@ export default function SessionsCard() {
                         <div
                             key={s.id}
                             className={`flex justify-between items-center border rounded-xl p-4 transition ${s.current
-                                    ? "bg-green-50 border-green-200"
-                                    : "hover:bg-gray-50"
+                                ? "bg-green-50 border-green-200"
+                                : "hover:bg-gray-50"
                                 }`}
                         >
                             {/* LEFT */}
@@ -169,10 +174,10 @@ export default function SessionsCard() {
                                         refetch();
                                     }}
                                 >
-                                    <Button 
-                                    size="sm"
-                                    variant="destructive"
-                                    className="flex items-center cursor-pointer gap-1 text-red-500 text-sm hover:underline">
+                                    <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        className="flex items-center cursor-pointer gap-1 text-red-500 text-sm hover:underline">
                                         <LogOut size={14} />
                                         Logout
                                     </Button>

@@ -12,6 +12,10 @@ const axiosInstance = axios.create({
 
 /* ================= FORCE LOGOUT ================= */
 function forceLogout() {
+  if (window.location.pathname.startsWith("/pdf")) {
+    return;
+  }
+
   tokenService.clear();
   localStorage.removeItem("shopId");
 
@@ -34,6 +38,9 @@ export const axiosBaseQuery =
       const token = tokenService.getToken();
       const shopId = localStorage.getItem("shopId");
 
+      const searchParams = new URLSearchParams(window.location.search);
+      const printToken = searchParams.get("token");
+
       const result = await axiosInstance({
         url,
         method,
@@ -41,7 +48,14 @@ export const axiosBaseQuery =
         params,
         responseType,
         headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
+          ...(printToken 
+            ? { "X-Print-Token" : printToken}
+            : token
+            ? {Authorization: `Bearer ${token}`}
+            : {}
+          ),
+
+          // ...(token && { Authorization: `Bearer ${token}` }),
           ...(shopId && { "X-Shop-Id": shopId }),
           "X-Device-Id": deviceService.getDeviceId(),
         },

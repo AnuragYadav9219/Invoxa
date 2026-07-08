@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.invoice.tracker.common.response.ApiResponse;
 import com.invoice.tracker.common.response.ResponseBuilder;
+import com.invoice.tracker.dto.invoice.UpdateInvoiceTemplateRequest;
 import com.invoice.tracker.dto.shop.ShopRequest;
 import com.invoice.tracker.dto.shop.ShopResponse;
 import com.invoice.tracker.service.shop.ShopService;
@@ -45,5 +47,17 @@ public class ShopController {
         ShopResponse updatedShop = shopService.updateShop(id, request);
 
         return ResponseBuilder.success(updatedShop, "Shop updated successfully");
+    }
+
+    @PatchMapping("/{shopId}/template")
+    @PreAuthorize("hasRole('OWNER')")
+    public ResponseEntity<ApiResponse<ShopResponse>> updateInvoiceTemplate(
+            @PathVariable UUID shopId,
+            @RequestBody UpdateInvoiceTemplateRequest request) {
+        ShopResponse response = shopService.updateInvoiceTemplate(shopId, request);
+
+        return ResponseBuilder.success(
+                response,
+                "Invoice template updated successfully");
     }
 }

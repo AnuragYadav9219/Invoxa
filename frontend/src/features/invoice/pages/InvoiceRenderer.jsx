@@ -13,47 +13,56 @@ import TropicalCitrusInvoice from "../templates/TropicalCitrusInvoice";
 import VibrantInvoice from "../templates/VibrantInvoice";
 
 export default function InvoiceRenderer({ template, data }) {
-    switch (template) {
-        case 'classic':
+
+    const selected = (template || "classic")
+        .trim()
+        .toLowerCase();
+
+    console.log("Template Selected =", selected);
+
+    switch (selected) {
+
+        case "classic":
             return <ClassicInvoice data={data} />;
 
-        case 'modern':
+        case "modern":
             return <ModernInvoice data={data} />;
 
-        case 'minimal':
+        case "minimal":
             return <MinimalInvoice data={data} />;
 
-        case 'corporate':
+        case "corporate":
             return <CorporateInvoice data={data} />;
 
-        case 'cyberpunk':
+        case "cyberpunk":
             return <ElectricCyberpunkInvoice data={data} />;
 
-        case 'neoBrutal':
+        case "neobrutal":
             return <NeoBrutalListInvoice data={data} />;
 
-        case 'neonDark':
+        case "neondark":
             return <NeonDarkInvoice data={data} />;
 
-        case 'rainbow':
+        case "rainbow":
             return <PlayfulRainbowInvoice data={data} />;
 
-        case 'popRetro':
+        case "popretro":
             return <PopRetroCandyInvoice data={data} />;
 
-        case 'royal':
+        case "royal":
             return <RoyalInvoice data={data} />;
 
-        case 'sunrise':
+        case "sunrise":
             return <SunriseInvoice data={data} />;
 
-        case 'tropical':
+        case "tropical":
             return <TropicalCitrusInvoice data={data} />;
 
-        case 'vibrant':
+        case "vibrant":
             return <VibrantInvoice data={data} />;
 
         default:
+            console.warn("Unknown template:", selected);
             return <ClassicInvoice data={data} />;
     }
 }
