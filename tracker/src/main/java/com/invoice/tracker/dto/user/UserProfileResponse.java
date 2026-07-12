@@ -22,5 +22,7 @@ public class UserProfileResponse {
     private String shopName;
     private String ownerName;
 
+    private String profileImage;
+
     private LocalDateTime createdAt;
 }

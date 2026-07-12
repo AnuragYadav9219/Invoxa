@@ -17,11 +17,6 @@ public class RazorpayConfig {
     @Bean
     public RazorpayClient razorpayClient() throws RazorpayException {
 
-        System.out.println("==================================");
-        System.out.println("KEY ID     : " + properties.getKeyId());
-        System.out.println("KEY SECRET : " + properties.getKeySecret());
-        System.out.println("==================================");
-
         return new RazorpayClient(
                 properties.getKeyId(),
                 properties.getKeySecret());

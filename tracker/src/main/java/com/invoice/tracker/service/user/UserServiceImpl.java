@@ -1,14 +1,16 @@
-package com.invoice.tracker.service.auth;
+package com.invoice.tracker.service.user;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.invoice.tracker.common.exception.BadRequestException;
 import com.invoice.tracker.common.exception.ResourceNotFoundException;
 import com.invoice.tracker.dto.auth.ChangePasswordRequest;
+import com.invoice.tracker.dto.cloudinary.ImageUploadResponse;
 import com.invoice.tracker.dto.user.DeleteAccountRequest;
 import com.invoice.tracker.dto.user.UpdateProfileRequest;
 import com.invoice.tracker.dto.user.UserProfileResponse;
@@ -16,19 +18,24 @@ import com.invoice.tracker.entity.auth.OtpPurpose;
 import com.invoice.tracker.entity.auth.User;
 import com.invoice.tracker.repository.auth.UserRepository;
 import com.invoice.tracker.security.SecurityUtils;
+import com.invoice.tracker.service.auth.OtpService;
+import com.invoice.tracker.service.auth.RefreshTokenService;
+import com.invoice.tracker.service.cloudinary.CloudinaryService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserServiceImpl implements UserService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final CloudinaryService cloudinaryService;
     private final RefreshTokenService refreshTokenService;
     private final OtpService otpService;
 
+    @Override
     public UUID getCurrentUserShopId() {
 
         String email = SecurityUtils.getCurrentUserEmail();
@@ -40,6 +47,7 @@ public class UserService {
     }
 
     // ============== UPDATE PROFILE =================
+    @Override
     @Transactional
     public UserProfileResponse updateProfile(UpdateProfileRequest request) {
 
@@ -78,6 +86,7 @@ public class UserService {
                 .email(user.getEmail())
                 .phone(user.getShop().getPhone())
                 .address(user.getShop().getAddress())
+                .profileImage(user.getProfileImage())
                 .shopId(user.getShop().getId())
                 .shopName(user.getShop().getShopName())
                 .ownerName(user.getShop().getOwnerName())
@@ -85,6 +94,7 @@ public class UserService {
     }
 
     // ================== GET PROFILE ================
+    @Override
     public UserProfileResponse getProfile() {
 
         String email = SecurityUtils.getCurrentUserEmail();
@@ -95,6 +105,7 @@ public class UserService {
         return UserProfileResponse.builder()
                 .name(user.getName())
                 .email(user.getEmail())
+                .profileImage(user.getProfileImage())
                 .phone(user.getShop() != null ? user.getShop().getPhone() : null)
                 .address(user.getShop() != null ? user.getShop().getAddress() : null)
                 .shopId(user.getShop() != null ? user.getShop().getId() : null)
@@ -105,6 +116,7 @@ public class UserService {
     }
 
     // ================== CHANGE PASSWORD ====================
+    @Override
     public void changePassword(String email, ChangePasswordRequest request) {
         User user = userRepository.findByEmailWithShop(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -118,6 +130,7 @@ public class UserService {
     }
 
     // =================== DELETE ACCOUNT ====================
+    @Override
     @Transactional
     public void deleteAccount(DeleteAccountRequest request) {
 
@@ -148,6 +161,7 @@ public class UserService {
     }
 
     // ================ RECOVER ==============
+    @Override
     @Transactional
     public void recoverAccount(String email, String otp) {
 
@@ -174,5 +188,26 @@ public class UserService {
         user.setTokenVersion(user.getTokenVersion() + 1);
 
         userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public ImageUploadResponse uploadProfileImage(MultipartFile image, UUID shopId, String email) {
+        
+        User user = userRepository.findByEmailAndShopId(email, shopId)
+        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (user.getProfileImagePublicId() != null && !user.getProfileImagePublicId().isBlank()) {
+            cloudinaryService.delete(user.getProfileImagePublicId());
+        }
+
+        ImageUploadResponse uploaded = cloudinaryService.upload(image, shopId);
+
+        user.setProfileImage(uploaded.getUrl());
+        user.setProfileImagePublicId(uploaded.getPublicId());
+
+        userRepository.save(user);
+
+        return uploaded;
     }
 }

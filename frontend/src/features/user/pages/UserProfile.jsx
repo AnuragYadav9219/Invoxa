@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Camera,
@@ -10,14 +10,22 @@ import { Button } from "@/components/ui/button";
 import {
   useGetProfileQuery,
   useUpdateProfileMutation,
+  useUploadProfileImageMutation,
 } from "@/features/user/userApi";
 import { formatDateInMonth } from "@/utils/formatters";
 import Shop from "../component/Shop";
 import PersonalInfo from "../component/PersonalInfo";
+import { toast } from "sonner";
+import ProfileImagePreview from "../component/ProfileImagePreview";
 
 export default function UserProfile() {
   const { data, isLoading: profileLoading } = useGetProfileQuery();
   const [updateProfile, { isLoading }] = useUpdateProfileMutation();
+  const [uploadProfileImage, { isLoading: imageUploading }] = useUploadProfileImageMutation();
+
+  const fileInputRef = useRef(null);
+  const [preview, setPreview] = useState(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const user = data?.data;
 
@@ -72,6 +80,44 @@ export default function UserProfile() {
     }
   };
 
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Maximum image size is 5 MB.");
+      return;
+    }
+
+    const allowed = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+    ];
+
+    if (!allowed.includes(file.type)) {
+      toast.error("Only JPG, PNG, JPEG and WEBP images are allowed.");
+      return;
+    }
+
+    const oldPreview = preview;
+    const localPreview = URL.createObjectURL(file);
+    setPreview(localPreview);
+
+    try {
+
+      await uploadProfileImage(file).unwrap();
+      toast.success("Profile image updated.");
+
+    } catch (err) {
+
+      setPreview(oldPreview);
+      toast.error(err?.data?.message || "Upload failed");
+    }
+  }
+
   if (profileLoading) {
     return (
       <div className="flex justify-center items-center h-60">
@@ -92,14 +138,52 @@ export default function UserProfile() {
         <div className="flex items-center gap-5">
 
           {/* Avatar */}
-          <div className="relative">
-            <div className="w-20 h-20 rounded-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
-              {form.name?.charAt(0)}
+          <div className="relative group">
+            <div
+              className="relative w-24 h-24 rounded-full overflow-hidden cursor-pointer shadow-lg"
+              onClick={() => {
+                if (preview || user?.profileImage) {
+                  setPreviewOpen(true);
+                }
+              }}
+            >
+              {preview || user?.profileImage ? (
+                <img
+                  src={preview || user?.profileImage}
+                  alt={user?.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold">
+                  {form.name?.charAt(0)}
+                </div>
+              )}
             </div>
 
-            <button className="absolute bottom-0 right-0 bg-white p-1.5 rounded-full shadow hover:scale-105 transition">
-              <Camera size={14} />
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                fileInputRef.current?.click();
+              }}
+              className="absolute bottom-1 right-1 h-8 w-8 rounded-full bg-white shadow-lg flex items-center justify-center hover:scale-110 transition"
+            >
+
+              {imageUploading ? (
+                <Loader2 className="animate-spin" size={15} />
+              ) : (
+                <Camera size={15} />
+              )}
+
             </button>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              hidden
+              accept="image/png,image/jpeg,image/webp"
+              onChange={handleImageChange}
+            />
           </div>
 
           {/* Info */}
@@ -163,6 +247,13 @@ export default function UserProfile() {
           </div>
         </>
       )}
+
+      <ProfileImagePreview
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        image={preview || user?.profileImage}
+        name={user?.name}
+      />
     </div>
   );
 }

@@ -18,10 +18,14 @@ import ConfirmDialog from "../common/ConfirmDialog";
 import Spinner from "../loaders/Spinner";
 import { useEffect } from "react";
 import NotificationBell from "@/features/notification/components/NotificationBell";
+import { useGetProfileQuery } from "@/features/user/userApi";
 
 export default function Navbar({ isOpen, setIsOpen }) {
     const navigate = useNavigate();
     const [logout, { isLoading, isSuccess }] = useLogoutMutation();
+
+    const { data } = useGetProfileQuery();
+    const profile = data?.data;
 
     const { user, isAuthenticated } = useSelector((state) => state.auth);
 
@@ -72,11 +76,19 @@ export default function Navbar({ isOpen, setIsOpen }) {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <div className="flex items-center gap-2 cursor-pointer px-2 py-1.5 rounded-lg hover:bg-white/60 transition">
-                                <img
-                                    src="https://i.pravatar.cc/40"
-                                    alt="profile"
-                                    className="w-8 h-8 rounded-full border border-white/50"
-                                />
+                                <div className="w-8 h-8 rounded-full overflow-hidden border border-white/50 bg-linear-to-br from-emerald-500 to-green-500 flex items-center justify-center">
+                                    {profile?.profileImage ? (
+                                        <img
+                                            src={profile.profileImage}
+                                            alt={profile.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <span className="text-white text-sm font-semibold">
+                                            {profile?.name?.charAt(0)?.toUpperCase() || "U"}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </DropdownMenuTrigger>
 

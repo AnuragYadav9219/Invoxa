@@ -11,7 +11,7 @@ export const userApi = baseApi.injectEndpoints({
     /* ================= GET PROFILE ================= */
     getProfile: builder.query({
       query: () => ({
-        url: "/users/profile", 
+        url: "/users/profile",
         method: "GET",
       }),
 
@@ -34,7 +34,7 @@ export const userApi = baseApi.injectEndpoints({
     /* ================= UPDATE PROFILE ================= */
     updateProfile: builder.mutation({
       query: (data) => ({
-        url: "/users/profile", 
+        url: "/users/profile",
         method: "PUT",
         body: data,
       }),
@@ -63,7 +63,7 @@ export const userApi = baseApi.injectEndpoints({
     /* ============== CHANGE PASSWORD =============== */
     changePassword: builder.mutation({
       query: (body) => ({
-        url: "/users/change-password", 
+        url: "/users/change-password",
         method: "PUT",
         body,
       }),
@@ -86,7 +86,7 @@ export const userApi = baseApi.injectEndpoints({
 
     sendDeleteOtp: builder.mutation({
       query: () => ({
-        url: "/users/delete/send-otp", 
+        url: "/users/delete/send-otp",
         method: "POST",
       }),
 
@@ -106,7 +106,7 @@ export const userApi = baseApi.injectEndpoints({
 
     deleteAccount: builder.mutation({
       query: (body) => ({
-        url: "/users/me", 
+        url: "/users/me",
         method: "DELETE",
         body,
       }),
@@ -136,7 +136,7 @@ export const userApi = baseApi.injectEndpoints({
 
     sendRecoverOtp: builder.mutation({
       query: (email) => ({
-        url: "/users/recover/send-otp", 
+        url: "/users/recover/send-otp",
         method: "POST",
         body: { email },
       }),
@@ -157,7 +157,7 @@ export const userApi = baseApi.injectEndpoints({
 
     recoverAccount: builder.mutation({
       query: (body) => ({
-        url: "/users/recover", 
+        url: "/users/recover",
         method: "POST",
         body,
       }),
@@ -176,6 +176,37 @@ export const userApi = baseApi.injectEndpoints({
       },
     }),
 
+    /* =============== UPLOAD PROFILE IMAGE ================== */
+    uploadProfileImage: builder.mutation({
+      query: (file) => {
+        const formData = new FormData();
+        formData.append("image", file);
+
+        return {
+          url: "/users/profile-image",
+          method: "POST",
+          body: formData,
+        };
+      },
+
+      invalidatesTags: ["Profile"],
+
+      async onQueryStarted(file, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+
+          dispatch(
+            userApi.util.updateQueryData(
+              "getProfile",
+              undefined,
+              (draft) => {
+                draft.data.profileImage = data.data.url;
+              }
+            )
+          );
+        } catch { }
+      }
+    }),
   }),
 });
 
@@ -189,4 +220,6 @@ export const {
 
   useSendRecoverOtpMutation,
   useRecoverAccountMutation,
+
+  useUploadProfileImageMutation,
 } = userApi;

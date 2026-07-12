@@ -42,6 +42,10 @@ public class User extends AuditableEntity {
 
     private String password;
 
+    private String profileImage;
+
+    private String profileImagePublicId;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
