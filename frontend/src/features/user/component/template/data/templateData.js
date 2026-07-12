@@ -79,8 +79,8 @@ export const templateData = [
         component: NeonDarkInvoice,
     },
     {
-        id: "neonBrutal",
-        name: "Neon Brutal",
+        id: "neoBrutal",
+        name: "Neo Brutal",
         description: "A bold brutalist design with high-contrast modern aesthetics.",
         icon: Layers,
         component: NeoBrutalListInvoice,

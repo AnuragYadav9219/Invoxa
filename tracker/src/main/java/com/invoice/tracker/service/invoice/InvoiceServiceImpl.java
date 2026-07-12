@@ -147,6 +147,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                                 .paidAmount(BigDecimal.ZERO)
                                 .remainingAmount(totalAmount)
                                 .dueDate(request.getDueDate())
+                                .paymentToken(UUID.randomUUID().toString().replace("-", ""))
                                 .build();
 
                 invoiceItems.forEach(i -> i.setInvoice(invoice));
@@ -476,6 +477,16 @@ public class InvoiceServiceImpl implements InvoiceService {
                                 pageData.getTotalElements(),
                                 pageData.getTotalPages(),
                                 pageData.isLast());
+        }
+
+        @Override
+        @Transactional(readOnly = true)
+        public InvoiceResponse getPublicInvoice(String paymentToken) {
+
+                Invoice invoice = invoiceRepository.findByPaymentToken(paymentToken)
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
+
+                return invoiceMapper.toResponse(invoice);
         }
 
         // ========================= PRIVATE METHODS =======================

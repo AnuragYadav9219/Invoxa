@@ -28,15 +28,7 @@ public class PrintTokenAuthenticationFilter extends OncePerRequestFilter {
 
         String token = request.getHeader("X-Print-Token");
 
-        System.out.println("===== PRINT FILTER =====");
-        System.out.println("Header : " + token);
-
-        if (token != null) {
-            System.out.println("Invoice : " + printTokenUtil.getInvoiceId(token));
-            System.out.println("Shop    : " + printTokenUtil.getShopId(token));
-        }
-
-        // No print token -> continue
+        // No print token
         if (token == null || token.isBlank()) {
             filterChain.doFilter(request, response);
             return;
@@ -44,22 +36,34 @@ public class PrintTokenAuthenticationFilter extends OncePerRequestFilter {
 
         try {
 
-            if (printTokenUtil.isValid(token)) {
-
-                request.setAttribute(
-                        "invoiceId",
-                        printTokenUtil.getInvoiceId(token));
-
-                request.setAttribute(
-                        "shopId",
-                        printTokenUtil.getShopId(token));
+            // Validate 
+            if (!printTokenUtil.isValid(token)) {
+                filterChain.doFilter(request, response);
+                return;
             }
 
-        } catch (Exception ignored) {
-            // Invalid token -> don't authenticate.
-            // Let the controller decide what to do.
+            request.setAttribute(
+                    "invoiceId",
+                    printTokenUtil.getInvoiceId(token));
+
+            request.setAttribute(
+                    "shopId",
+                    printTokenUtil.getShopId(token));
+
+        } catch (Exception e) {
+            System.err.println("Invalid Print Token: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+
+        String path = request.getRequestURI();
+
+        // Only execute this filter for public print/payment URLs
+        return !(path.startsWith("/api/public")
+                || path.startsWith("/api/print"));
     }
 }

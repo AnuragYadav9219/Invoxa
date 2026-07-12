@@ -196,10 +196,10 @@ export default function useInvoiceForm(invoice, open, setOpen, itemsData = []) {
         };
 
         if (isEditMode) {
-            await handleUpdate({
-                id: invoice.id,
-                body: payload
-            });
+            await handleUpdate(
+                invoice.id,
+                payload,
+            );
         } else {
             await handleCreate(payload);
         }

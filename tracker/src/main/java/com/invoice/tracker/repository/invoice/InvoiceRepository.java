@@ -37,6 +37,8 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID>, JpaSpec
 
         Optional<Invoice> findByIdAndShopIdAndDeletedFalse(UUID id, UUID shopId);
 
+        Optional<Invoice> findByPaymentToken(String paymentToken);
+
         @Query("""
                         SELECT i FROM Invoice i
                         LEFT JOIN FETCH i.items

@@ -160,8 +160,8 @@ public class InvoiceController {
         @PreAuthorize("hasAnyRole('OWNER', 'STAFF')")
         @PostMapping("/pdf/{invoiceId}")
         public ResponseEntity<byte[]> generateInvoicePdf(
-                @PathVariable UUID invoiceId,
-                @RequestParam(defaultValue = "classic") InvoiceTemplate template) {
+                        @PathVariable UUID invoiceId,
+                        @RequestParam(defaultValue = "classic") InvoiceTemplate template) {
 
                 UUID shopId = SecurityUtils.getCurrentUserShopId();
 

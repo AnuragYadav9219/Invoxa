@@ -122,6 +122,42 @@ export const paymentApi = baseApi.injectEndpoints({
             transformResponse: (response) => response.data,
             providesTags: ["Payment"],
         }),
+        
+        /* ================= CREATE RAZORPAY ORDER =================== */
+        createOrder: builder.mutation({
+            query: (invoiceId) => ({
+                url: "/payments/order",
+                method: "POST",
+                body: {
+                    invoiceId,
+                },
+            }),
+
+            transformResponse: (response) => response.data,
+        }),
+
+        /* ================= VERIFY PAYMENT =================== */
+        verifyPayment: builder.mutation({
+            query: (body) => ({
+                url: "/payments/verify",
+                method: "POST",
+                body,
+            }),
+
+            transformResponse: (response) => response.data,
+
+            invalidatesTags: ["Invoice", "Payment"],
+        }),
+
+        /* ================= CUSTOMER PAYMENT =================== */
+        getPublicInvoice: builder.query({
+            query: (paymentToken) => ({
+                url: `/public/invoices/${paymentToken}`,
+                method: "GET",
+            }),
+
+            transformResponse: (response) => response.data,
+        }),
 
     }),
 });
@@ -140,4 +176,9 @@ export const {
     useGetDeletedPaymentsQuery,
 
     useGetPaymentByIdQuery, 
+
+    useCreateOrderMutation,
+    useVerifyPaymentMutation,
+
+    useGetPublicInvoiceQuery,
 } = paymentApi;

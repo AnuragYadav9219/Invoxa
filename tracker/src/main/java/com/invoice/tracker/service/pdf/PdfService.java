@@ -67,13 +67,6 @@ public class PdfService {
                     + "&template="
                     + URLEncoder.encode(template.name().toLowerCase(), StandardCharsets.UTF_8);
 
-            System.out.println("=================================================");
-            System.out.println("Generating PDF");
-            System.out.println("Invoice : " + invoiceId);
-            System.out.println("Shop    : " + shopId);
-            System.out.println("URL     : " + url);
-            System.out.println("=================================================");
-
             page.onConsoleMessage(msg -> System.out.println("[CONSOLE] " + msg.type() + " : " + msg.text()));
 
             page.onPageError(err -> System.err.println("[PAGE ERROR] " + err));
@@ -89,8 +82,6 @@ public class PdfService {
                             .setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
 
             page.waitForLoadState(LoadState.NETWORKIDLE);
-
-            // Wait until React explicitly says it's ready
             page.waitForFunction("() => window.__PDF_READY__ === true");
 
             System.out.println("PDF READY");
@@ -110,10 +101,6 @@ public class PdfService {
             return pdf;
 
         } catch (Exception ex) {
-
-            System.err.println("========== PAGE HTML ==========");
-            System.err.println(page.content());
-            System.err.println("================================");
 
             throw new RuntimeException("Failed to generate invoice PDF", ex);
 

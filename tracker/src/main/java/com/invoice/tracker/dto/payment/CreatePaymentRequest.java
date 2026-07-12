@@ -16,4 +16,8 @@ public class CreatePaymentRequest {
     private BigDecimal amount;
     private PaymentMethod method;
     private String referenceNumber;
+
+    private String gatewayOrderId;
+    private String gatewayPaymentId;
+    private String gatewaySignature;
 }

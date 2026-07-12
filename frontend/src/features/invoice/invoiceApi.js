@@ -150,8 +150,9 @@ export const invoiceApi = baseApi.injectEndpoints({
       query: ({ id, body }) => {
 
         if (!id) throw new Error("Invoice ID required");
-        if (!body?.items?.length)
+        if (!body?.items?.length) {
           throw new Error("Invoice must contain items");
+        }
 
         const formattedItems = body.items.map((item) => {
 
@@ -262,46 +263,6 @@ export const invoiceApi = baseApi.injectEndpoints({
     }),
 
     /* ================= DOWNLOAD PDF ================= */
-    //   downloadInvoicePDF: builder.mutation({
-    //     async queryFn({ id }) {
-    //       try {
-    //         const token = localStorage.getItem("token");
-    //         const user = JSON.parse(localStorage.getItem("user"));
-    //         const shopId = user?.shopId;
-
-    //         if (!token || !shopId) {
-    //           throw new Error("Authentication required");
-    //         }
-
-    //         const res = await fetch(`http://localhost:8080/api/invoices/pdf/${id}`, {
-    //           method: "POST",
-    //           headers: {
-    //             Authorization: `Bearer ${token}`,
-    //             "X-Shop-Id": shopId,
-    //           },
-    //         });
-
-    //         if (!res.ok) {
-    //           throw new Error("Unauthorized or PDF failed");
-    //         }
-
-    //         const blob = await res.blob();
-
-    //         const url = URL.createObjectURL(blob);
-    //         window.open(url, "_blank");
-
-    //         window.URL.revokeObjectURL(url);
-
-    //         return { data: true };
-
-    //       } catch (error) {
-    //         return { error: error.message };
-    //       }
-    //     },
-    //   }),
-    // }),
-
-
     downloadInvoicePDF: builder.mutation({
       async queryFn({ id, template, preview = false }) {
         try {

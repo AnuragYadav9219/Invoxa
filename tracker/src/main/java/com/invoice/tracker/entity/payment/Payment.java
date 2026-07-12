@@ -57,4 +57,12 @@ public class Payment extends AuditableEntity {
     private LocalDateTime deletedAt;
 
     private UUID deletedBy;
+
+    @Column(unique = true)
+    private String gatewayOrderId;
+
+    @Column(unique = true)
+    private String gatewayPaymentId;
+
+    private String gatewaySignature;
 }

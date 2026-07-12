@@ -72,6 +72,9 @@ public class PaymentServiceImpl implements PaymentService {
                 .amount(request.getAmount())
                 .method(request.getMethod())
                 .referenceNumber(request.getReferenceNumber())
+                .gatewayOrderId(request.getGatewayOrderId())
+                .gatewayPaymentId(request.getGatewayPaymentId())
+                .gatewaySignature(request.getGatewaySignature())
                 .invoice(invoice)
                 .build();
 

@@ -27,6 +27,9 @@ import RecoverPage from "./features/user/component/RecoveryPage";
 import Notifications from "./features/notification/pages/Notifications";
 import NotificationDetail from "./features/notification/components/NotificationDetail";
 import InvoicePdfPage from "./features/invoice/pages/InvoicePdfPage";
+import CustomerPayment from "./features/payment/pages/CustomerPayment";
+import PaymentSuccess from "./features/payment/pages/PaymentSuccess";
+import PaymentFailed from "./features/payment/pages/PaymentFailed";
 
 export default function App() {
   useAutoLogout();
@@ -58,6 +61,7 @@ export default function App() {
           <Route path="/auth-otp" element={<AuthOtpPage />} />
           <Route path="/recover" element={<RecoverPage />} />
           <Route path="/pdf/:invoiceId" element={<InvoicePdfPage />} />
+          <Route path="/pay/:paymentToken" element={<CustomerPayment />} />
 
           {/* PROTECTED */}
           <Route path="/dashboard" element={<AppLayoutRoute><Dashboard /></AppLayoutRoute>} />
@@ -72,6 +76,8 @@ export default function App() {
 
           <Route path="/payments" element={<AppLayoutRoute><Payment /></AppLayoutRoute>} />
           <Route path="/payments/:id" element={<AppLayoutRoute><PaymentDetails /></AppLayoutRoute>} />
+          <Route path="/payment/success" element={<AppLayoutRoute><PaymentSuccess /></AppLayoutRoute>} />
+          <Route path="/payment/failed" element={<AppLayoutRoute><PaymentFailed /></AppLayoutRoute>} />
 
           <Route path="/customers" element={<AppLayoutRoute><CustomerPage /></AppLayoutRoute>} />
           <Route path="/customers/:name" element={<AppLayoutRoute><CustomerDetailsPage /></AppLayoutRoute>} />

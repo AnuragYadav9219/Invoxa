@@ -89,6 +89,9 @@ public class EmailService {
         context.setVariable("invoice", invoice);
 
         String payLink = buildPayLink(invoice);
+
+        log.info("Pay Link: {}", payLink);
+        
         context.setVariable("payLink", payLink);
 
         String html = templateEngine.process("email/invoice-email", context);
@@ -147,6 +150,11 @@ public class EmailService {
 
     // =========================== HELPER ===========================
     private String buildPayLink(Invoice invoice) {
-        return frontendUrl + "/pay/" + invoice.getId();
+
+        if (invoice.getPaymentToken() == null || invoice.getPaymentToken().isBlank()) {
+            throw new BadRequestException("Invoice payment token is missing");
+        }
+
+        return frontendUrl + "/pay/" + invoice.getPaymentToken();
     }
 }

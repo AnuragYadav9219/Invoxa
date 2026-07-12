@@ -84,4 +84,7 @@ public class Invoice extends BaseEntity {
     private LocalDateTime deletedAt;
     
     private UUID deletedBy;
+
+    @Column(unique = true)
+    private String paymentToken;
 }

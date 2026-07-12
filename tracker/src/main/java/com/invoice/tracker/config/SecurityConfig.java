@@ -63,7 +63,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/**",
-                                "/api/internal/**").permitAll()
+                                "/api/internal/**",
+                                "/api/public/**",
+                                "/api/payments/webhook").permitAll()
 
                         .requestMatchers(
                                 "/api/users/recover/send-otp",

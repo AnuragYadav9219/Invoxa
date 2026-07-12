@@ -31,4 +31,10 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID>, JpaSpec
     Optional<Payment> findByIdAndInvoiceShopIdAndDeletedFalse(UUID id, UUID shopId);
 
     long countByInvoiceShopId(UUID shopId);
+
+    boolean existsByGatewayPaymentId(String gatewayPaymentId);
+
+    Optional<Payment> findByGatewayPaymentId(String gatewayPaymentId);
+
+    Optional<Payment> findByGatewayOrderId(String gatewayOrderId);
 }

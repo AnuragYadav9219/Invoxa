@@ -38,4 +38,6 @@ public interface InvoiceService {
     PageResponse<InvoiceResponse> filterInvoices(InvoiceFilterRequest filter, int page, int size);
 
     InvoiceResponse getInvoiceForPrint(UUID invoiceId, UUID shopId);
+
+    InvoiceResponse getPublicInvoice(String paymentToken);
 }
