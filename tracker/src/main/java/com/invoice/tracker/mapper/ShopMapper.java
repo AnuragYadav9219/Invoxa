@@ -14,7 +14,8 @@ public class ShopMapper {
         return ShopResponse.builder()
                 .id(shop.getId())
                 .shopName(shop.getShopName())
-                .ownername(shop.getOwnerName())
+                .ownerName(shop.getOwnerName())
+                .email(shop.getEmail())
                 .phone(shop.getPhone())
                 .address(shop.getAddress())
                 .invoiceTemplate(
@@ -33,6 +34,7 @@ public class ShopMapper {
                 .shopName(request.getShopName())
                 .ownerName(request.getOwnerName())
                 .phone(request.getPhone())
+                .email(request.getEmail())
                 .address(request.getAddress())
                 .build();
     }
@@ -46,5 +48,6 @@ public class ShopMapper {
         shop.setOwnerName(request.getOwnerName());
         shop.setPhone(request.getPhone());
         shop.setAddress(request.getAddress());
+        shop.setEmail(request.getEmail());
     }
 }

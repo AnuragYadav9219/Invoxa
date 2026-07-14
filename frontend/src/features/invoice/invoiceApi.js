@@ -264,7 +264,7 @@ export const invoiceApi = baseApi.injectEndpoints({
 
     /* ================= DOWNLOAD PDF ================= */
     downloadInvoicePDF: builder.mutation({
-      async queryFn({ id, template, preview = false }) {
+      async queryFn({ id, template }) {
         try {
           const token = localStorage.getItem("token");
           const user = JSON.parse(localStorage.getItem("user"));
@@ -291,13 +291,7 @@ export const invoiceApi = baseApi.injectEndpoints({
 
           const blob = await res.blob();
 
-          if (preview) {
-            const url = URL.createObjectURL(blob);
-            window.open(url, "_blank");
-            return { data: { blob } };
-          }
-
-          return { data: { blob } };
+          return { data: blob };
 
         } catch (error) {
           return {

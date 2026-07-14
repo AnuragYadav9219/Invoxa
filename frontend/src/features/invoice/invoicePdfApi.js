@@ -3,17 +3,24 @@ import { baseApi } from "@/api/baseApi";
 export const invoicePdfApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         getPdfInvoice: builder.query({
-            query: (invoiceId) => ({
-                url: `/internal/invoices/${invoiceId}`,
+            query: ({ invoiceId, token }) => ({
+                url: `/public/print/${invoiceId}`,
                 method: "GET",
+                headers: {
+                    "X-Print-Token": token,
+                },
             }),
+
+            transformResponse: (res) => res.data,
         }),
 
         getPdfShop: builder.query({
             query: (shopId) => ({
-                url: `/internal/shops/${shopId}`,
+                url: `/public/shops/${shopId}`,
                 method: "GET",
             }),
+
+            transformResponse: (res) => res.data,
         }),
     }),
 });

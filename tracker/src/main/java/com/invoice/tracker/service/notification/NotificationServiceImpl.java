@@ -53,10 +53,9 @@ public class NotificationServiceImpl implements NotificationService {
         String message = buildInvoiceCreatedMessage(invoice);
 
         byte[] pdf = pdfService.generateInvoicePdf(
-            invoice.getId(), 
-            invoice.getShopId(),
-            invoice.getTemplate()
-        );
+                invoice.getId(),
+                invoice.getShopId(),
+                invoice.getTemplate());
 
         boolean sent = sendEmailSafely(() -> {
             emailService.sendInvoiceCreated(email, invoice, pdf);
@@ -268,63 +267,65 @@ public class NotificationServiceImpl implements NotificationService {
 
     private String buildInvoiceCreatedMessage(Invoice invoice) {
         return String.format(
-                "Hi %s,%n%n"
-                        + "Your invoice %s for ₹%s has been successfully created.%n"
-                        + "Due date: %s%n%n"
-                        + "Please review and make the payment on or before the due date.%n%n"
-                        + "Thank you for your business.",
-                getCustomerName(invoice),
+                "Invoice %s has been created successfully.%n%n"
+                        + "Customer: %s%n"
+                        + "Amount: ₹%s%n"
+                        + "Due Date: %s%n%n"
+                        + "The invoice has been sent to the customer.",
                 invoice.getInvoiceNumber(),
+                getCustomerName(invoice),
                 formatAmount(invoice.getTotalAmount()),
                 invoice.getDueDate());
     }
 
     private String buildPartialPaymentMessage(Invoice invoice) {
         return String.format(
-                "Hi %s,%n%n"
-                        + "We’ve received a payment of ₹%s for invoice %s.%n"
-                        + "Remaining balance: ₹%s%n%n"
-                        + "Please complete the remaining payment at your convenience.%n%n"
-                        + "Thank you.",
+                "Partial payment received for Invoice %s.%n%n"
+                        + "Customer: %s%n"
+                        + "Amount Received: ₹%s%n"
+                        + "Remaining Balance: ₹%s%n%n"
+                        + "Awaiting the remaining payment.",
+                invoice.getInvoiceNumber(),
                 getCustomerName(invoice),
                 formatAmount(invoice.getPaidAmount()),
-                invoice.getInvoiceNumber(),
                 formatAmount(invoice.getRemainingAmount()));
     }
 
     private String buildFullPaymentMessage(Invoice invoice) {
         return String.format(
-                "Hi %s,%n%n"
-                        + "We’re pleased to inform you that invoice %s has been fully paid.%n%n"
-                        + "Thank you for your prompt payment.%n"
-                        + "We appreciate your business!",
+                "Invoice %s has been fully paid.%n%n"
+                        + "Customer: %s%n"
+                        + "Amount Received: ₹%s%n%n"
+                        + "Payment has been completed successfully.",
+                invoice.getInvoiceNumber(),
                 getCustomerName(invoice),
-                invoice.getInvoiceNumber());
+                formatAmount(invoice.getTotalAmount()));
     }
 
     private String buildDueReminderMessage(Invoice invoice) {
         return String.format(
-                "Hi %s,%n%n"
-                        + "This is a friendly reminder that invoice %s for ₹%s is due on %s.%n%n"
-                        + "We kindly request you to ensure the payment is made by the due date to avoid any delays.%n%n"
-                        + "Thank you.",
-                getCustomerName(invoice),
+                "Payment reminder sent for Invoice %s.%n%n"
+                        + "Customer: %s%n"
+                        + "Outstanding Amount: ₹%s%n"
+                        + "Due Date: %s%n%n"
+                        + "The customer has been reminded to complete the payment.",
                 invoice.getInvoiceNumber(),
-                formatAmount(invoice.getTotalAmount()),
+                getCustomerName(invoice),
+                formatAmount(invoice.getRemainingAmount()),
                 invoice.getDueDate());
     }
 
     private String buildOverdueMessage(Invoice invoice) {
         return String.format(
-                "Hi %s,%n%n"
-                        + "We would like to inform you that invoice %s is now overdue.%n"
-                        + "Outstanding amount: ₹%s%n%n"
-                        + "We kindly request you to make the payment at the earliest to avoid further action.%n%n"
-                        + "If you’ve already made the payment, please disregard this message.%n%n"
-                        + "Thank you.",
-                getCustomerName(invoice),
+                "Invoice %s is overdue.%n%n"
+                        + "Customer: %s%n"
+                        + "Outstanding Amount: ₹%s%n"
+                        + "Due Date: %s%n%n"
+                        + "Immediate follow-up with the customer is recommended.",
                 invoice.getInvoiceNumber(),
-                formatAmount(invoice.getRemainingAmount()));
+                getCustomerName(invoice),
+                formatAmount(invoice.getRemainingAmount()),
+                invoice.getDueDate());
     }
 
     // ============= HELPERS ===============

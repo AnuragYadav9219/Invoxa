@@ -1,5 +1,6 @@
 package com.invoice.tracker.service.invoice;
 
+import com.invoice.tracker.security.PrintTokenUtil;
 import com.invoice.tracker.service.payment.PaymentService;
 import com.invoice.tracker.service.pdf.PdfService;
 import com.invoice.tracker.specification.InvoiceSpecification;
@@ -48,6 +49,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class InvoiceServiceImpl implements InvoiceService {
 
+        private final PrintTokenUtil printTokenUtil;
         private final PdfService pdfService;
         private final InvoiceRepository invoiceRepository;
         private final ShopRepository shopRepository;
@@ -484,7 +486,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         public InvoiceResponse getPublicInvoice(String paymentToken) {
 
                 Invoice invoice = invoiceRepository.findByPaymentToken(paymentToken)
-                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
+                                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
 
                 return invoiceMapper.toResponse(invoice);
         }
@@ -512,9 +514,27 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
 
         @Override
-        public InvoiceResponse getInvoiceForPrint(UUID invoiceId, UUID shopId) {
+        @Transactional(readOnly = true)
+        public InvoiceResponse getInvoiceForPrint(UUID invoiceId, String printToken) {
 
-                Invoice invoice = invoiceHelper.getInvoiceOrThrow(invoiceId, shopId);
+                if (!printTokenUtil.isValid(printToken)) {
+                        throw new BadRequestException("Invalid print token");
+                }
+
+                UUID tokenInvoiceId = printTokenUtil.getInvoiceId(printToken);
+                UUID shopId = printTokenUtil.getShopId(printToken);
+
+                if (!tokenInvoiceId.equals(invoiceId)) {
+                        throw new BadRequestException("Invalid print token");
+                }
+
+                Invoice invoice = invoiceRepository
+                                .findById(invoiceId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Invalid not found"));
+
+                if (!invoice.getShopId().equals(shopId)) {
+                        throw new BadRequestException("Invalid print token");
+                }
 
                 return invoiceMapper.toResponse(invoice);
         }

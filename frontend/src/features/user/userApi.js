@@ -84,26 +84,6 @@ export const userApi = baseApi.injectEndpoints({
 
     /* ================= DELETE ACCOUNT ================= */
 
-    sendDeleteOtp: builder.mutation({
-      query: () => ({
-        url: "/users/delete/send-otp",
-        method: "POST",
-      }),
-
-      async onQueryStarted(arg, { queryFulfilled }) {
-        try {
-          await queryFulfilled;
-          showSuccess("OTP sent for account deletion");
-
-        } catch (err) {
-          showError("Failed to send OTP", {
-            description:
-              err?.error?.data?.message || "Try again",
-          });
-        }
-      },
-    }),
-
     deleteAccount: builder.mutation({
       query: (body) => ({
         url: "/users/me",
@@ -133,27 +113,6 @@ export const userApi = baseApi.injectEndpoints({
     }),
 
     /* ================= RECOVER ACCOUNT ================= */
-
-    sendRecoverOtp: builder.mutation({
-      query: (email) => ({
-        url: "/users/recover/send-otp",
-        method: "POST",
-        body: { email },
-      }),
-
-      async onQueryStarted(arg, { queryFulfilled }) {
-        try {
-          await queryFulfilled;
-          showSuccess("Recovery OTP sent");
-
-        } catch (err) {
-          showError("Failed to send OTP", {
-            description:
-              err?.error?.data?.message || "Try again",
-          });
-        }
-      },
-    }),
 
     recoverAccount: builder.mutation({
       query: (body) => ({
@@ -215,10 +174,7 @@ export const {
   useUpdateProfileMutation,
   useChangePasswordMutation,
 
-  useSendDeleteOtpMutation,
   useDeleteAccountMutation,
-
-  useSendRecoverOtpMutation,
   useRecoverAccountMutation,
 
   useUploadProfileImageMutation,

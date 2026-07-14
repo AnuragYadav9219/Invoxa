@@ -9,10 +9,13 @@ import {
   Settings,
 } from "lucide-react";
 import { useSelector } from "react-redux";
+import { useGetProfileQuery } from "@/features/user/userApi";
 
 export default function Sidebar({ isOpen, setIsOpen }) {
   const handleClick = () => setIsOpen(false);
   const { user } = useSelector((state) => state.auth);
+  const { data } = useGetProfileQuery();
+  const profile = data?.data;
 
   const linkBase =
     "relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 group";
@@ -136,10 +139,21 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           >
             {/* Avatar */}
             <div className="relative shrink-0">
-              <img
-                src="https://i.pravatar.cc/40"
-                className="w-9 h-9 min-w-9 min-h-9 rounded-full object-cover border border-white/60"
-              />
+              <div className="w-9 h-9 min-w-9 min-h-9 rounded-full overflow-hidden border border-white/60 bg-linear-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
+                {profile?.profileImage ? (
+                  <img
+                    src={profile.profileImage}
+                    alt={profile?.name || "User"}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-white text-sm font-semibold">
+                    {profile?.name?.charAt(0)?.toUpperCase() || "U"}
+                  </span>
+                )}
+              </div>
+
+              {/* Online Indicator */}
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
             </div>
 

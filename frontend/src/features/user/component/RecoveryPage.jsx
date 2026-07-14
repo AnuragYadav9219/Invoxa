@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import {
-    useSendRecoverOtpMutation,
     useRecoverAccountMutation,
 } from "@/features/user/userApi";
 
@@ -11,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 import { showSuccess, showError } from "@/components/toast/toast";
+import { useSendOtpMutation } from "@/features/auth/authApi";
 
 export default function RecoverPage() {
     const navigate = useNavigate();
@@ -20,7 +20,7 @@ export default function RecoverPage() {
     const [otp, setOtp] = useState("");
     const [step, setStep] = useState(1);
 
-    const [sendOtp, { isLoading: sending }] = useSendRecoverOtpMutation();
+    const [sendOtp, { isLoading: sending }] = useSendOtpMutation();
     const [recover, { isLoading: recovering }] = useRecoverAccountMutation();
 
     useEffect(() => {
@@ -31,7 +31,11 @@ export default function RecoverPage() {
 
     const handleSendOtp = async () => {
         try {
-            await sendOtp(email).unwrap();
+            await sendOtp({
+                email,
+                purpose: "RECOVER",
+            }).unwrap();
+
             showSuccess("OTP sent to your email");
             setStep(2);
         } catch (err) {

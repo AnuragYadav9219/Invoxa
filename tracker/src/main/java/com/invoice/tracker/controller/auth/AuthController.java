@@ -2,6 +2,7 @@ package com.invoice.tracker.controller.auth;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,7 +25,6 @@ import com.invoice.tracker.dto.auth.RegisterRequest;
 import com.invoice.tracker.dto.auth.ResetPasswordRequest;
 import com.invoice.tracker.dto.auth.SendOtpRequest;
 import com.invoice.tracker.dto.auth.SessionResponse;
-import com.invoice.tracker.entity.auth.OtpPurpose;
 import com.invoice.tracker.service.auth.AuthService;
 import com.invoice.tracker.service.auth.OtpService;
 import com.invoice.tracker.util.CookieUtil;
@@ -45,7 +45,8 @@ public class AuthController {
     private final OtpService otpService;
     private final CookieUtil cookieUtil;
 
-    private static final int REFRESH_TOKEN_AGE = 7 * 24 * 60 * 60;
+    @Value("${app.refresh-cookie-age}")
+    private int refreshCookieAge;
 
     /* ================= REGISTER ================= */
     @PostMapping("/register")
@@ -58,7 +59,7 @@ public class AuthController {
         cookieUtil.addRefreshTokenCookie(
                 response,
                 authResponse.getRefreshToken(),
-                REFRESH_TOKEN_AGE);
+                refreshCookieAge);
 
         authResponse.setRefreshToken(null);
 
@@ -76,29 +77,21 @@ public class AuthController {
         cookieUtil.addRefreshTokenCookie(
                 response,
                 authResponse.getRefreshToken(),
-                REFRESH_TOKEN_AGE);
+                refreshCookieAge);
 
         authResponse.setRefreshToken(null);
 
         return ResponseBuilder.success(authResponse, "Login successful");
     }
 
-    /* ================= REGISTER OTP ================= */
-    @PostMapping("/register/send-otp")
-    public ResponseEntity<ApiResponse<Void>> sendRegisterOtp(
+    /* ================ SEND OTP =================== */
+    @PostMapping("/send-otp")
+    public ResponseEntity<ApiResponse<Void>> sendOtp(
             @Valid @RequestBody SendOtpRequest request) {
 
-        otpService.sendOtp(request.getEmail(), OtpPurpose.REGISTER);
-        return ResponseBuilder.success(null, "OTP sent");
-    }
+        otpService.sendOtp(request.getEmail(), request.getPurpose());
 
-    /* ================= LOGIN OTP ================= */
-    @PostMapping("/login/send-otp")
-    public ResponseEntity<ApiResponse<Void>> sendLoginOtp(
-            @Valid @RequestBody SendOtpRequest request) {
-
-        otpService.sendOtp(request.getEmail(), OtpPurpose.LOGIN);
-        return ResponseBuilder.success(null, "OTP sent");
+        return ResponseBuilder.success(null, "OTP sent successfully");
     }
 
     /* ================= OTP VERIFY ================= */
@@ -116,22 +109,12 @@ public class AuthController {
             cookieUtil.addRefreshTokenCookie(
                     response,
                     result.getAuth().getRefreshToken(),
-                    REFRESH_TOKEN_AGE);
+                    refreshCookieAge);
 
             result.getAuth().setRefreshToken(null);
         }
 
         return ResponseBuilder.success(result, "OTP verified successfully");
-    }
-
-    // ================= FORGOT PASSWORD - SEND OTP ==================
-    @PostMapping("/forgot-password/send-otp")
-    public ResponseEntity<ApiResponse<Void>> forgotPasswordSendOtp(
-            @Valid @RequestBody SendOtpRequest request) {
-
-        otpService.sendOtp(request.getEmail(), OtpPurpose.RESET);
-
-        return ResponseBuilder.success(null, "OTP sent successfully");
     }
 
     // ================ RESET PASSWORD ==================
@@ -162,7 +145,7 @@ public class AuthController {
         cookieUtil.addRefreshTokenCookie(
                 response,
                 authResponse.getRefreshToken(),
-                REFRESH_TOKEN_AGE);
+                refreshCookieAge);
 
         authResponse.setRefreshToken(null);
 

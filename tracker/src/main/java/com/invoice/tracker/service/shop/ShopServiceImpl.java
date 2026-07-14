@@ -66,4 +66,13 @@ public class ShopServiceImpl implements ShopService {
 
         return ShopMapper.toResponse(saved);
     }
+
+    @Override 
+    public ShopResponse getPublicShop(UUID shopId) {
+
+        Shop shop = shopRepository.findById(shopId)
+        .orElseThrow(() -> new ResourceNotFoundException("Shop not found"));
+
+        return ShopMapper.toResponse(shop);
+    }
 }

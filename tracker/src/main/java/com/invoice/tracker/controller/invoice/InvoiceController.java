@@ -161,11 +161,19 @@ public class InvoiceController {
         @PostMapping("/pdf/{invoiceId}")
         public ResponseEntity<byte[]> generateInvoicePdf(
                         @PathVariable UUID invoiceId,
-                        @RequestParam(defaultValue = "classic") InvoiceTemplate template) {
+                        @RequestParam(defaultValue = "classic") String template) {
 
                 UUID shopId = SecurityUtils.getCurrentUserShopId();
 
-                byte[] pdf = pdfService.generateInvoicePdf(invoiceId, shopId, template);
+                InvoiceTemplate invoiceTemplate;
+
+                try {
+                        invoiceTemplate = InvoiceTemplate.valueOf(template.toUpperCase());
+                } catch (IllegalArgumentException ex) {
+                        invoiceTemplate = InvoiceTemplate.CLASSIC;
+                }
+
+                byte[] pdf = pdfService.generateInvoicePdf(invoiceId, shopId, invoiceTemplate);
 
                 return ResponseEntity.ok()
                                 .contentType(MediaType.APPLICATION_PDF)

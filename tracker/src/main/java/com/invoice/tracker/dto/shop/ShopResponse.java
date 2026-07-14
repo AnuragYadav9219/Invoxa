@@ -12,7 +12,7 @@ import lombok.Setter;
 public class ShopResponse {
     private UUID id;
     private String shopName;
-    private String ownername;
+    private String ownerName;
     private String phone;
     private String address;
     private String email;

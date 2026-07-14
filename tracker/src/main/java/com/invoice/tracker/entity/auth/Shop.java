@@ -38,6 +38,8 @@ public class Shop extends AuditableEntity {
 
     private String phone;
 
+    private String email;
+
     private String address;
 
     @Builder.Default

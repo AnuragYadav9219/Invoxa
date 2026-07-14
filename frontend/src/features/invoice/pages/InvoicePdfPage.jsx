@@ -1,7 +1,11 @@
 import { useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 
-import { useGetPdfInvoiceQuery, useGetPdfShopQuery } from "../invoicePdfApi";
+import {
+    useGetPdfInvoiceQuery,
+    useGetPdfShopQuery,
+} from "../invoicePdfApi";
+
 import { mapInvoice } from "../invoiceMapper";
 import InvoiceRenderer from "./InvoiceRenderer";
 
@@ -9,6 +13,10 @@ export default function InvoicePdfPage() {
 
     const { invoiceId } = useParams();
 
+    const [searchParams] = useSearchParams();
+    const token = searchParams.get("token");
+
+    // Reset every render
     useEffect(() => {
         window.__PDF_READY__ = false;
     }, []);
@@ -16,11 +24,16 @@ export default function InvoicePdfPage() {
     const {
         data: invoice,
         isLoading: invoiceLoading,
-    } = useGetPdfInvoiceQuery(invoiceId);
+        isError: invoiceError,
+    } = useGetPdfInvoiceQuery({
+        invoiceId,
+        token,
+    });
 
     const {
         data: shop,
         isLoading: shopLoading,
+        isError: shopError,
     } = useGetPdfShopQuery(invoice?.shopId, {
         skip: !invoice?.shopId,
     });
@@ -29,10 +42,7 @@ export default function InvoicePdfPage() {
 
     useEffect(() => {
 
-        if (loading) return;
-        if (!invoice || !shop) return;
-
-        const ready = async () => {
+        const markReady = async () => {
 
             if (document.fonts) {
                 await document.fonts.ready;
@@ -41,15 +51,16 @@ export default function InvoicePdfPage() {
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     window.__PDF_READY__ = true;
+                    console.log("PDF READY");
                 });
             });
         };
 
-        ready();
+        if (!loading) {
+            markReady();
+        }
 
-    }, [loading, invoice, shop]);
-
-    const [searchParams] = useSearchParams();
+    }, [loading]);
 
     if (loading) {
         return (
@@ -59,7 +70,8 @@ export default function InvoicePdfPage() {
         );
     }
 
-    if (!invoice || !shop) {
+    if (invoiceError || shopError || !invoice || !shop) {
+
         return (
             <div className="flex min-h-screen items-center justify-center">
                 Invoice not found
@@ -67,28 +79,20 @@ export default function InvoicePdfPage() {
         );
     }
 
-    console.log("Invoice =", invoice);
-    console.log("Shop =", shop);
-
-    console.log("Invoice Template =", invoice.template);
-    console.log("Shop Template =", shop.invoiceTemplate);
-
     const data = mapInvoice(invoice, shop, null);
 
     const template =
-        searchParams.get("template")
-        || invoice.template 
-        || shop.invoiceTemplate 
-        || "classic";
+        searchParams.get("template") ||
+        invoice.template ||
+        shop.invoiceTemplate ||
+        "classic";
 
     return (
         <div id="invoice-root">
-
             <InvoiceRenderer
                 template={template}
                 data={data}
             />
-
         </div>
     );
 }

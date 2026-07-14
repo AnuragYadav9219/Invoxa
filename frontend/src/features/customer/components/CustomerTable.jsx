@@ -66,12 +66,32 @@ export default function CustomerTable({
                                     />
                                 ))
                             ) : (
-                                <TableRow>
-                                    <TableCell colSpan="4" className="text-center py-16 text-gray-500">
-                                        <div className="flex flex-col items-center gap-2">
-                                            <p className="text-lg">No customers found</p>
-                                            <p className="text-sm text-gray-400">
-                                                Try searching something else
+                                <TableRow className="hover:bg-transparent">
+                                    <TableCell
+                                        colSpan={6}
+                                        className="text-center py-20 bg-slate-50/40 border-t border-slate-100/50"
+                                    >
+                                        <div className="flex flex-col items-center justify-center max-w-xs mx-auto text-center">
+                                            {/* Minimalist Search Icon Graphic */}
+                                            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 text-slate-400 mb-4 ring-8 ring-slate-50">
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth="1.75"
+                                                    stroke="currentColor"
+                                                    className="w-5 h-5"
+                                                >
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+                                                </svg>
+                                            </div>
+
+                                            {/* Content */}
+                                            <h3 className="text-sm font-semibold text-slate-800">
+                                                No customers found
+                                            </h3>
+                                            <p className="text-xs text-slate-400 mt-1 max-w-60">
+                                                We couldn't find any matches. Try adjusting your keywords or filters.
                                             </p>
                                         </div>
                                     </TableCell>

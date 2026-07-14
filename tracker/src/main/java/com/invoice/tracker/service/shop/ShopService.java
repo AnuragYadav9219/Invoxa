@@ -12,4 +12,6 @@ public interface ShopService {
     ShopResponse updateShop(UUID id, ShopRequest request);
 
     ShopResponse updateInvoiceTemplate(UUID shopId, UpdateInvoiceTemplateRequest request);
+
+    ShopResponse getPublicShop(UUID shopId);
 }

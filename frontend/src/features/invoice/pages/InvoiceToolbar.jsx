@@ -1,48 +1,54 @@
 import { Eye, Download } from "lucide-react";
+import { useState } from "react";
 
 export default function InvoiceToolbar({
     invoice,
     selectedTemplate,
     downloadPDF,
-    isDownloading,
 }) {
+    const [isPreviewing, setIsPreviewing] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
 
     const handlePreview = async () => {
+        try {
+            setIsPreviewing(true);
 
-        const res = await downloadPDF({
-            id: invoice.id,
-            template: selectedTemplate,
-            preview: true,
-        });
+            const template = selectedTemplate || invoice?.template || "classic";
 
-        if (res.data?.blob) {
+            const blob = await downloadPDF({
+                id: invoice.id,
+                template,
+            }).unwrap();
 
-            const url = URL.createObjectURL(res.data.blob);
-
+            const url = URL.createObjectURL(blob);
             window.open(url, "_blank");
+
+        } finally {
+            setIsPreviewing(false);
         }
     };
 
     const handleDownload = async () => {
+        try {
+            setIsDownloading(true);
+            
+            const template = selectedTemplate || invoice?.template || "classic";
 
-        const res = await downloadPDF({
-            id: invoice.id,
-            template: selectedTemplate,
-            preview: false,
-        });
+            const blob = await downloadPDF({
+                id: invoice.id,
+                template,
+            }).unwrap();
 
-        if (res.data?.blob) {
-
-            const url = URL.createObjectURL(res.data.blob);
+            const url = URL.createObjectURL(blob);
 
             const a = document.createElement("a");
-
             a.href = url;
             a.download = `Invoice-${invoice.invoiceNumber}.pdf`;
-
             a.click();
 
             URL.revokeObjectURL(url);
+        } finally {
+            setIsDownloading(false);
         }
     };
 
@@ -51,16 +57,16 @@ export default function InvoiceToolbar({
 
             <button
                 onClick={handlePreview}
-                disabled={isDownloading}
+                disabled={isPreviewing || isDownloading}
                 className="flex cursor-pointer items-center gap-2 rounded-lg border bg-white px-4 py-2 text-sm shadow hover:bg-slate-50"
             >
                 <Eye size={16} />
-                Preview
+                {isPreviewing ? "Opening..." : "Preview"}
             </button>
 
             <button
                 onClick={handleDownload}
-                disabled={isDownloading}
+                disabled={isPreviewing || isDownloading}
                 className="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-900 text-white px-4 py-2 text-sm shadow hover:bg-slate-800"
             >
                 <Download size={16} />

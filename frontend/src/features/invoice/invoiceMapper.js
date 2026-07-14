@@ -6,7 +6,7 @@ export function mapInvoice(invoice, shop, user) {
             name: user?.shopName ?? shop?.shopName,
             owner: user?.ownerName ?? shop?.ownerName,
             phone: user?.phone ?? shop?.phone,
-            email: user?.email ?? "",
+            email: user?.email ?? shop?.email,
             address: user?.address ?? shop?.address,
         },
 

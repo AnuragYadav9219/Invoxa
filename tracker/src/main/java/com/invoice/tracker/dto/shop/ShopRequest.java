@@ -12,4 +12,5 @@ public class ShopRequest {
     private String ownerName;
     private String phone;
     private String address;
+    private String email;
 }

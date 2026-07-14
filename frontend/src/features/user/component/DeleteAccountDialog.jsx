@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import {
     Dialog,
     DialogContent,
@@ -12,11 +12,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowRight, Trash2, AlertTriangle, ChevronLeft, Loader2 } from "lucide-react";
-import { useSendDeleteOtpMutation, useDeleteAccountMutation } from "../userApi";
+import { useDeleteAccountMutation } from "../userApi";
+import { useSelector } from "react-redux";
+import { useSendOtpMutation } from "@/features/auth/authApi";
 
 export function DeleteAccountDialog() {
     const [open, setOpen] = useState(false);
     const [step, setStep] = useState(1);
+
+    const email = useSelector(state => state.auth.user?.email);
 
     const [formData, setFormData] = useState({
         confirmText: "",
@@ -24,7 +28,7 @@ export function DeleteAccountDialog() {
         otp: "",
     });
 
-    const [sendOtp, { isLoading: isSendingOtp }] = useSendDeleteOtpMutation();
+    const [sendOtp, { isLoading: isSendingOtp }] = useSendOtpMutation();
     const [deleteAccount, { isLoading: isDeleting }] = useDeleteAccountMutation();
 
     const isStepOneValid = formData.confirmText === "DELETE" && formData.password.length > 0;
@@ -47,7 +51,11 @@ export function DeleteAccountDialog() {
 
     const handleSendOtp = async () => {
         try {
-            await sendOtp().unwrap();
+            await sendOtp({
+                email,
+                purpose: "DELETE_ACCOUNT",
+            }).unwrap();
+
             setStep(2);
         } catch (err) {
             /* Handled by Global Error Middleware */

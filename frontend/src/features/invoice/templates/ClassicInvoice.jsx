@@ -8,19 +8,15 @@ export default function ClassicInvoice({ data }) {
     return (
         <>
             <div className="bg-slate-50 min-h-screen md:py-5 px-0 sm:px-2">
-
                 <div className="max-w-[210mm] mx-auto overflow-x-auto">
-
                     <div>
                         <Card className="w-full min-w-[320px] md:w-[210mm] bg-white shadow-lg border-none rounded-none overflow-hidden">
-
                             <CardContent className="p-0 flex flex-col h-full">
 
                                 {/* ================= HEADER ================= */}
                                 <div className="px-2 md:px-6 pt-5 md:pt-7 pb-6 border-b">
                                     <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
                                         <div className="max-w-xs">
-
                                             <div className="flex items-center gap-3">
                                                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#0e8388]/10">
                                                     <Store className="h-5 w-5 text-[#0e8388]" />
@@ -42,7 +38,6 @@ export default function ClassicInvoice({ data }) {
 
                                         {/* RIGHT -> INVOICE META */}
                                         <div className="w-full sm:w-auto border border-[#0e8388]/20 rounded-md p-2 md:p-3 sm:p-4 bg-[#0e8388]/5 text-[11px] md:text-sm text-gray-700 space-y-1">
-
                                             <div className="flex justify-between gap-4">
                                                 <span className="font-medium text-gray-500">Invoice No</span>
                                                 <span className="font-semibold text-[#0e8388]">

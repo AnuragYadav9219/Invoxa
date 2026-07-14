@@ -20,7 +20,6 @@ export default function InvoiceDetails() {
     isLoading,
     error,
     downloadPDF,
-    isDownloading,
   } = useInvoiceData(id);
 
   const [selectedTemplate, setSelectedTemplate] = useState(
@@ -56,22 +55,17 @@ export default function InvoiceDetails() {
 
       {/* ================= HEADER ================= */}
       <div className="mx-auto mb-6 w-full max-w-[210mm] px-3">
-
         <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-
           <div className="flex flex-col gap-4 p-4 md:p-5 lg:flex-row lg:items-end lg:justify-between">
 
             {/* Template Selector */}
             <div className="w-full lg:max-w-sm">
-
               <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border bg-white">
                   <LayoutTemplate className="h-5 w-5 text-slate-600" />
                 </div>
 
                 <div className="min-w-0 flex-1">
-
                   <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     Invoice Template
                   </p>
@@ -110,7 +104,6 @@ export default function InvoiceDetails() {
                           </SelectItem>
                         );
                       })}
-
                     </SelectContent>
                   </Select>
                 </div>
@@ -119,38 +112,29 @@ export default function InvoiceDetails() {
 
             {/* Toolbar */}
             <div className="flex w-full justify-end lg:w-auto">
-
               <InvoiceToolbar
                 invoice={invoice}
+                selectedTemplate={selectedTemplate}
                 downloadPDF={downloadPDF}
-                isDownloading={isDownloading}
               />
-
             </div>
-
           </div>
 
           {/* Bottom Info */}
           <div className="flex flex-col gap-2 border-t border-slate-100 bg-slate-50 px-5 py-3 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
-
             <div className="flex items-center gap-2">
-
               <Sparkles className="h-4 w-4 shrink-0 text-amber-500" />
 
               <span>
                 Template changes affect only the preview and downloaded PDF.
               </span>
-
             </div>
 
             <span className="text-xs font-medium text-slate-400">
               Invoice data remains unchanged.
             </span>
-
           </div>
-
         </div>
-
       </div>
 
       {/* ================= INVOICE ================= */}

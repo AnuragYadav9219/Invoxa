@@ -115,7 +115,7 @@ export const templateData = [
     },
     {
         id: "tropical",
-        name: "Tropical Citrus",
+        name: "Tropical",
         description: "A fresh tropical design with bright citrus-inspired colors.",
         icon: Citrus,
         component: TropicalCitrusInvoice,

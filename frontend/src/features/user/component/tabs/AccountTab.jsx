@@ -1,13 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     User,
     Mail,
     ArrowRight,
-    KeyRound,
-    Trash2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { DeleteAccountDialog } from "../DeleteAccountDialog";
@@ -33,6 +31,11 @@ export default function AccountTab() {
             <Card className="rounded-2xl shadow-sm border bg-white">
                 <CardHeader className="flex flex-row items-center gap-4">
                     <Avatar className="h-12 w-12">
+                        <AvatarImage
+                            src={user?.profileImage}
+                            alt={user?.name || user?.fullName}
+                        />
+                        
                         <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                             {initials}
                         </AvatarFallback>

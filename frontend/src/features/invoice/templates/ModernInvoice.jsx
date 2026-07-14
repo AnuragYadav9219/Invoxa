@@ -14,7 +14,7 @@ export default function ModernInvoice({ data }) {
                 : "PARTIALLY PAID";
 
     return (
-        <Card className="w-full md:w-[210mm] border-0 rounded-2xl shadow-xl overflow-hidden bg-white">
+        <Card className="w-full md:w-[210mm] border-0 rounded-2xl shadow-xl mx-auto overflow-hidden bg-white">
             <CardContent className="p-0">
                 {/* Top Accent Line */}
                 <div className="h-2 bg-linear-to-r from-blue-600 via-indigo-500 to-violet-500" />

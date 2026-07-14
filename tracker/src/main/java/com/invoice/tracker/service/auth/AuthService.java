@@ -76,6 +76,7 @@ public class AuthService {
                 Shop shop = Shop.builder()
                                 .shopName(request.getShopName())
                                 .ownerName(request.getOwnerName())
+                                .email(request.getEmail())
                                 .phone(request.getPhone())
                                 .address(request.getAddress())
                                 .build();

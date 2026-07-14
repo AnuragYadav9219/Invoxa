@@ -116,10 +116,10 @@ public class PaymentServiceImpl implements PaymentService {
                 .invoice(invoice)
                 .build();
 
-        paymentRepository.save(payment);
+        Payment saved = paymentRepository.saveAndFlush(payment);
 
         // Update invoice
-        applyPaymentToInvoice(payment);
+        applyPaymentToInvoice(saved);
 
         return invoiceMapper.toResponse(invoice);
     }
@@ -279,7 +279,7 @@ public class PaymentServiceImpl implements PaymentService {
             return;
         }
 
-        UUID shopId = SecurityUtils.getCurrentUserShopId();
+        UUID shopId = invoice.getShopId();
 
         if (invoice.getStatus() == InvoiceStatus.PAID) {
             eventPublisher.publishEvent(new InvoiceFullyPaidEvent(invoice.getId(), shopId));
