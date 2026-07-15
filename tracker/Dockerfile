@@ -1,7 +1,7 @@
 # ==========================
-# Build Stage
+# BUILD STAGE
 # ==========================
-FROM eclipse-temurin:17-jdk AS builder
+FROM maven:3.9.9-eclipse-temurin-17 AS builder
 
 WORKDIR /app
 
@@ -12,9 +12,9 @@ RUN chmod +x mvnw
 RUN ./mvnw clean package -DskipTests
 
 # ==========================
-# Runtime Stage
+# RUNTIME STAGE
 # ==========================
-FROM eclipse-temurin:17-jre
+FROM mcr.microsoft.com/playwright/java:v1.44.0-jammy
 
 WORKDIR /app
 
