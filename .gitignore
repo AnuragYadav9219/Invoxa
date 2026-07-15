@@ -38,11 +38,6 @@ tracker/*.jar
 tracker/*.war
 tracker/*.ear
 
-# Maven Wrapper (optional ignore)
-tracker/.mvn/
-tracker/mvnw
-tracker/mvnw.cmd
-
 # Application Secrets
 tracker/src/main/resources/application.properties
 tracker/src/main/resources/application.yml
