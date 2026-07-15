@@ -43,7 +43,7 @@ It follows a **multi-tenant architecture**, ensuring secure data isolation for d
 
 ## 🧱 Tech Stack
 
-| Layer        | Technology            |
+| Layer       | Technology           |
 |-------------|----------------------|
 | Backend     | Java, Spring Boot    |
 | ORM         | Hibernate / JPA      |
@@ -53,14 +53,14 @@ It follows a **multi-tenant architecture**, ensuring secure data isolation for d
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
-### 🔹 High-Level Flow
+### High-Level Flow
 
 
 ---
 
-### 🔹 Project Structure
+### Project Structure
 
 com.invoice.tracker
 │
