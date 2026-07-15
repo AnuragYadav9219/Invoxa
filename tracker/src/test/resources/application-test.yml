@@ -1,16 +1,47 @@
 spring:
-  datasource:
-    url: jdbc:h2:mem:tracker
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: 
+    datasource:
+        url: jdbc:h2:mem:tracker
+        driver-class-name: org.h2.Driver
+        username: sa
+        password:
 
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
+    jpa:
+        hibernate:
+            ddl-auto: create-drop
+        database-platform: org.hibernate.dialect.H2Dialect
 
-    database-platform: org.hibernate.dialect.H2Dialect
+    sql:
+        init:
+            mode: never
 
-  sql:
-    init:
-      mode: never
+    mail:
+        host: localhost
+        port: 2525
+
+jwt:
+    secret: test-jwt-secret
+    expiration: 86400000
+    refreshExpiration: 604800000
+
+app:
+    refresh-cookie-age: 604800
+    frontend:
+        url: http://localhost:3000
+
+    cookie:
+        secure: false
+        same-site: Lax
+
+    print:
+        secret: test-print-secret
+        expiration: 300000
+
+razorpay:
+    key-id: test
+    key-secret: test
+    webhook-secret: test
+
+cloudinary:
+    cloud-name: test
+    api-key: test
+    api-secret: test
