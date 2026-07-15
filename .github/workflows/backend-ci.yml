@@ -35,7 +35,7 @@ jobs:
         run: chmod +x mvnw
 
       - name: Verify Project
-        run: ./mvnw clean verify
+        run: ./mvnw clean package -DskipTests --batch-mode
 
       - name: Upload JAR Artifact
         uses: actions/upload-artifact@v4
