@@ -4,6 +4,7 @@ import com.invoice.tracker.common.extryPoint.CustomAccessDeniedHandler;
 import com.invoice.tracker.common.extryPoint.CustomAuthEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -61,6 +62,8 @@ public class SecurityConfig {
                         .ignoringRequestMatchers("/api/**"))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        
                         .requestMatchers(
                                 "/",
                                 "/error",
