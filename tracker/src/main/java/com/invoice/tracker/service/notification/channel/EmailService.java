@@ -23,6 +23,9 @@ public class EmailService {
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
+    @Value("${spring.email.username}")
+    private String username;
+
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
 
@@ -44,6 +47,7 @@ public class EmailService {
                 helper.addAttachment(fileName, new ByteArrayResource(attachment));
             }
 
+            log.info("SMTP Username: {}", username);
             mailSender.send(message);
             log.info("Email sent to {}", to);
 
