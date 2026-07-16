@@ -62,23 +62,21 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/",
+                                "/error",
+                                "/favicon.ico",
                                 "/api/auth/**",
                                 "/api/public/**",
-                                "/api/payments/webhook").permitAll()
-
-                        .requestMatchers(
-                                "/api/users/recover/send-otp",
-                                "/api/users/recover")
-                        .permitAll()
-
-                        .requestMatchers("/api/csrf").permitAll()
-                        
-                        .requestMatchers(
+                                "/api/payments/webhook",
+                                "/api/csrf",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/actuator/**",
-                                "/pay/**")
-                        .permitAll()
+                                "/pay/**",
+                                "/api/users/recover/send-otp",
+                                "/api/users/recover"
+                        ).permitAll()
+
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(customAuthEntryPoint)
