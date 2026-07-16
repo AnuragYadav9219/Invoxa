@@ -30,6 +30,7 @@ import InvoicePdfPage from "./features/invoice/pages/InvoicePdfPage";
 import CustomerPayment from "./features/payment/pages/CustomerPayment";
 import PaymentSuccess from "./features/payment/pages/PaymentSuccess";
 import PaymentFailed from "./features/payment/pages/PaymentFailed";
+import LandingPage from "./pages/LandingPage";
 
 export default function App() {
   useAutoLogout();
@@ -56,6 +57,7 @@ export default function App() {
         <Routes>
 
           {/* PUBLIC */}
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/auth-otp" element={<AuthOtpPage />} />
