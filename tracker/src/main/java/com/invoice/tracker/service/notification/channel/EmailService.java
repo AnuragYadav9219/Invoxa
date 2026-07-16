@@ -23,7 +23,7 @@ public class EmailService {
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
-    @Value("${spring.email.username}")
+    @Value("${spring.mail.username}")
     private String username;
 
     private final JavaMailSender mailSender;
