@@ -83,7 +83,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleException(Exception ex) {
 
-        log.error("Unexpected Exception: {}", ex.getMessage(), ex);
+        // log.error("Unexpected Exception: {}", ex.getMessage(), ex);
+
+        log.error("Unexpected Exception", ex);
 
         return ResponseBuilder.error("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
     }

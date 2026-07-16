@@ -71,6 +71,8 @@ public class EmailService {
 
     public void sendOtpEmail(String email, String otp) {
 
+        log.info("Sending OTP email to {}", email);
+
         Context context = new Context();
         context.setVariable("otp", otp);
 

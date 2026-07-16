@@ -38,6 +38,8 @@ public class OtpService {
     @Transactional
     public void sendOtp(String email, OtpPurpose purpose) {
 
+        log.info("Entered OtpService.sendOtp()");
+
         email = normalizeEmail(email);
 
         boolean userExists = userRepository.existsByEmail(email);

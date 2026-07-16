@@ -89,6 +89,10 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> sendOtp(
             @Valid @RequestBody SendOtpRequest request) {
 
+        log.info("OTP Request: email={}, purpose={}",
+                request.getEmail(),
+                request.getPurpose());
+
         otpService.sendOtp(request.getEmail(), request.getPurpose());
 
         return ResponseBuilder.success(null, "OTP sent successfully");
