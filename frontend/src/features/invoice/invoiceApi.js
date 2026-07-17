@@ -274,8 +274,10 @@ export const invoiceApi = baseApi.injectEndpoints({
             throw new Error("Authentication required");
           }
 
+          const apiUrl = import.meta.env.VITE_API_URL;
+
           const res = await fetch(
-            `http://localhost:8080/api/invoices/pdf/${id}?template=${encodeURIComponent(template)}`,
+            `${apiUrl}/invoices/pdf/${id}?template=${encodeURIComponent(template)}`,
             {
               method: "POST",
               headers: {
