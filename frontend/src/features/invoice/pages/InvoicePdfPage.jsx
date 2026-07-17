@@ -56,11 +56,16 @@ export default function InvoicePdfPage() {
             });
         };
 
-        if (!loading) {
+        if (
+            !loading &&
+            !invoiceError &&
+            !shopError &&
+            invoice &&
+            shop
+        ) {
             markReady();
         }
-
-    }, [loading]);
+    }, [loading, invoiceError, shopError, invoice, shop]);
 
     if (loading) {
         return (
