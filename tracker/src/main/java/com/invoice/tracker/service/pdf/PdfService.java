@@ -175,9 +175,26 @@ public class PdfService {
 
                 page.waitForLoadState(LoadState.NETWORKIDLE);
                 // page.waitForFunction("() => window.__PDF_READY__ === true");
-                page.waitForSelector("#invoice-root", 
-                        new Page.WaitForSelectorOptions()
-                                .setTimeout(60000));
+
+                System.out.println("====== URL ======");
+                System.out.println(page.url());
+                        
+                System.out.println("====== TITLE ======");
+                System.out.println(page.title());
+                        
+                System.out.println("====== CONTENT ======");
+                System.out.println(page.content());
+                        
+                page.screenshot(
+                    new Page.ScreenshotOptions()
+                        .setPath(java.nio.file.Paths.get("/tmp/pdf-debug.png"))
+                        .setFullPage(true)
+                );
+                        
+                page.waitForFunction(
+                    "() => window.__PDF_READY__ === true",
+                    new Page.WaitForFunctionOptions().setTimeout(60000)
+                );
 
                 return page.pdf(
                         new Page.PdfOptions()
