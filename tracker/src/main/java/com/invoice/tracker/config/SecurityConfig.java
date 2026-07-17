@@ -70,7 +70,7 @@ public class SecurityConfig {
                                 "/favicon.ico",
                                 "/api/auth/**",
                                 "/api/public/**",
-                                "/api/payments/webhook",
+                                "/api/webhooks/razorpay",
                                 "/api/csrf",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",

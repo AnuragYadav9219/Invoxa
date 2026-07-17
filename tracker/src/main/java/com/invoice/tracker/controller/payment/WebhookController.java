@@ -12,7 +12,7 @@ import com.invoice.tracker.service.payment.gateway.RazorpayWebhookService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/payments")
+@RequestMapping("/api/webhooks")
 @RequiredArgsConstructor
 public class WebhookController {
     
@@ -26,6 +26,6 @@ public class WebhookController {
 
         webhookService.processWebhook(signature, payload);
 
-        return ResponseEntity.ok("OK");
+        return ResponseEntity.ok().build();
     }
 }
