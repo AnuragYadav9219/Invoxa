@@ -171,8 +171,13 @@ public class PdfService {
                         new Page.NavigateOptions()
                                 .setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
 
+                System.out.println(page.content());
+
                 page.waitForLoadState(LoadState.NETWORKIDLE);
-                page.waitForFunction("() => window.__PDF_READY__ === true");
+                // page.waitForFunction("() => window.__PDF_READY__ === true");
+                page.waitForSelector("#invoice-root", 
+                        new Page.WaitForSelectorOptions()
+                                .setTimeout(60000));
 
                 return page.pdf(
                         new Page.PdfOptions()
