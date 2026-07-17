@@ -10,6 +10,7 @@ import org.thymeleaf.context.Context;
 
 import com.invoice.tracker.common.exception.BadRequestException;
 import com.invoice.tracker.entity.invoice.Invoice;
+import com.resend.Resend;
 
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class EmailService {
     private String username;
 
     private final JavaMailSender mailSender;
+    private final Resend resend;
     private final TemplateEngine templateEngine;
 
     // ================= CORE EMAIL METHOD =================
