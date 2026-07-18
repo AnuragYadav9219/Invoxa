@@ -183,7 +183,23 @@ public class PdfService {
                 System.out.println(page.title());
                         
                 System.out.println("====== CONTENT ======");
-                System.out.println(page.content());
+                page.onConsoleMessage(msg ->
+                        System.out.println("BROWSER CONSOLE: " + msg.type() + " -> " + msg.text())
+                );
+
+                page.onPageError(err ->
+                    System.out.println("PAGE ERROR: " + err)
+                );
+                        
+                page.onRequestFailed(req ->
+                    System.out.println("REQUEST FAILED: " + req.url() + " -> " + req.failure())
+                );
+                        
+                page.onResponse(res -> {
+                    if (res.status() >= 400) {
+                        System.out.println("HTTP " + res.status() + " -> " + res.url());
+                    }
+                });
                         
                 page.screenshot(
                     new Page.ScreenshotOptions()
@@ -191,10 +207,9 @@ public class PdfService {
                         .setFullPage(true)
                 );
                         
-                page.waitForFunction(
-                    "() => window.__PDF_READY__ === true",
-                    new Page.WaitForFunctionOptions().setTimeout(60000)
-                );
+                page.setDefaultTimeout(60000);
+
+                page.waitForFunction("() => window.__PDF_READY__ === true");
 
                 return page.pdf(
                         new Page.PdfOptions()
