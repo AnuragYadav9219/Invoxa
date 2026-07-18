@@ -188,6 +188,7 @@ public class PdfService {
         try {
 
             // Faster timeout
+            page.setDefaultNavigationTimeout(30000);
             page.setDefaultTimeout(10000);
 
             String token = printTokenUtil.generateToken(invoiceId, shopId);
@@ -200,15 +201,22 @@ public class PdfService {
                     template.name().toLowerCase()
             );
 
+            long t1 = System.currentTimeMillis();
+
             // Navigate to invoice page
             page.navigate(
                     url,
                     new Page.NavigateOptions()
-                            .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                            .setWaitUntil(WaitUntilState.COMMIT)
             );
+
+            System.out.println("Navigate: " + (System.currentTimeMillis() - t1) + " ms");
+            long t2 = System.currentTimeMillis();
 
             // Wait until React finishes rendering
             page.waitForFunction("() => window.__PDF_READY__ === true");
+
+            System.out.println("PDF_READY: " + (System.currentTimeMillis() - t2) + " ms");
 
             // Generate PDF
             return page.pdf(
