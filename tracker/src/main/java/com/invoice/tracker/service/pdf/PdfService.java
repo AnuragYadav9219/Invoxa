@@ -165,22 +165,6 @@ public class PdfService {
                         + URLEncoder.encode(token, StandardCharsets.UTF_8)
                         + "&template="
                         + URLEncoder.encode(template.name().toLowerCase(), StandardCharsets.UTF_8);
-
-                page.navigate(
-                        url,
-                        new Page.NavigateOptions()
-                                .setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
-
-                System.out.println(page.content());
-
-                page.waitForLoadState(LoadState.NETWORKIDLE);
-                // page.waitForFunction("() => window.__PDF_READY__ === true");
-
-                System.out.println("====== URL ======");
-                System.out.println(page.url());
-                        
-                System.out.println("====== TITLE ======");
-                System.out.println(page.title());
                         
                 System.out.println("====== CONTENT ======");
                 page.onConsoleMessage(msg ->
@@ -190,16 +174,33 @@ public class PdfService {
                 page.onPageError(err ->
                     System.out.println("PAGE ERROR: " + err)
                 );
-                        
+
                 page.onRequestFailed(req ->
                     System.out.println("REQUEST FAILED: " + req.url() + " -> " + req.failure())
                 );
-                        
+
                 page.onResponse(res -> {
                     if (res.status() >= 400) {
                         System.out.println("HTTP " + res.status() + " -> " + res.url());
                     }
                 });
+
+                page.navigate(
+                        url,
+                        new Page.NavigateOptions()
+                                .setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
+
+                System.out.println(page.content());
+
+                page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+
+                // page.waitForFunction("() => window.__PDF_READY__ === true");
+
+                System.out.println("====== URL ======");
+                System.out.println(page.url());
+                        
+                System.out.println("====== TITLE ======");
+                System.out.println(page.title());
                         
                 page.screenshot(
                     new Page.ScreenshotOptions()
@@ -207,21 +208,28 @@ public class PdfService {
                         .setFullPage(true)
                 );
                         
-                page.setDefaultTimeout(60000);
+                System.out.println("STEP 1: Waiting for PDF_READY");
 
                 page.waitForFunction("() => window.__PDF_READY__ === true");
 
-                return page.pdf(
+                System.out.println("STEP 2: PDF_READY received");
+
+                byte[] pdf = page.pdf(
                         new Page.PdfOptions()
-                                .setFormat("A4")
-                                .setPrintBackground(true)
-                                .setPreferCSSPageSize(true)
-                                .setMargin(
-                                        new Margin()
-                                                .setTop("20px")
-                                                .setBottom("20px")
-                                                .setLeft("20px")
-                                                .setRight("20px")));
+                        .setFormat("A4")
+                        .setPrintBackground(true)
+                        .setPreferCSSPageSize(true)
+                        .setMargin(
+                                new Margin()
+                                .setTop("20px")
+                                .setBottom("20px")
+                                .setLeft("20px")
+                                .setRight("20px"))
+                );
+
+                System.out.println("STEP 3: PDF generated. Size = " + pdf.length);
+
+                return pdf;
 
             } finally {
                 page.close();
