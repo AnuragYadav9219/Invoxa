@@ -288,7 +288,9 @@ export const invoiceApi = baseApi.injectEndpoints({
           );
 
           if (!res.ok) {
-            throw new Error("PDF generation failed");
+            const errorText = await res.text();
+
+            throw new Error(errorText || `HTTP ${res.status}`);
           }
 
           const blob = await res.blob();
