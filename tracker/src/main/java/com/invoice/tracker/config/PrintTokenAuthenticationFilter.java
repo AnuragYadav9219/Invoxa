@@ -36,8 +36,9 @@ public class PrintTokenAuthenticationFilter extends OncePerRequestFilter {
 
         try {
 
-            // Validate 
-            if (!printTokenUtil.isValid(token)) {
+            boolean valid = printTokenUtil.isValid(token);
+
+            if (!valid) {
                 filterChain.doFilter(request, response);
                 return;
             }

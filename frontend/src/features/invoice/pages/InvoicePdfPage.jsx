@@ -11,29 +11,32 @@ import InvoiceRenderer from "./InvoiceRenderer";
 
 export default function InvoicePdfPage() {
 
-    const { invoiceId } = useParams();
-
-    const [searchParams] = useSearchParams();
-    const token = searchParams.get("token");
-
-    // Reset every render
+    // Initialize immediately
     useEffect(() => {
         window.__PDF_READY__ = false;
     }, []);
 
-    const {
-        data: invoice,
-        isLoading: invoiceLoading,
-        isError: invoiceError,
-    } = useGetPdfInvoiceQuery({
+    const { invoiceId } = useParams();
+    const [searchParams] = useSearchParams();
+    const token = searchParams.get("token");
+
+    const query = useGetPdfInvoiceQuery({
         invoiceId,
         token,
     });
 
     const {
+        data: invoice,
+        isLoading: invoiceLoading,
+        isError: invoiceError,
+        error: invoiceErr,
+    } = query;
+
+    const {
         data: shop,
         isLoading: shopLoading,
         isError: shopError,
+        error: shopErr,
     } = useGetPdfShopQuery(invoice?.shopId, {
         skip: !invoice?.shopId,
     });
@@ -42,29 +45,31 @@ export default function InvoicePdfPage() {
 
     useEffect(() => {
 
+        if (
+            loading ||
+            invoiceError ||
+            shopError ||
+            !invoice ||
+            !shop
+        ) {
+            return;
+        }
+
         const markReady = async () => {
 
             if (document.fonts) {
                 await document.fonts.ready;
             }
 
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    window.__PDF_READY__ = true;
-                    console.log("PDF READY");
-                });
-            });
+            // wait for browser paint
+            await new Promise(requestAnimationFrame);
+            await new Promise(requestAnimationFrame);
+
+            window.__PDF_READY__ = true;
         };
 
-        if (
-            !loading &&
-            !invoiceError &&
-            !shopError &&
-            invoice &&
-            shop
-        ) {
-            markReady();
-        }
+        markReady();
+
     }, [loading, invoiceError, shopError, invoice, shop]);
 
     if (loading) {

@@ -5,7 +5,6 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,6 +13,7 @@ import com.invoice.tracker.common.response.ResponseBuilder;
 import com.invoice.tracker.dto.invoice.InvoiceResponse;
 import com.invoice.tracker.service.invoice.InvoiceService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -26,10 +26,12 @@ public class PublicPrintController {
     @GetMapping("/{invoiceId}")
     public ResponseEntity<ApiResponse<InvoiceResponse>> getInvoiceForPrint(
             @PathVariable UUID invoiceId,
-            @RequestHeader("X-Print-Token") String printToken) {
+            HttpServletRequest request) {
 
         return ResponseBuilder.success(
-                invoiceService.getInvoiceForPrint(invoiceId, printToken),
-                "Invoice fetched successfully");
+                invoiceService.getInvoiceForPrint(
+                        invoiceId,
+                        request.getHeader("X-Print-Token")),
+                "OK");
     }
 }

@@ -6,9 +6,6 @@ export const invoicePdfApi = baseApi.injectEndpoints({
             query: ({ invoiceId, token }) => ({
                 url: `/public/print/${invoiceId}`,
                 method: "GET",
-                headers: {
-                    "X-Print-Token": token,
-                },
             }),
 
             transformResponse: (res) => res.data,
