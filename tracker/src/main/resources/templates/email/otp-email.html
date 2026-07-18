@@ -1,120 +1,118 @@
 <!DOCTYPE html>
 <html>
 
-<body
-    style="margin:0;background:#f4f6f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+<body style="margin:0;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
 
-    <table width="100%" cellpadding="0" cellspacing="0">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;">
         <tr>
-            <td align="center">
+            <td align="center" style="padding: 20px 0;">
 
                 <!-- CARD -->
-                <table width="420" cellpadding="0" cellspacing="0" style="background:#ffffff;margin:40px auto;padding:28px;border-radius:14px;
-box-shadow:0 8px 24px rgba(0,0,0,0.06);text-align:center;">
+                <table width="440" cellpadding="0" cellspacing="0" style="background:#ffffff;margin:40px auto;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(15, 23, 42, 0.04);border: 1px solid #e2e8f0;text-align:center;">
 
-                    <!-- LOGO / BRAND -->
+                    <!-- TOP ACCENT BAR -->
                     <tr>
-                        <td style="font-size:14px;font-weight:600;color:#4f46e5;letter-spacing:0.5px;">
-                            Invoice Tracker
+                        <td height="6" style="background: linear-gradient(90deg, #4f46e5, #7c3aed);"></td>
+                    </tr>
+
+                    <!-- MAIN CONTENT CONTAINER -->
+                    <tr>
+                        <td style="padding: 40px 32px 32px 32px;">
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                
+                                <!-- LOGO / BRAND -->
+                                <tr>
+                                    <td style="font-size:13px;font-weight:700;color:#4f46e5;letter-spacing:1.5px;text-transform:uppercase;">
+                                        Invoice Tracker
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td height="16"></td>
+                                </tr>
+
+                                <!-- TITLE -->
+                                <tr>
+                                    <td style="font-size:24px;font-weight:700;color:#0f172a;letter-spacing:-0.02em;">
+                                        Verify your email
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td height="12"></td>
+                                </tr>
+
+                                <!-- DESCRIPTION -->
+                                <tr>
+                                    <td style="font-size:15px;color:#475569;line-height:1.6;">
+                                        Use the verification code below to complete your sign-in.
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td height="28"></td>
+                                </tr>
+
+                                <!-- OTP BOX -->
+                                <tr>
+                                    <td align="center">
+                                        <table cellpadding="0" cellspacing="0" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px 32px;">
+                                            <tr>
+                                                <td style="font-family:'Courier New', Courier, monospace, sans-serif; font-size:32px; font-weight:700; color:#0f172a; letter-spacing:10px; padding-left:10px;">
+                                                    [[${otp}]]
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td height="24"></td>
+                                </tr>
+
+                                <!-- INFO -->
+                                <tr>
+                                    <td style="font-size:13px;color:#64748b;line-height:1.6;">
+                                        This code will expire in <strong style="color:#0f172a;">5 minutes</strong>.<br>
+                                        For your security, do not share this code with anyone.
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td height="28"></td>
+                                </tr>
+
+                                <!-- WARNING BOX -->
+                                <tr>
+                                    <td style="background:#fffbeb; border:1px solid #fef3c7; color:#b45309; font-size:12px; padding:12px 16px; border-radius:10px; line-height:1.5;">
+                                        If you didn’t request this code, you can safely ignore this email.
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td height="32"></td>
+                                </tr>
+
+                                <!-- DIVIDER -->
+                                <tr>
+                                    <td style="border-top:1px solid #e2e8f0;"></td>
+                                </tr>
+
+                                <tr>
+                                    <td height="20"></td>
+                                </tr>
+
+                                <!-- FOOTER -->
+                                <tr>
+                                    <td style="font-size:11px;color:#94a3b8;line-height:1.6;letter-spacing:0.01em;">
+                                        © [[${#dates.year(#dates.createNow())}]] Invoice Tracker<br>
+                                        <span style="color:#cbd5e1;">Secure authentication system</span>
+                                    </td>
+                                </tr>
+
+                            </table>
                         </td>
                     </tr>
-
-                    <tr>
-                        <td height="12"></td>
-                    </tr>
-
-                    <!-- TITLE -->
-                    <tr>
-                        <td style="font-size:20px;font-weight:600;color:#111;">
-                            Verify your email
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td height="10"></td>
-                    </tr>
-
-                    <!-- DESCRIPTION -->
-                    <tr>
-                        <td style="font-size:14px;color:#555;line-height:1.6;">
-                            Use the verification code below to complete your sign-in.
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td height="24"></td>
-                    </tr>
-
-                    <!-- OTP BOX -->
-                    <tr>
-                        <td>
-                            <div style="
-                font-size:28px;
-                font-weight:700;
-                letter-spacing:8px;
-                background:linear-gradient(135deg,#4f46e5,#7c3aed);
-                color:#ffffff;
-                padding:14px 24px;
-                border-radius:12px;
-                display:inline-block;
-                box-shadow:0 4px 12px rgba(79,70,229,0.25);
-            ">
-                                [[${otp}]]
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td height="20"></td>
-                    </tr>
-
-                    <!-- INFO -->
-                    <tr>
-                        <td style="font-size:13px;color:#777;line-height:1.6;">
-                            This code will expire in <strong>5 minutes</strong>.<br>
-                            For your security, do not share this code with anyone.
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td height="24"></td>
-                    </tr>
-
-                    <!-- WARNING BOX -->
-                    <tr>
-                        <td style="
-            background:#fef3f2;
-            border:1px solid #fde2e1;
-            color:#b42318;
-            font-size:12px;
-            padding:10px 12px;
-            border-radius:8px;
-        ">
-                            If you didn’t request this code, you can safely ignore this email.
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td height="28"></td>
-                    </tr>
-
-                    <!-- DIVIDER -->
-                    <tr>
-                        <td style="border-top:1px solid #eee;"></td>
-                    </tr>
-
-                    <tr>
-                        <td height="16"></td>
-                    </tr>
-
-                    <!-- FOOTER -->
-                    <tr>
-                        <td style="font-size:11px;color:#aaa;line-height:1.5;">
-                            © [[${#dates.year(#dates.createNow())}]] Invoice Tracker<br>
-                            Secure authentication system
-                        </td>
-                    </tr>
-
                 </table>
 
             </td>

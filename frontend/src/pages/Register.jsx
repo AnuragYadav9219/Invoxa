@@ -100,18 +100,6 @@ export default function Register() {
     }
   };
 
-  // --- Step 2 Action: Final Registration ---
-  // const handleFinalRegister = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     await register({ ...form, name: form.ownerName, otp: otp.join("") }).unwrap();
-  //     showSuccess("Account created successfully!");
-  //     navigate("/dashboard");
-  //   } catch (err) {
-  //     showError(err?.data?.message || "Registration failed");
-  //   }
-  // };
-
   const handleFinalRegister = async (e) => {
     e.preventDefault();
 

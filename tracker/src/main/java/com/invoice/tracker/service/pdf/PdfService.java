@@ -59,7 +59,7 @@ public class PdfService {
                         page.navigate(
                                         url,
                                         new Page.NavigateOptions()
-                                                        .setWaitUntil(WaitUntilState.NETWORKIDLE));
+                                                        .setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
 
                         page.waitForFunction(
                                         "() => window.__PDF_READY__ === true",
