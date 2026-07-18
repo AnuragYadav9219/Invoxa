@@ -22,7 +22,7 @@ public class BrowserManager {
 
         browser = playwright.chromium().launch(
                 new BrowserType.LaunchOptions()
-                        .setHeadless(false)
+                        .setHeadless(true)
                         .setArgs(List.of(
                                 "--no-sandbox",
                                 "--disable-setuid-sandbox",
