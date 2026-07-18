@@ -202,12 +202,6 @@ public class PdfService {
                 System.out.println("====== TITLE ======");
                 System.out.println(page.title());
                         
-                page.screenshot(
-                    new Page.ScreenshotOptions()
-                        .setPath(java.nio.file.Paths.get("/tmp/pdf-debug.png"))
-                        .setFullPage(true)
-                );
-                        
                 System.out.println("STEP 1: Waiting for PDF_READY");
 
                 page.waitForFunction("() => window.__PDF_READY__ === true");
