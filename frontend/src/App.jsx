@@ -1,40 +1,88 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Toaster } from "sonner";
+import { lazy, Suspense, useEffect } from "react";
 
-import AppLayoutRoute from "./routes/AppLayoutRoute";
-import RoleRoute from "./routes/RoleRoute";
+const AppLayoutRoute = lazy(() => import("./routes/AppLayoutRoute"));
+const RoleRoute = lazy(() => import("./routes/RoleRoute"));
 
-import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import SettingsPage from "./features/user/component/tabs/SettingsPage";
-import UserProfile from "./features/user/pages/UserProfile";
+const LandingPage = lazy(() => import("./pages/LandingPage"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const AuthOtpPage = lazy(() => import("./pages/AuthOtpPage"));
 
-import Invoices from "./features/invoice/pages/Invoices";
-import InvoiceDetails from "./features/invoice/pages/InvoiceDetails";
-import Items from "./features/item/pages/Items";
-import Trash from "./components/common/Trash";
-import Payment from "./features/payment/pages/Payments";
-import PaymentDetails from "./features/payment/pages/PaymentDetails";
-import CustomerPage from "./features/customer/CustomerPage";
-import CustomerDetailsPage from "./features/customer/CustomerDetailsPage";
-import AdminPage from "./features/admin/AdminPage";
+const RecoverPage = lazy(() =>
+  import("./features/user/component/RecoveryPage")
+);
 
-import { useAutoLogout } from "./hooks/useAutoLogout";
-import { useEffect } from "react";
-import AuthOtpPage from "./pages/AuthOtpPage";
-import RecoverPage from "./features/user/component/RecoveryPage";
-import Notifications from "./features/notification/pages/Notifications";
-import NotificationDetail from "./features/notification/components/NotificationDetail";
-import InvoicePdfPage from "./features/invoice/pages/InvoicePdfPage";
-import CustomerPayment from "./features/payment/pages/CustomerPayment";
-import PaymentSuccess from "./features/payment/pages/PaymentSuccess";
-import PaymentFailed from "./features/payment/pages/PaymentFailed";
-import LandingPage from "./pages/LandingPage";
+const SettingsPage = lazy(() =>
+  import("./features/user/component/tabs/SettingsPage")
+);
+
+const UserProfile = lazy(() =>
+  import("./features/user/pages/UserProfile")
+);
+
+const Invoices = lazy(() =>
+  import("./features/invoice/pages/Invoices")
+);
+
+const InvoiceDetails = lazy(() =>
+  import("./features/invoice/pages/InvoiceDetails")
+);
+
+const InvoicePdfPage = lazy(() =>
+  import("./features/invoice/pages/InvoicePdfPage")
+);
+
+const Items = lazy(() =>
+  import("./features/item/pages/Items")
+);
+
+const Trash = lazy(() =>
+  import("./components/common/Trash")
+);
+
+const Payment = lazy(() =>
+  import("./features/payment/pages/Payments")
+);
+
+const PaymentDetails = lazy(() =>
+  import("./features/payment/pages/PaymentDetails")
+);
+
+const CustomerPayment = lazy(() =>
+  import("./features/payment/pages/CustomerPayment")
+);
+
+const PaymentSuccess = lazy(() =>
+  import("./features/payment/pages/PaymentSuccess")
+);
+
+const PaymentFailed = lazy(() =>
+  import("./features/payment/pages/PaymentFailed")
+);
+
+const CustomerPage = lazy(() =>
+  import("./features/customer/CustomerPage")
+);
+
+const CustomerDetailsPage = lazy(() =>
+  import("./features/customer/CustomerDetailsPage")
+);
+
+const Notifications = lazy(() =>
+  import("./features/notification/pages/Notifications")
+);
+
+const NotificationDetail = lazy(() =>
+  import("./features/notification/components/NotificationDetail")
+);
+
+const AdminPage = lazy(() =>
+  import("./features/admin/AdminPage")
+);
 
 export default function App() {
-  useAutoLogout();
-
   useEffect(() => {
     const handleWheel = (event) => {
       const active = document.activeElement;
@@ -54,55 +102,61 @@ export default function App() {
   return (
     <>
       <BrowserRouter>
-        <Routes>
+        <Suspense
+          fallback={
+            <div className="flex h-screen items-center justify-center">
+              Loading...
+            </div>
+          }
+        >
+          <Routes>
 
-          {/* PUBLIC */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/auth-otp" element={<AuthOtpPage />} />
-          <Route path="/recover" element={<RecoverPage />} />
-          <Route path="/pdf/:invoiceId" element={<InvoicePdfPage />} />
-          <Route path="/pay/:paymentToken" element={<CustomerPayment />} />
+            {/* PUBLIC */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/auth-otp" element={<AuthOtpPage />} />
+            <Route path="/recover" element={<RecoverPage />} />
+            <Route path="/pdf/:invoiceId" element={<InvoicePdfPage />} />
+            <Route path="/pay/:paymentToken" element={<CustomerPayment />} />
 
-          {/* PROTECTED */}
-          <Route path="/dashboard" element={<AppLayoutRoute><Dashboard /></AppLayoutRoute>} />
-          <Route path="/settings" element={<AppLayoutRoute><SettingsPage /></AppLayoutRoute>} />
-          <Route path="/profile" element={<AppLayoutRoute><UserProfile /></AppLayoutRoute>} />
+            {/* PROTECTED */}
+            <Route path="/dashboard" element={<AppLayoutRoute><Dashboard /></AppLayoutRoute>} />
+            <Route path="/settings" element={<AppLayoutRoute><SettingsPage /></AppLayoutRoute>} />
+            <Route path="/profile" element={<AppLayoutRoute><UserProfile /></AppLayoutRoute>} />
 
-          <Route path="/invoices" element={<AppLayoutRoute><Invoices /></AppLayoutRoute>} />
-          <Route path="/invoices/:id" element={<AppLayoutRoute><InvoiceDetails /></AppLayoutRoute>} />
+            <Route path="/invoices" element={<AppLayoutRoute><Invoices /></AppLayoutRoute>} />
+            <Route path="/invoices/:id" element={<AppLayoutRoute><InvoiceDetails /></AppLayoutRoute>} />
 
-          <Route path="/items" element={<AppLayoutRoute><Items /></AppLayoutRoute>} />
-          <Route path="/trash" element={<AppLayoutRoute><Trash /></AppLayoutRoute>} />
+            <Route path="/items" element={<AppLayoutRoute><Items /></AppLayoutRoute>} />
+            <Route path="/trash" element={<AppLayoutRoute><Trash /></AppLayoutRoute>} />
 
-          <Route path="/payments" element={<AppLayoutRoute><Payment /></AppLayoutRoute>} />
-          <Route path="/payments/:id" element={<AppLayoutRoute><PaymentDetails /></AppLayoutRoute>} />
-          <Route path="/payment/success" element={<AppLayoutRoute><PaymentSuccess /></AppLayoutRoute>} />
-          <Route path="/payment/failed" element={<AppLayoutRoute><PaymentFailed /></AppLayoutRoute>} />
+            <Route path="/payments" element={<AppLayoutRoute><Payment /></AppLayoutRoute>} />
+            <Route path="/payments/:id" element={<AppLayoutRoute><PaymentDetails /></AppLayoutRoute>} />
+            <Route path="/payment/success" element={<AppLayoutRoute><PaymentSuccess /></AppLayoutRoute>} />
+            <Route path="/payment/failed" element={<AppLayoutRoute><PaymentFailed /></AppLayoutRoute>} />
 
-          <Route path="/customers" element={<AppLayoutRoute><CustomerPage /></AppLayoutRoute>} />
-          <Route path="/customers/:name" element={<AppLayoutRoute><CustomerDetailsPage /></AppLayoutRoute>} />
+            <Route path="/customers" element={<AppLayoutRoute><CustomerPage /></AppLayoutRoute>} />
+            <Route path="/customers/:name" element={<AppLayoutRoute><CustomerDetailsPage /></AppLayoutRoute>} />
 
-          <Route path="/notifications" element={<AppLayoutRoute><Notifications /></AppLayoutRoute>} />
-          <Route path="/notifications/:id" element={<AppLayoutRoute><NotificationDetail /></AppLayoutRoute>} />
+            <Route path="/notifications" element={<AppLayoutRoute><Notifications /></AppLayoutRoute>} />
+            <Route path="/notifications/:id" element={<AppLayoutRoute><NotificationDetail /></AppLayoutRoute>} />
 
-          {/* ROLE BASED */}
-          <Route
-            path="/admin"
-            element={
-              <AppLayoutRoute>
-                <RoleRoute allowedRoles={["OWNER"]}>
-                  <AdminPage />
-                </RoleRoute>
-              </AppLayoutRoute>
-            }
-          />
+            {/* ROLE BASED */}
+            <Route
+              path="/admin"
+              element={
+                <AppLayoutRoute>
+                  <RoleRoute allowedRoles={["OWNER"]}>
+                    <AdminPage />
+                  </RoleRoute>
+                </AppLayoutRoute>
+              }
+            />
 
-        </Routes>
+          </Routes>
+        </Suspense>
       </BrowserRouter>
-
-      <Toaster position="top-right" richColors />
     </>
   );
 }

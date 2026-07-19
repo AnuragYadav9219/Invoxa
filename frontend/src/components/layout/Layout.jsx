@@ -3,6 +3,7 @@ import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Toaster } from "sonner";
 
 export default function Layout({ children }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -51,6 +52,8 @@ export default function Layout({ children }) {
 
         </main>
       </div>
+
+      <Toaster position="top-right" richColors />
     </div>
   );
 }
