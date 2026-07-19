@@ -7,6 +7,7 @@ import java.util.UUID;
 import com.invoice.tracker.dto.common.PageResponse;
 import com.invoice.tracker.dto.invoice.CreateInvoiceRequest;
 import com.invoice.tracker.dto.invoice.InvoiceFilterRequest;
+import com.invoice.tracker.dto.invoice.InvoicePdfResponse;
 import com.invoice.tracker.dto.invoice.InvoiceResponse;
 
 public interface InvoiceService {
@@ -37,7 +38,7 @@ public interface InvoiceService {
 
     PageResponse<InvoiceResponse> filterInvoices(InvoiceFilterRequest filter, int page, int size);
 
-    InvoiceResponse getInvoiceForPrint(UUID invoiceId, String printToken);
+    InvoicePdfResponse getInvoiceForPrint(UUID invoiceId, String printToken);
 
     InvoiceResponse getPublicInvoice(String paymentToken);
 }

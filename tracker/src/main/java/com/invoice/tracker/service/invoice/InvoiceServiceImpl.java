@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.invoice.tracker.dto.invoice.InvoiceItemRequest;
+import com.invoice.tracker.dto.invoice.InvoicePdfResponse;
 import com.invoice.tracker.dto.invoice.InvoiceResponse;
 import com.invoice.tracker.common.exception.BadRequestException;
 import com.invoice.tracker.common.exception.ResourceNotFoundException;
@@ -38,6 +39,7 @@ import com.invoice.tracker.event.invoice.InvoiceCreatedEvent;
 import com.invoice.tracker.helper.invoice.InvoiceHelper;
 import com.invoice.tracker.helper.item.ItemHelper;
 import com.invoice.tracker.mapper.InvoiceMapper;
+import com.invoice.tracker.mapper.ShopMapper;
 import com.invoice.tracker.repository.invoice.InvoiceRepository;
 import com.invoice.tracker.repository.shop.ShopRepository;
 import com.invoice.tracker.security.SecurityUtils;
@@ -515,7 +517,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         @Override
         @Transactional(readOnly = true)
-        public InvoiceResponse getInvoiceForPrint(UUID invoiceId, String printToken) {
+        public InvoicePdfResponse getInvoiceForPrint(UUID invoiceId, String printToken) {
 
                 if (!printTokenUtil.isValid(printToken)) {
                         throw new BadRequestException("Invalid print token");
@@ -530,12 +532,19 @@ public class InvoiceServiceImpl implements InvoiceService {
 
                 Invoice invoice = invoiceRepository
                                 .findById(invoiceId)
-                                .orElseThrow(() -> new ResourceNotFoundException("Invalid not found"));
+                                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
 
                 if (!invoice.getShopId().equals(shopId)) {
                         throw new BadRequestException("Invalid print token");
                 }
 
-                return invoiceMapper.toResponse(invoice);
+                Shop shop = shopRepository
+                                .findById(shopId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Shop not found"));
+
+                return new InvoicePdfResponse(
+                        invoiceMapper.toResponse(invoice),
+                        ShopMapper.toResponse(shop)
+                );
         }
 }

@@ -202,7 +202,8 @@ public class PdfService {
             page.navigate(
                     url,
                     new Page.NavigateOptions()
-                            .setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
+                            .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                            .setTimeout(60000));
 
             System.out.println(
                     "✅ Navigate took: "

@@ -24,14 +24,9 @@ export default function NotificationDetail() {
     const notification = data.find((n) => n.id === id);
 
     useEffect(() => {
-        if (!notification) return;
-
-        if (!notification.isRead && !hasMarked.current) {
-            setTimeout(() => {
-                markAsRead(id);
-            }, 400); 
-
+        if (notification && !notification.isRead && !hasMarked.current) {
             hasMarked.current = true;
+            markAsRead(id);
         }
     }, [notification, id, markAsRead]);
 

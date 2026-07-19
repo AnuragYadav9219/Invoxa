@@ -15,18 +15,6 @@ const Skeleton = () => (
 );
 
 export default function NotificationList({ data = [], isLoading }) {
-    const [markAsRead] = useMarkAsReadMutation();
-
-    const processedRef = useRef(new Set());
-
-    useEffect(() => {
-        data.forEach((n) => {
-            if (!n.isRead && !processedRef.current.has(n.id)) {
-                processedRef.current.add(n.id);
-                markAsRead(n.id);
-            }
-        });
-    }, [data, markAsRead]);
 
     if (isLoading) return <Skeleton />;
 
