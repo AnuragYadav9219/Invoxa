@@ -1,7 +1,5 @@
 import NotificationCard from "./NotificationCard";
 import { BellOff } from "lucide-react";
-import { useMarkAsReadMutation } from "@/features/notification/notificationApi";
-import { useEffect, useRef } from "react";
 
 const Skeleton = () => (
     <div className="flex flex-col gap-3 animate-pulse">

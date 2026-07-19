@@ -84,26 +84,6 @@ export const authApi = baseApi.injectEndpoints({
       },
     }),
 
-    /* ================= REFRESH ================= */
-    // refresh: builder.mutation({
-    //   query: () => ({
-    //     url: "/auth/refresh",
-    //     method: "POST",
-    //   }),
-
-    //   async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-    //     try {
-    //       const { data } = await queryFulfilled;
-    //       handleAuthSuccess(dispatch, data.data);
-
-    //     } catch (err) {
-    //       tokenService.clear();
-    //       localStorage.removeItem("shopId");
-    //       dispatch(logoutAction());
-    //     }
-    //   },
-    // }),
-
     /* ============== GET SESSIONS ============== */
     getSessions: builder.query({
       query: () => ({

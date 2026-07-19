@@ -56,8 +56,6 @@ export const axiosBaseQuery =
                 ? { Authorization: `Bearer ${token}` }
                 : {}
             ),
-
-            // ...(token && { Authorization: `Bearer ${token}` }),
             ...(shopId && { "X-Shop-Id": shopId }),
             "X-Device-Id": deviceService.getDeviceId(),
           },
