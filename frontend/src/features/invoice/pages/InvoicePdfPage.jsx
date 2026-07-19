@@ -154,17 +154,16 @@
 
 
 import { useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 
 import { useGetPdfDataQuery } from "../invoicePdfApi";
 import { mapInvoice } from "../invoiceMapper";
 import InvoiceRenderer from "./InvoiceRenderer";
 
 export default function InvoicePdfPage() {
+    const { invoiceId } = useParams();
 
     const [searchParams] = useSearchParams();
-
-    const invoiceId = searchParams.get("invoiceId");
     const token = searchParams.get("token");
 
     useEffect(() => {
