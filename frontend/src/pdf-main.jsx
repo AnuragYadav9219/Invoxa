@@ -1,16 +1,10 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import { Provider } from "react-redux";
+import React from "react";
+import ReactDOM from "react-dom/client";
 
 import "./index.css";
 
-import { store } from "./app/store";
 import InvoicePdfPage from "./features/invoice/pages/InvoicePdfPage";
 
-createRoot(document.getElementById("root")).render(
-    <StrictMode>
-        <Provider store={store}>
-            <InvoicePdfPage />
-        </Provider>
-    </StrictMode>
-)
+ReactDOM.createRoot(document.getElementById("root")).render(
+    <InvoicePdfPage />
+);

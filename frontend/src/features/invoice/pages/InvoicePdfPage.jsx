@@ -151,44 +151,82 @@
 
 
 
+import { useEffect, useState } from "react";
 
-
-import { useEffect } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
-
-import { useGetPdfDataQuery } from "../invoicePdfApi";
 import { mapInvoice } from "../invoiceMapper";
 import InvoiceRenderer from "./InvoiceRenderer";
 
-export default function InvoicePdfPage() {
-    const { invoiceId } = useParams();
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-    const [searchParams] = useSearchParams();
-    const token = searchParams.get("token");
+export default function InvoicePdfPage() {
+
+    const params = new URLSearchParams(window.location.search);
+
+    const invoiceId = params.get("invoiceId");
+    const token = params.get("token");
+
+    const [invoice, setInvoice] = useState(null);
+    const [shop, setShop] = useState(null);
+
+    const [isLoading, setIsLoading] = useState(true);
+    const [isError, setIsError] = useState(false);
 
     useEffect(() => {
         window.__PDF_READY__ = false;
     }, []);
 
-    const {
-        data,
-        isLoading,
-        isError,
-    } = useGetPdfDataQuery({
-        invoiceId,
-        token,
-    });
+    useEffect(() => {
 
-    const invoice = data?.invoice;
-    const shop = data?.shop;
+        async function loadInvoice() {
+
+            try {
+
+                const response = await fetch(
+                    `${API_BASE_URL}/api/public/print/${invoiceId}`,
+                    {
+                        headers: {
+                            "X-Print-Token": token,
+                        },
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Failed to load invoice");
+                }
+
+                const json = await response.json();
+
+                setInvoice(json.data.invoice);
+                setShop(json.data.shop);
+
+            } catch (error) {
+
+                console.error(error);
+                setIsError(true);
+
+            } finally {
+
+                setIsLoading(false);
+
+            }
+        }
+
+        loadInvoice();
+
+    }, [invoiceId, token]);
 
     useEffect(() => {
 
         let cancelled = false;
 
-        const markReady = async () => {
+        async function markReady() {
 
-            if (isLoading || isError || !invoice || !shop) {
+            if (
+                isLoading ||
+                isError ||
+                !invoice ||
+                !shop
+            ) {
                 return;
             }
 
@@ -210,8 +248,10 @@ export default function InvoicePdfPage() {
                 if (!cancelled) {
                     window.__PDF_READY__ = true;
                 }
+
             }
-        };
+
+        }
 
         markReady();
 
@@ -240,7 +280,7 @@ export default function InvoicePdfPage() {
     const dataModel = mapInvoice(invoice, shop, null);
 
     const template =
-        searchParams.get("template") ||
+        params.get("template") ||
         invoice.template ||
         shop.invoiceTemplate ||
         "classic";

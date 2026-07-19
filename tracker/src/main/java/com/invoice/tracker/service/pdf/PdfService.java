@@ -167,7 +167,7 @@ public class PdfService {
             String token = printTokenUtil.generateToken(invoiceId, shopId);
 
             String url = String.format(
-                    "%s/pdf/%s?token=%s&template=%s",
+                    "%s/pdf.html?invoiceId=%s&token=%s&template=%s",
                     frontendUrl,
                     invoiceId,
                     URLEncoder.encode(token, StandardCharsets.UTF_8),
