@@ -52,14 +52,28 @@ public class NotificationServiceImpl implements NotificationService {
 
         String message = buildInvoiceCreatedMessage(invoice);
 
-        byte[] pdf = pdfService.generateInvoicePdf(
-                invoice.getId(),
-                invoice.getShopId(),
-                invoice.getTemplate());
+        boolean sent = false;
 
-        boolean sent = sendEmailSafely(() -> {
-            emailService.sendInvoiceCreated(email, invoice, pdf);
-        }, invoice);
+        try {
+            log.info("Generating PDF...");
+
+            byte[] pdf = pdfService.generateInvoicePdf(
+                    invoice.getId(),
+                    invoice.getShopId(),
+                    invoice.getTemplate());
+                
+            log.info("PDF generated successsfully.");
+
+            sent = sendEmailSafely(() -> {
+                log.info("Sending email...");
+                emailService.sendInvoiceCreated(email, invoice, pdf);
+            }, invoice);
+
+            log.info("Email sent: {}", sent);
+
+        } catch (Exception e) {
+            log.error("Failed to send invoice email", e);
+        }
 
         saveNotification(invoice, message, getRecipient(invoice), "EMAIL", sent);
     }
