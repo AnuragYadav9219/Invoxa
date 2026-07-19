@@ -43,6 +43,7 @@ public class PdfService {
                                         invoiceId,
                                         URLEncoder.encode(token, StandardCharsets.UTF_8),
                                         template.name().toLowerCase());
+
                         page.onRequest(request -> System.out
                                         .println("REQUEST: " + request.method() + " " + request.url()));
 
@@ -56,10 +57,14 @@ public class PdfService {
 
                         page.onPageError(err -> System.out.println("PAGE ERROR: " + err));
 
+                        System.out.println("Opening: " + url);
+
                         page.navigate(
                                         url,
                                         new Page.NavigateOptions()
                                                         .setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
+
+                        System.out.println("DOM loaded");
 
                         page.waitForFunction(
                                         "() => window.__PDF_READY__ === true",
@@ -67,7 +72,11 @@ public class PdfService {
                                         new Page.WaitForFunctionOptions()
                                                         .setTimeout(30000));
 
+                        System.out.println("PDF Ready");
+
                         page.waitForSelector("#invoice-root");
+
+                        System.out.println("Invoice Root Found");
 
                         page.emulateMedia(
                                         new Page.EmulateMediaOptions()

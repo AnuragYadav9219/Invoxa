@@ -1,3 +1,133 @@
+// import { useEffect } from "react";
+// import { useParams, useSearchParams } from "react-router-dom";
+
+// import {
+//     useGetPdfInvoiceQuery,
+//     useGetPdfShopQuery,
+// } from "../invoicePdfApi";
+
+// import { mapInvoice } from "../invoiceMapper";
+// import InvoiceRenderer from "./InvoiceRenderer";
+
+// export default function InvoicePdfPage() {
+
+//     // Initialize immediately
+//     useEffect(() => {
+//         window.__PDF_READY__ = false;
+//     }, []);
+
+//     const { invoiceId } = useParams();
+//     const [searchParams] = useSearchParams();
+//     const token = searchParams.get("token");
+
+//     const query = useGetPdfInvoiceQuery({
+//         invoiceId,
+//         token,
+//     });
+
+//     const {
+//         data: invoice,
+//         isLoading: invoiceLoading,
+//         isError: invoiceError,
+//         error: invoiceErr,
+//     } = query;
+
+//     const {
+//         data: shop,
+//         isLoading: shopLoading,
+//         isError: shopError,
+//         error: shopErr,
+//     } = useGetPdfShopQuery(invoice?.shopId, {
+//         skip: !invoice?.shopId,
+//     });
+
+//     const loading = invoiceLoading || shopLoading;
+
+//     useEffect(() => {
+
+//         if (
+//             loading ||
+//             invoiceError ||
+//             shopError ||
+//             !invoice ||
+//             !shop
+//         ) {
+//             return;
+//         }
+
+//         const markReady = async () => {
+
+//             if (document.fonts) {
+//                 await document.fonts.ready;
+//             }
+
+//             // wait for browser paint
+//             await new Promise(requestAnimationFrame);
+//             await new Promise(requestAnimationFrame);
+
+//             window.__PDF_READY__ = true;
+//         };
+
+//         markReady();
+
+//     }, [loading, invoiceError, shopError, invoice, shop]);
+
+//     if (loading) {
+//         return (
+//             <div className="flex min-h-screen items-center justify-center">
+//                 Loading invoice...
+//             </div>
+//         );
+//     }
+
+//     if (invoiceError || shopError || !invoice || !shop) {
+
+//         return (
+//             <div className="flex min-h-screen items-center justify-center">
+//                 Invoice not found
+//             </div>
+//         );
+//     }
+
+//     const data = mapInvoice(invoice, shop, null);
+
+//     const template =
+//         searchParams.get("template") ||
+//         invoice.template ||
+//         shop.invoiceTemplate ||
+//         "classic";
+
+//     return (
+//         <div id="invoice-root">
+//             <InvoiceRenderer
+//                 template={template}
+//                 data={data}
+//             />
+//         </div>
+//     );
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import { useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 
@@ -11,32 +141,28 @@ import InvoiceRenderer from "./InvoiceRenderer";
 
 export default function InvoicePdfPage() {
 
-    // Initialize immediately
-    useEffect(() => {
-        window.__PDF_READY__ = false;
-    }, []);
-
     const { invoiceId } = useParams();
     const [searchParams] = useSearchParams();
     const token = searchParams.get("token");
 
-    const query = useGetPdfInvoiceQuery({
-        invoiceId,
-        token,
-    });
+    // Reset PDF ready flag
+    useEffect(() => {
+        window.__PDF_READY__ = false;
+    }, []);
 
     const {
         data: invoice,
         isLoading: invoiceLoading,
         isError: invoiceError,
-        error: invoiceErr,
-    } = query;
+    } = useGetPdfInvoiceQuery({
+        invoiceId,
+        token,
+    });
 
     const {
         data: shop,
         isLoading: shopLoading,
         isError: shopError,
-        error: shopErr,
     } = useGetPdfShopQuery(invoice?.shopId, {
         skip: !invoice?.shopId,
     });
@@ -44,31 +170,59 @@ export default function InvoicePdfPage() {
     const loading = invoiceLoading || shopLoading;
 
     useEffect(() => {
+        console.log("Invoice:", invoice);
+        console.log("Shop:", shop);
+        console.log("Loading:", loading);
+        console.log("Invoice Error:", invoiceError);
+        console.log("Shop Error:", shopError);
+    }, [loading, invoice, shop, invoiceError, shopError]);
 
-        if (
-            loading ||
-            invoiceError ||
-            shopError ||
-            !invoice ||
-            !shop
-        ) {
-            return;
+    useEffect(() => {
+        if (!loading && invoice && shop) {
+            console.log("Setting PDF READY");
+            window.__PDF_READY__ = true;
         }
+    }, [loading, invoice, shop]);
+
+    useEffect(() => {
+        let cancelled = false;
 
         const markReady = async () => {
 
-            if (document.fonts) {
-                await document.fonts.ready;
+            if (
+                loading ||
+                invoiceError ||
+                shopError ||
+                !invoice ||
+                !shop
+            ) {
+                return;
             }
 
-            // wait for browser paint
-            await new Promise(requestAnimationFrame);
-            await new Promise(requestAnimationFrame);
+            try {
 
-            window.__PDF_READY__ = true;
+                if (document.fonts) {
+                    await document.fonts.ready;
+                }
+
+                await new Promise(requestAnimationFrame);
+                await new Promise(requestAnimationFrame);
+
+            } finally {
+
+                if (!cancelled) {
+                    window.__PDF_READY__ = true;
+                    console.log("PDF READY");
+                }
+
+            }
         };
 
         markReady();
+
+        return () => {
+            cancelled = true;
+        };
 
     }, [loading, invoiceError, shopError, invoice, shop]);
 
@@ -81,7 +235,6 @@ export default function InvoicePdfPage() {
     }
 
     if (invoiceError || shopError || !invoice || !shop) {
-
         return (
             <div className="flex min-h-screen items-center justify-center">
                 Invoice not found
