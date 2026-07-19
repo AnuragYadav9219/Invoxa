@@ -1,133 +1,3 @@
-// import { useEffect } from "react";
-// import { useParams, useSearchParams } from "react-router-dom";
-
-// import {
-//     useGetPdfInvoiceQuery,
-//     useGetPdfShopQuery,
-// } from "../invoicePdfApi";
-
-// import { mapInvoice } from "../invoiceMapper";
-// import InvoiceRenderer from "./InvoiceRenderer";
-
-// export default function InvoicePdfPage() {
-
-//     // Initialize immediately
-//     useEffect(() => {
-//         window.__PDF_READY__ = false;
-//     }, []);
-
-//     const { invoiceId } = useParams();
-//     const [searchParams] = useSearchParams();
-//     const token = searchParams.get("token");
-
-//     const query = useGetPdfInvoiceQuery({
-//         invoiceId,
-//         token,
-//     });
-
-//     const {
-//         data: invoice,
-//         isLoading: invoiceLoading,
-//         isError: invoiceError,
-//         error: invoiceErr,
-//     } = query;
-
-//     const {
-//         data: shop,
-//         isLoading: shopLoading,
-//         isError: shopError,
-//         error: shopErr,
-//     } = useGetPdfShopQuery(invoice?.shopId, {
-//         skip: !invoice?.shopId,
-//     });
-
-//     const loading = invoiceLoading || shopLoading;
-
-//     useEffect(() => {
-
-//         if (
-//             loading ||
-//             invoiceError ||
-//             shopError ||
-//             !invoice ||
-//             !shop
-//         ) {
-//             return;
-//         }
-
-//         const markReady = async () => {
-
-//             if (document.fonts) {
-//                 await document.fonts.ready;
-//             }
-
-//             // wait for browser paint
-//             await new Promise(requestAnimationFrame);
-//             await new Promise(requestAnimationFrame);
-
-//             window.__PDF_READY__ = true;
-//         };
-
-//         markReady();
-
-//     }, [loading, invoiceError, shopError, invoice, shop]);
-
-//     if (loading) {
-//         return (
-//             <div className="flex min-h-screen items-center justify-center">
-//                 Loading invoice...
-//             </div>
-//         );
-//     }
-
-//     if (invoiceError || shopError || !invoice || !shop) {
-
-//         return (
-//             <div className="flex min-h-screen items-center justify-center">
-//                 Invoice not found
-//             </div>
-//         );
-//     }
-
-//     const data = mapInvoice(invoice, shop, null);
-
-//     const template =
-//         searchParams.get("template") ||
-//         invoice.template ||
-//         shop.invoiceTemplate ||
-//         "classic";
-
-//     return (
-//         <div id="invoice-root">
-//             <InvoiceRenderer
-//                 template={template}
-//                 data={data}
-//             />
-//         </div>
-//     );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import { useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 
@@ -189,32 +59,36 @@ export default function InvoicePdfPage() {
 
         const markReady = async () => {
 
-            if (
-                loading ||
-                invoiceError ||
-                shopError ||
-                !invoice ||
-                !shop
-            ) {
+            if (loading || invoiceError || shopError || !invoice || !shop) {
                 return;
             }
 
+            console.time("PDF Ready");
+
             try {
 
+                console.time("Fonts");
                 if (document.fonts) {
                     await document.fonts.ready;
                 }
+                console.timeEnd("Fonts");
 
+                console.time("RAF 1");
                 await new Promise(requestAnimationFrame);
+                console.timeEnd("RAF 1");
+
+                console.time("RAF 2");
                 await new Promise(requestAnimationFrame);
+                console.timeEnd("RAF 2");
 
             } finally {
 
-                if (!cancelled) {
-                    window.__PDF_READY__ = true;
-                    console.log("PDF READY");
-                }
+                console.timeEnd("PDF Ready");
 
+                if (!cancelled) {
+                    console.log("Setting PDF READY");
+                    window.__PDF_READY__ = true;
+                }
             }
         };
 
