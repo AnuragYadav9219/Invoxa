@@ -182,7 +182,7 @@ export default function InvoicePdfPage() {
             try {
 
                 const response = await fetch(
-                    `${API_BASE_URL}/api/public/print/${invoiceId}`,
+                    `${API_BASE_URL}/public/print/${invoiceId}`,
                     {
                         headers: {
                             "X-Print-Token": token,
