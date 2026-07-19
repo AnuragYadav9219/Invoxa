@@ -7,7 +7,14 @@ const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 export default function InvoicePdfPage() {
 
+    console.log(window.location.search);
+
     const params = new URLSearchParams(window.location.search);
+
+    console.log(params.toString());
+    console.log("invoiceId =", params.get("invoiceId"));
+    console.log("token =", params.get("token"));
+    console.log("template =", params.get("template"));
 
     const invoiceId = params.get("invoiceId");
     const token = params.get("token");
