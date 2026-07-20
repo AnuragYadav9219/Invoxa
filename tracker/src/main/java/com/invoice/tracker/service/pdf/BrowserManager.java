@@ -85,7 +85,13 @@ public class BrowserManager {
                                 "--disable-extensions",
                                 "--disable-background-networking",
                                 "--disable-sync",
-                                "--mute-audio")));
+                                "--mute-audio",
+                                "--single-process",
+                                "--disable-features=site-per-process",
+                                "--disable-renderer-backgrounding",
+                                "--disable-background-timer-throttling",
+                                "--disable-backgrounding-occluded-windows",
+                                "--disable-ipc-flooding-protection")));
 
         browser.onDisconnected(b -> System.out.println("Chromium disconnected."));
 
