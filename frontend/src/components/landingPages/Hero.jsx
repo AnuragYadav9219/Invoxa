@@ -1,104 +1,119 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiArrowRight, FiTrendingUp, FiFileText, FiPieChart } from 'react-icons/fi';
+import { 
+  FiArrowRight, 
+  FiTrendingUp, 
+  FiFileText, 
+  FiPieChart, 
+  FiCheckCircle, 
+  FiClock, 
+  FiPlayCircle 
+} from 'react-icons/fi';
 
 export default function Hero() {
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
-    };
+  const [activeTab, setActiveTab] = useState('overview');
 
-    const itemVariants = {
-        hidden: { opacity: 0, y: 30 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
-    };
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.12 } }
+  };
 
-    return (
-        <section className="max-w-7xl mx-auto px-6 pt-28 pb-24 text-center relative z-10">
-            <motion.div
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-                className="max-w-3xl mx-auto space-y-6"
-            >
-                <motion.div
-                    variants={itemVariants}
-                    whileHover={{ scale: 1.05 }}
-                    className="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/5 text-xs font-medium text-indigo-400 backdrop-blur-sm cursor-pointer select-none"
-                >
-                    <span>Introducing Invoxa 1.0</span>
-                    <FiArrowRight className="w-3 h-3" />
-                </motion.div>
+  const itemVariants = {
+    hidden: { opacity: 0, y: 25 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } 
+    }
+  };
 
-                <motion.h1 variants={itemVariants} className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1]">
-                    Manage your business{' '}
-                    <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-pink-400 bg-clip-text text-transparent">
-                        smarter & faster
-                    </span>
-                </motion.h1>
+  return (
+    <section className="relative pt-32 pb-24 md:pt-40 md:pb-32 overflow-hidden bg-slate-950 text-center">
+      
+      {/* Background Ambient Lighting & Grid Overlay */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-250 h-125 bg-linear-to-tr from-indigo-600/20 via-violet-600/15 to-pink-500/10 blur-[150px] pointer-events-none rounded-full" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-size-[4rem_4rem] mask-[radial-gradient(ellipse_60%_50%_at_50%_35%,#000_70%,transparent_100%)] pointer-events-none" />
 
-                <motion.p variants={itemVariants} className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-                    Automate invoicing, track operations, and register clients effortlessly. The all-in-one SaaS platform built to let you focus on growth.
-                </motion.p>
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        
+        {/* Main Content Area */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="max-w-4xl mx-auto space-y-8"
+        >
+          {/* Release Badge Link */}
+          <motion.div variants={itemVariants} className="inline-block">
+            <Link to="/changelog">
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-xs font-semibold text-indigo-300 backdrop-blur-md cursor-pointer select-none ring-1 ring-white/10 hover:border-indigo-500/50 transition-colors"
+              >
+                <span className="flex h-2 w-2 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                </span>
+                <span>Invoxa 2.0 is now live</span>
+                <span className="text-slate-500">|</span>
+                <span className="flex items-center gap-1 text-slate-300 font-medium">
+                  See what's new <FiArrowRight className="w-3 h-3 text-indigo-400" />
+                </span>
+              </motion.div>
+            </Link>
+          </motion.div>
 
-                <motion.div variants={itemVariants} className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <motion.button
-                        whileHover={{ scale: 1.02, y: -2 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="w-full sm:w-auto px-8 py-4 text-sm font-semibold bg-gradient-to-r from-indigo-500 to-violet-600 text-white rounded-xl shadow-xl shadow-indigo-500/20 flex items-center justify-center space-x-2 group"
-                    >
-                        <span>Get Started Free</span>
-                        <FiArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </motion.button>
+          {/* Headline */}
+          <motion.h1 
+            variants={itemVariants} 
+            className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white leading-[1.1]"
+          >
+            Manage revenue & invoicing{' '}
+            <span className="block mt-2 bg-linear-to-r from-indigo-300 via-violet-300 to-pink-300 bg-clip-text text-transparent">
+              smarter, faster, automated.
+            </span>
+          </motion.h1>
 
-                    <motion.button
-                        whileHover={{ scale: 1.02, bg: '#1e293b' }}
-                        whileTap={{ scale: 0.98 }}
-                        className="w-full sm:w-auto px-8 py-4 text-sm font-semibold bg-slate-900 border border-slate-800 text-slate-300 rounded-xl transition-colors"
-                    >
-                        Book a Demo
-                    </motion.button>
-                </motion.div>
+          {/* Subtitle */}
+          <motion.p 
+            variants={itemVariants} 
+            className="text-base sm:text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed"
+          >
+            The financial infrastructure built for modern SaaS. Automate custom billing schedules, reconcile global ledgers, and track cash flow with real-time accuracy.
+          </motion.p>
+
+          {/* Call-To-Action Buttons with Links */}
+          <motion.div variants={itemVariants} className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
+            
+            {/* Primary Action Button -> Register */}
+            <motion.div whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }} className="w-full sm:w-auto">
+              <Link
+                to="/register"
+                className="w-full sm:w-auto px-8 py-4 text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-xl shadow-indigo-500/25 ring-1 ring-white/20 flex items-center justify-center gap-2 group transition-all"
+              >
+                <span>Start Free Trial</span>
+                <FiArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </motion.div>
 
-            {/* Dynamic Dashboard App Preview Block */}
-            <motion.div
-                initial={{ opacity: 0, y: 60, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="mt-20 border border-slate-800/80 rounded-2xl bg-slate-900/20 backdrop-blur-md p-5 shadow-2xl shadow-indigo-500/5 max-w-5xl mx-auto relative group overflow-hidden"
-            >
-                <div className="absolute -inset-px bg-gradient-to-r from-indigo-500/20 via-transparent to-violet-500/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                <div className="flex items-center space-x-2 pb-4 border-b border-slate-800/60 mb-5">
-                    <div className="w-3 h-3 rounded-full bg-rose-500/40" />
-                    <div className="w-3 h-3 rounded-full bg-amber-500/40" />
-                    <div className="w-3 h-3 rounded-full bg-emerald-500/40" />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-left">
-                    {[
-                        { label: 'Total Revenue', value: '$48,250.00', sub: '+12% from last month', icon: FiTrendingUp, color: 'text-emerald-400' },
-                        { label: 'Invoices Sent', value: '184', sub: '99.1% paid on time', icon: FiFileText, color: 'text-indigo-400' },
-                        { label: 'Active Clients', value: '42', sub: '4 new this week', icon: FiPieChart, color: 'text-violet-400' }
-                    ].map((card, i) => {
-                        const Icon = card.icon;
-                        return (
-                            <motion.div
-                                key={i}
-                                whileHover={{ y: -4, borderColor: 'rgb(51 65 85)' }}
-                                className="border border-slate-800/80 bg-slate-950/60 rounded-xl p-6 transition-all duration-300"
-                            >
-                                <div className="flex justify-between items-start mb-4">
-                                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">{card.label}</span>
-                                    <Icon className={`${card.color} w-5 h-5`} />
-                                </div>
-                                <div className="text-3xl font-bold tracking-tight text-slate-100">{card.value}</div>
-                                <p className="text-xs text-slate-500 mt-1">{card.sub}</p>
-                            </motion.div>
-                        );
-                    })}
-                </div>
+            {/* Secondary Action Button -> Demo/Contact */}
+            <motion.div whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }} className="w-full sm:w-auto">
+              <Link
+                to="/demo"
+                className="w-full sm:w-auto px-8 py-4 text-sm font-semibold bg-slate-900/80 hover:bg-slate-800/80 border border-white/10 text-slate-300 hover:text-white rounded-xl backdrop-blur-md flex items-center justify-center gap-2.5 transition-all"
+              >
+                <FiPlayCircle className="w-4 h-4 text-indigo-400" />
+                <span>Watch Demo (2 min)</span>
+              </Link>
             </motion.div>
-        </section>
-    );
+
+          </motion.div>
+
+        </motion.div>
+
+      </div>
+    </section>
+  );
 }

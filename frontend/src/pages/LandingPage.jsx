@@ -2,7 +2,6 @@ import BottomCTA from '@/components/landingPages/BottomCTA';
 import FAQ from '@/components/landingPages/FAQ';
 import Features from '@/components/landingPages/Features';
 import Hero from '@/components/landingPages/Hero';
-import LivePlayground from '@/components/landingPages/LivePlayground';
 import LogoTicker from '@/components/landingPages/LogoTicker';
 import Navbar from '@/components/landingPages/Navbar';
 import Pricing from '@/components/landingPages/Pricing';
@@ -19,7 +18,6 @@ export default function LandingPage() {
             <Navbar />
             <Hero />
             <LogoTicker />
-            <LivePlayground />
             <Features />
             <Testimonials />
             <Pricing />

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 
 import { mapInvoice } from "../invoiceMapper";
@@ -6,17 +7,42 @@ import InvoiceRenderer from "./InvoiceRenderer";
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 export default function InvoicePdfPage() {
+    console.log("Rendering InvoicePdfPage");
+    window.javaTime?.();
+
+    useEffect(() => {
+        console.log("Mounted");
+    }, []);
+
+    console.log(location.href);
+    console.log(performance.now());
+
     const params = new URLSearchParams(window.location.search);
 
     const invoiceId = params.get("invoiceId");
     const token = params.get("token");
     const templateParam = params.get("template");
 
+    console.log("invoiceId =", invoiceId);
+    console.log("token =", token);
+    console.log("template =", templateParam);
+
     const [invoice, setInvoice] = useState(null);
     const [shop, setShop] = useState(null);
 
     const [isLoading, setIsLoading] = useState(true);
     const [isError, setIsError] = useState(false);
+
+    useEffect(() => {
+        return () => {
+            console.log("UNMOUNTED");
+        };
+    }, []);
+
+    console.log(
+        "Navigation:",
+        performance.getEntriesByType("navigation")[0]
+    );
 
     useEffect(() => {
 
@@ -50,6 +76,8 @@ export default function InvoicePdfPage() {
                         },
                     }
                 );
+
+                console.timeEnd("Fetch Invoice");
 
                 if (!response.ok) {
                     throw new Error("Failed to load invoice");
@@ -103,6 +131,8 @@ export default function InvoicePdfPage() {
                 return;
             }
 
+            console.time("PDF Ready");
+
             try {
 
                 if (document.fonts) {
@@ -114,8 +144,11 @@ export default function InvoicePdfPage() {
 
             } finally {
 
+                console.timeEnd("PDF Ready");
+
                 if (!cancelled) {
                     window.__PDF_READY__ = true;
+                    console.log("PDF READY");
                 }
 
             }
