@@ -1,103 +1,3 @@
-// package com.invoice.tracker.service.pdf;
-
-// import java.net.URLEncoder;
-// import java.nio.charset.StandardCharsets;
-// import java.util.UUID;
-
-// import org.springframework.beans.factory.annotation.Value;
-// import org.springframework.stereotype.Service;
-
-// import com.invoice.tracker.entity.invoice.InvoiceTemplate;
-// import com.invoice.tracker.security.PrintTokenUtil;
-// import com.microsoft.playwright.BrowserContext;
-// import com.microsoft.playwright.Page;
-// import com.microsoft.playwright.options.Margin;
-// import com.microsoft.playwright.options.Media;
-// import com.microsoft.playwright.options.WaitUntilState;
-
-// import lombok.RequiredArgsConstructor;
-
-// @Service
-// @RequiredArgsConstructor
-// public class PdfService {
-
-//     private final PrintTokenUtil printTokenUtil;
-//     private final BrowserManager browserManager;
-
-//     @Value("${app.frontend.url}")
-//     private String frontendUrl;
-
-//     public byte[] generateInvoicePdf(
-//             UUID invoiceId,
-//             UUID shopId,
-//             InvoiceTemplate template) {
-
-//         BrowserContext context = browserManager.browser().newContext();
-//         Page page = context.newPage();
-
-//         try {
-
-//             String token = printTokenUtil.generateToken(invoiceId, shopId);
-
-//             String url = String.format(
-//                     "%s/pdf.html?invoiceId=%s&token=%s&template=%s",
-//                     frontendUrl,
-//                     invoiceId,
-//                     URLEncoder.encode(token, StandardCharsets.UTF_8),
-//                     template.name().toLowerCase());
-
-//             long totalStart = System.currentTimeMillis();
-
-//             page.navigate(
-//                     url,
-//                     new Page.NavigateOptions()
-//                             .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
-//                             .setTimeout(60000));
-
-//             System.out.println("Navigate took: "
-//                     + (System.currentTimeMillis() - totalStart) + " ms");
-
-//             page.waitForFunction(
-//                     "() => window.__PDF_READY__ === true",
-//                     null,
-//                     new Page.WaitForFunctionOptions()
-//                             .setTimeout(60000));
-
-//             System.out.println("Ready took: "
-//                     + (System.currentTimeMillis() - totalStart) + " ms");
-
-//             page.emulateMedia(
-//                     new Page.EmulateMediaOptions()
-//                             .setMedia(Media.PRINT));
-
-//             long pdfStart = System.currentTimeMillis();
-
-//             byte[] pdfBytes = page.pdf(
-//                     new Page.PdfOptions()
-//                             .setFormat("A4")
-//                             .setPrintBackground(true)
-//                             .setMargin(
-//                                     new Margin()
-//                                             .setTop("20px")
-//                                             .setBottom("20px")
-//                                             .setLeft("20px")
-//                                             .setRight("20px")));
-
-//             System.out.println("Playwright PDF took: "
-//                     + (System.currentTimeMillis() - pdfStart) + " ms");
-
-//             System.out.println("Total PDF generation: "
-//                     + (System.currentTimeMillis() - totalStart) + " ms");
-
-//             return pdfBytes;
-
-//         } finally {
-//             page.close();
-//             context.close();
-//         }
-//     }
-// }
-
 package com.invoice.tracker.service.pdf;
 
 import java.net.URLEncoder;
@@ -137,7 +37,7 @@ public class PdfService {
 
                 try {
 
-                        page.setDefaultTimeout(60000);
+                        page.setDefaultTimeout(90000);
 
                         page.onConsoleMessage(
                                         msg -> System.out.println("[Console] " + msg.type() + " : " + msg.text()));
@@ -183,7 +83,7 @@ public class PdfService {
                                         url,
                                         new Page.NavigateOptions()
                                                         .setWaitUntil(WaitUntilState.COMMIT)
-                                                        .setTimeout(60000));
+                                                        .setTimeout(90000));
 
                         System.out.println("Navigate took: "
                                         + (System.currentTimeMillis() - totalStart) + " ms");
@@ -192,7 +92,7 @@ public class PdfService {
                                         "() => window.__PDF_READY__ === true",
                                         null,
                                         new Page.WaitForFunctionOptions()
-                                                        .setTimeout(60000));
+                                                        .setTimeout(90000));
 
                         // allow browser to paint one more frame
                         page.evaluate("() => new Promise(requestAnimationFrame)");
