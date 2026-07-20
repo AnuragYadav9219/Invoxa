@@ -86,7 +86,6 @@ public class BrowserManager {
                                 "--disable-background-networking",
                                 "--disable-sync",
                                 "--mute-audio",
-                                "--single-process",
                                 "--disable-features=site-per-process",
                                 "--disable-renderer-backgrounding",
                                 "--disable-background-timer-throttling",

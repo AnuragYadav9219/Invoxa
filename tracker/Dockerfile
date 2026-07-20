@@ -14,7 +14,7 @@ RUN ./mvnw clean package -DskipTests
 # ==========================
 # RUNTIME STAGE
 # ==========================
-FROM mcr.microsoft.com/playwright/java:v1.44.0-jammy
+FROM mcr.microsoft.com/playwright/java:v1.54.0-jammy
 
 WORKDIR /app
 
