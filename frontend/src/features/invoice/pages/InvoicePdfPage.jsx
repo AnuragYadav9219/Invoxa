@@ -165,7 +165,7 @@
 
 
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { mapInvoice } from "../invoiceMapper";
 import InvoiceRenderer from "./InvoiceRenderer";
@@ -173,12 +173,17 @@ import InvoiceRenderer from "./InvoiceRenderer";
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 export default function InvoicePdfPage() {
+    console.log("Rendering InvoicePdfPage");
     window.javaTime?.();
 
-    const params = useMemo(
-        () => new URLSearchParams(window.location.search),
-        []
-    );
+    useEffect(() => {
+        console.log("Mounted");
+    }, []);
+
+    console.log(location.href);
+    console.log(performance.now());
+
+    const params = new URLSearchParams(window.location.search);
 
     const invoiceId = params.get("invoiceId");
     const token = params.get("token");
@@ -193,6 +198,17 @@ export default function InvoicePdfPage() {
 
     const [isLoading, setIsLoading] = useState(true);
     const [isError, setIsError] = useState(false);
+
+    useEffect(() => {
+        return () => {
+            console.log("UNMOUNTED");
+        };
+    }, []);
+
+    console.log(
+        "Navigation:",
+        performance.getEntriesByType("navigation")[0]
+    );
 
     useEffect(() => {
 
