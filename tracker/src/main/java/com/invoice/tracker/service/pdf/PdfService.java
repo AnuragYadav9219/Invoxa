@@ -133,7 +133,6 @@ public class PdfService {
                         InvoiceTemplate template) {
 
                 BrowserContext context = browserManager.browser().newContext();
-
                 Page page = context.newPage();
 
                 try {
@@ -152,8 +151,7 @@ public class PdfService {
 
                         page.onResponse(res -> {
                                 if (res.status() >= 400) {
-                                        System.out.println("[HTTP " + res.status() + "] "
-                                                        + res.url());
+                                        System.out.println("[HTTP " + res.status() + "] " + res.url());
                                 }
                         });
 
@@ -173,13 +171,6 @@ public class PdfService {
 
                         long totalStart = System.currentTimeMillis();
 
-                        page.onConsoleMessage(msg -> System.out.println("[Console] " + msg.type() + ": " + msg.text()));
-
-                        page.onPageError(err -> System.out.println("[Page Error] " + err));
-
-                        page.onRequestFailed(
-                                        req -> System.out.println("[Failed] " + req.url() + " -> " + req.failure()));
-
                         page.navigate(
                                         url,
                                         new Page.NavigateOptions()
@@ -194,6 +185,9 @@ public class PdfService {
                                         null,
                                         new Page.WaitForFunctionOptions()
                                                         .setTimeout(60000));
+
+                        // allow browser to paint one more frame
+                        page.evaluate("() => new Promise(requestAnimationFrame)");
 
                         System.out.println("Ready took: "
                                         + (System.currentTimeMillis() - totalStart) + " ms");
