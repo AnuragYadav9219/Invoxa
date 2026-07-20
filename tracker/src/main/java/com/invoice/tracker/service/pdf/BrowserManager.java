@@ -103,7 +103,9 @@ public class BrowserManager {
 
         try {
 
-            if (browser == null || !browser.isConnected()) {
+            try {
+                browser.version(); // Throws if browser is disconnected
+            } catch (Exception e) {
                 System.out.println("Recreating Chromium...");
                 browser = createBrowser();
             }
