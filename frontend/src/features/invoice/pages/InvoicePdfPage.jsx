@@ -176,39 +176,17 @@ export default function InvoicePdfPage() {
     console.log("Rendering InvoicePdfPage");
     window.javaTime?.();
 
-    useEffect(() => {
-        console.log("Mounted");
-    }, []);
-
-    console.log(location.href);
-    console.log(performance.now());
-
     const params = new URLSearchParams(window.location.search);
 
     const invoiceId = params.get("invoiceId");
     const token = params.get("token");
     const templateParam = params.get("template");
 
-    console.log("invoiceId =", invoiceId);
-    console.log("token =", token);
-    console.log("template =", templateParam);
-
     const [invoice, setInvoice] = useState(null);
     const [shop, setShop] = useState(null);
 
     const [isLoading, setIsLoading] = useState(true);
     const [isError, setIsError] = useState(false);
-
-    useEffect(() => {
-        return () => {
-            console.log("UNMOUNTED");
-        };
-    }, []);
-
-    console.log(
-        "Navigation:",
-        performance.getEntriesByType("navigation")[0]
-    );
 
     useEffect(() => {
 
