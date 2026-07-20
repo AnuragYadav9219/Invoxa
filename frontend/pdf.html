@@ -10,7 +10,15 @@
 <body>
     <div id="root"></div>
 
-    <script type="module" src="/src/pdf-main.jsx"></script>
+    <script>
+        console.log("HTML parsed", performance.now());
+    </script>
+
+    <!-- <script type="module" src="/src/pdf-main.jsx"></script> -->
+    <script type="module">
+        console.log("Module starts", performance.now());
+        import "/src/pdf-main.jsx";
+    </script>
 </body>
 
 </html>
