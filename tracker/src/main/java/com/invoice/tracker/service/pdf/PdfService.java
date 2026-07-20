@@ -171,6 +171,14 @@ public class PdfService {
 
                         long totalStart = System.currentTimeMillis();
 
+                        page.exposeFunction("javaTime", args -> {
+                                System.out.println(
+                                                "Browser started JS after "
+                                                                + (System.currentTimeMillis() - totalStart)
+                                                                + " ms");
+                                return null;
+                        });
+
                         page.navigate(
                                         url,
                                         new Page.NavigateOptions()

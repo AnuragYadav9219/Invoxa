@@ -276,6 +276,8 @@ export const invoiceApi = baseApi.injectEndpoints({
 
           const apiUrl = import.meta.env.VITE_API_URL;
 
+          console.time("Fetch Invoice");
+
           const res = await fetch(
             `${apiUrl}/invoices/pdf/${id}?template=${encodeURIComponent(template)}`,
             {
@@ -286,6 +288,8 @@ export const invoiceApi = baseApi.injectEndpoints({
               },
             }
           );
+
+          console.timeEnd("Fetch Invoice");
 
           if (!res.ok) {
             const errorText = await res.text();

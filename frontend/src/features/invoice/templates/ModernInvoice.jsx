@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Phone, MapPin, User, Mail } from "lucide-react";
+import { Calendar, User } from "lucide-react";
 import { formatCurrency, formatDate } from "@/utils/formatters";
 import InvoiceItemsTable from "../shared/InvoiceItemsTable";
 

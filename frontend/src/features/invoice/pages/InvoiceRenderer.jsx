@@ -14,6 +14,8 @@ import VibrantInvoice from "../templates/VibrantInvoice";
 
 export default function InvoiceRenderer({ template, data }) {
 
+    console.time("InvoiceRenderer");
+
     const selected = (template || "classic")
         .trim()
         .toLowerCase();

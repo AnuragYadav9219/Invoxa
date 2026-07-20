@@ -1,13 +1,12 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Briefcase, Calendar, Phone, MapPin, Mail, FileText } from "lucide-react";
+import { Briefcase, MapPin, FileText } from "lucide-react";
 import { formatCurrency, formatDate } from "@/utils/formatters";
 import InvoiceItemsTable from "../shared/InvoiceItemsTable";
 
 export default function MinimalInvoice({ data }) {
     const balance = data.payment.remaining;
-    const status =
+       const status =
         balance === 0
             ? "PAID"
             : balance === data.payment.total
