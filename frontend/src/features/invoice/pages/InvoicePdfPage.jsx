@@ -173,7 +173,6 @@ import InvoiceRenderer from "./InvoiceRenderer";
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 export default function InvoicePdfPage() {
-    console.log("Rendering InvoicePdfPage");
     window.javaTime?.();
 
     const params = new URLSearchParams(window.location.search);
@@ -210,8 +209,6 @@ export default function InvoicePdfPage() {
                     throw new Error("Missing invoiceId or token.");
                 }
 
-                console.time("Fetch Invoice");
-
                 const response = await fetch(
                     `${API_BASE_URL}/public/print/${invoiceId}`,
                     {
@@ -220,8 +217,6 @@ export default function InvoicePdfPage() {
                         },
                     }
                 );
-
-                console.timeEnd("Fetch Invoice");
 
                 if (!response.ok) {
                     throw new Error("Failed to load invoice");
@@ -275,8 +270,6 @@ export default function InvoicePdfPage() {
                 return;
             }
 
-            console.time("PDF Ready");
-
             try {
 
                 if (document.fonts) {
@@ -288,11 +281,8 @@ export default function InvoicePdfPage() {
 
             } finally {
 
-                console.timeEnd("PDF Ready");
-
                 if (!cancelled) {
                     window.__PDF_READY__ = true;
-                    console.log("PDF READY");
                 }
 
             }
