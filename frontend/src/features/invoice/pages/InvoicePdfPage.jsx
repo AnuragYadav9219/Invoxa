@@ -1,4 +1,3 @@
-
 // import { useEffect, useState } from "react";
 
 // import { mapInvoice } from "../invoiceMapper";
@@ -7,18 +6,6 @@
 // const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 // export default function InvoicePdfPage() {
-//     console.log("Rendering InvoicePdfPage");
-
-//     useEffect(() => {
-//         window.javaTime?.();
-//     }, []);
-
-//     useEffect(() => {
-//         console.log("Mounted");
-//     }, []);
-
-//     console.log(location.href);
-//     console.log(performance.now());
 
 //     const params = new URLSearchParams(window.location.search);
 
@@ -26,27 +13,18 @@
 //     const token = params.get("token");
 //     const templateParam = params.get("template");
 
-//     console.log("invoiceId =", invoiceId);
-//     console.log("token =", token);
-//     console.log("template =", templateParam);
-
 //     const [invoice, setInvoice] = useState(null);
 //     const [shop, setShop] = useState(null);
 
 //     const [isLoading, setIsLoading] = useState(true);
 //     const [isError, setIsError] = useState(false);
 
+//     // Tell Playwright when JS actually starts
 //     useEffect(() => {
-//         return () => {
-//             console.log("UNMOUNTED");
-//         };
+//         window.javaTime?.();
 //     }, []);
 
-//     console.log(
-//         "Navigation:",
-//         performance.getEntriesByType("navigation")[0]
-//     );
-
+//     // Initialize ready flag
 //     useEffect(() => {
 
 //         window.__PDF_READY__ = false;
@@ -57,6 +35,7 @@
 
 //     }, []);
 
+//     // Fetch invoice
 //     useEffect(() => {
 
 //         let cancelled = false;
@@ -93,9 +72,9 @@
 //                 setInvoice(json.data.invoice);
 //                 setShop(json.data.shop);
 
-//             } catch (error) {
+//             } catch (err) {
 
-//                 console.error(error);
+//                 console.error(err);
 
 //                 if (!cancelled) {
 //                     setIsError(true);
@@ -119,46 +98,58 @@
 
 //     }, [invoiceId, token]);
 
+//     // Wait until invoice is completely rendered
 //     useEffect(() => {
+
+//         if (isLoading || isError || !invoice || !shop) {
+//             return;
+//         }
 
 //         let cancelled = false;
 
-//         async function markReady() {
-
-//             if (
-//                 isLoading ||
-//                 isError ||
-//                 !invoice ||
-//                 !shop
-//             ) {
-//                 return;
-//             }
+//         async function ready() {
 
 //             console.time("PDF Ready");
 
 //             try {
 
+//                 // Wait for React render
+//                 await new Promise(requestAnimationFrame);
+//                 await new Promise(requestAnimationFrame);
+
+//                 // Wait for fonts
 //                 if (document.fonts) {
 //                     await document.fonts.ready;
 //                 }
 
-//                 await new Promise(requestAnimationFrame);
+//                 // Wait another frame
 //                 await new Promise(requestAnimationFrame);
 
-//             } finally {
+//                 // Ensure invoice DOM exists
+//                 const root = document.getElementById("invoice-root");
 
-//                 console.timeEnd("PDF Ready");
+//                 if (!root) {
+//                     throw new Error("invoice-root not found");
+//                 }
+
+//                 if (root.offsetHeight === 0) {
+//                     throw new Error("invoice-root not rendered");
+//                 }
 
 //                 if (!cancelled) {
 //                     window.__PDF_READY__ = true;
 //                     console.log("PDF READY");
 //                 }
 
+//             } finally {
+
+//                 console.timeEnd("PDF Ready");
+
 //             }
 
 //         }
 
-//         markReady();
+//         ready();
 
 //         return () => {
 //             cancelled = true;
@@ -226,17 +217,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 import { useEffect, useState } from "react";
 
 import { mapInvoice } from "../invoiceMapper";
@@ -250,41 +230,44 @@ export default function InvoicePdfPage() {
 
     const invoiceId = params.get("invoiceId");
     const token = params.get("token");
+
     const templateParam = params.get("template");
 
-    const [invoice, setInvoice] = useState(null);
-    const [shop, setShop] = useState(null);
+    const [state, setState] = useState({
+        loading: true,
+        error: null,
+        invoice: null,
+        shop: null
+    });
 
-    const [isLoading, setIsLoading] = useState(true);
-    const [isError, setIsError] = useState(false);
-
-    // Tell Playwright when JS actually starts
-    useEffect(() => {
-        window.javaTime?.();
-    }, []);
-
-    // Initialize ready flag
     useEffect(() => {
 
         window.__PDF_READY__ = false;
+        window.__PDF_ERROR__ = null;
+
+        window.javaTime?.();
 
         return () => {
+
             window.__PDF_READY__ = false;
+            window.__PDF_ERROR__ = null;
+
         };
 
     }, []);
 
-    // Fetch invoice
     useEffect(() => {
 
         let cancelled = false;
 
-        async function loadInvoice() {
+        const controller = new AbortController();
+
+        async function load() {
 
             try {
 
                 if (!invoiceId || !token) {
-                    throw new Error("Missing invoiceId or token.");
+                    throw new Error("Missing invoiceId or token");
                 }
 
                 console.time("Fetch Invoice");
@@ -293,143 +276,142 @@ export default function InvoicePdfPage() {
                     `${API_BASE_URL}/public/print/${invoiceId}`,
                     {
                         headers: {
-                            "X-Print-Token": token,
+                            "X-Print-Token": token
                         },
+                        signal: controller.signal
                     }
                 );
 
                 console.timeEnd("Fetch Invoice");
 
                 if (!response.ok) {
-                    throw new Error("Failed to load invoice");
+                    throw new Error(`HTTP ${response.status}`);
                 }
 
                 const json = await response.json();
 
                 if (cancelled) return;
 
-                setInvoice(json.data.invoice);
-                setShop(json.data.shop);
+                setState({
+                    loading: false,
+                    error: null,
+                    invoice: json.data.invoice,
+                    shop: json.data.shop
+                });
 
-            } catch (err) {
+            }
 
-                console.error(err);
+            catch (e) {
 
-                if (!cancelled) {
-                    setIsError(true);
-                }
+                console.error(e);
 
-            } finally {
+                if (cancelled) return;
 
-                if (!cancelled) {
-                    setIsLoading(false);
-                }
+                window.__PDF_ERROR__ = e.message;
+
+                setState({
+                    loading: false,
+                    error: e.message,
+                    invoice: null,
+                    shop: null
+                });
 
             }
 
         }
 
-        loadInvoice();
+        load();
 
         return () => {
+
             cancelled = true;
+            controller.abort();
+
         };
 
     }, [invoiceId, token]);
 
-    // Wait until invoice is completely rendered
     useEffect(() => {
 
-        if (isLoading || isError || !invoice || !shop) {
+        if (
+            state.loading ||
+            state.error ||
+            !state.invoice ||
+            !state.shop
+        ) {
             return;
         }
 
-        let cancelled = false;
+        requestAnimationFrame(() => {
 
-        async function ready() {
+            const root = document.getElementById("invoice-root");
 
-            console.time("PDF Ready");
+            if (!root) {
 
-            try {
+                window.__PDF_ERROR__ = "invoice-root missing";
 
-                // Wait for React render
-                await new Promise(requestAnimationFrame);
-                await new Promise(requestAnimationFrame);
-
-                // Wait for fonts
-                if (document.fonts) {
-                    await document.fonts.ready;
-                }
-
-                // Wait another frame
-                await new Promise(requestAnimationFrame);
-
-                // Ensure invoice DOM exists
-                const root = document.getElementById("invoice-root");
-
-                if (!root) {
-                    throw new Error("invoice-root not found");
-                }
-
-                if (root.offsetHeight === 0) {
-                    throw new Error("invoice-root not rendered");
-                }
-
-                if (!cancelled) {
-                    window.__PDF_READY__ = true;
-                    console.log("PDF READY");
-                }
-
-            } finally {
-
-                console.timeEnd("PDF Ready");
+                return;
 
             }
 
-        }
+            if (root.offsetHeight === 0) {
 
-        ready();
+                window.__PDF_ERROR__ = "invoice-root empty";
 
-        return () => {
-            cancelled = true;
-        };
+                return;
 
-    }, [isLoading, isError, invoice, shop]);
+            }
 
-    if (isLoading) {
+            window.__PDF_READY__ = true;
+
+            console.log("PDF READY");
+
+        });
+
+    }, [state]);
+
+    if (state.loading) {
+
         return (
             <div className="flex min-h-screen items-center justify-center">
                 Loading invoice...
             </div>
         );
+
     }
 
-    if (isError || !invoice || !shop) {
+    if (state.error) {
+
         return (
             <div className="flex min-h-screen items-center justify-center">
                 Invoice not found
             </div>
         );
+
     }
 
-    console.time("Map Invoice");
-
-    const dataModel = mapInvoice(invoice, shop, null);
-
-    console.timeEnd("Map Invoice");
-
-    const template =
-        templateParam ||
-        invoice.template ||
-        shop.invoiceTemplate ||
-        "classic";
+    const data = mapInvoice(
+        state.invoice,
+        state.shop,
+        null
+    );
 
     return (
+
         <div id="invoice-root">
+
             <InvoiceRenderer
-                template={template}
-                data={dataModel}
+                template={
+                    templateParam ||
+                    state.invoice.template ||
+                    state.shop.invoiceTemplate ||
+                    "classic"
+                }
+                data={data}
             />
+
         </div>
+
     );
+
 }

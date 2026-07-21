@@ -89,7 +89,16 @@ public class PdfService {
                                         + (System.currentTimeMillis() - totalStart) + " ms");
 
                         page.waitForFunction(
-                                        "() => window.__PDF_READY__ === true",
+                                        """
+                                                        () => {
+
+                                                            if(window.__PDF_ERROR__)
+                                                                throw new Error(window.__PDF_ERROR__);
+
+                                                            return window.__PDF_READY__ === true;
+
+                                                        }
+                                                        """,
                                         null,
                                         new Page.WaitForFunctionOptions()
                                                         .setTimeout(90000));

@@ -1,28 +1,29 @@
 <!DOCTYPE html>
 <html>
 
-<body style="margin:0;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<body style="margin:0;background:#f8fafc;">
 
     <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;">
         <tr>
-            <td align="center" style="padding: 20px 0;">
+            <td align="center" style="padding:20px 0;">
 
-                <!-- CARD -->
-                <table width="500" cellpadding="0" cellspacing="0" style="background:#ffffff;margin:32px auto;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(15, 23, 42, 0.04);border: 1px solid #e2e8f0;">
+                <table width="500" cellpadding="0" cellspacing="0"
+                    style="background:#ffffff;margin:32px auto;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(15,23,42,.04);border:1px solid #e2e8f0;">
 
-                    <!-- URGENCY ACCENT BAR -->
+                    <!-- TOP BAR -->
                     <tr>
-                        <td height="6" style="background: linear-gradient(90deg, #dc2626, #f43f5e);"></td>
+                        <td height="6" style="background:#dc2626;"></td>
                     </tr>
 
-                    <!-- MAIN CONTAINER -->
+                    <!-- CONTENT -->
                     <tr>
-                        <td style="padding: 36px;">
+                        <td style="padding:36px;">
+
                             <table width="100%" cellpadding="0" cellspacing="0">
 
                                 <!-- HEADER -->
                                 <tr>
-                                    <td style="font-size:20px;font-weight:700;color:#991b1b;letter-spacing:-0.02em;">
+                                    <td style="font-size:20px;font-weight:700;color:#991b1b;">
                                         Payment Overdue Notice
                                     </td>
                                 </tr>
@@ -33,9 +34,13 @@
 
                                 <!-- MESSAGE -->
                                 <tr>
-                                    <td style="font-size:15px;color:#334155;line-height:1.6;">
-                                        Hi <strong style="color:#0f172a;">[[${invoice.customerName}]]</strong>,<br><br>
-                                        This is a reminder that your payment for the invoice listed below is now past due. We kindly request that you complete the payment at your earliest convenience to keep your account current.
+                                    <td style="font-size:15px;color:#334155;line-height:24px;">
+                                        Hi <strong style="color:#0f172a;">[[${invoice.customerName}]]</strong>,
+                                        <br><br>
+
+                                        This is a reminder that your payment for the invoice listed below is now
+                                        past due. We kindly request that you complete the payment at your earliest
+                                        convenience to keep your account current.
                                     </td>
                                 </tr>
 
@@ -43,37 +48,65 @@
                                     <td height="24"></td>
                                 </tr>
 
-                                <!-- ALERT BOX -->
+                                <!-- INVOICE BOX -->
                                 <tr>
                                     <td>
-                                        <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#fef2f2,#fff1f2);border:1px solid #fee2e2;padding:20px;border-radius:12px;">
+
+                                        <table width="100%" cellpadding="0" cellspacing="0"
+                                            style="background:#fef2f2;border:1px solid #fee2e2;border-radius:12px;padding:20px;">
+
                                             <tr>
                                                 <td>
+
                                                     <table width="100%" cellpadding="0" cellspacing="0">
+
                                                         <tr>
-                                                            <td style="font-size:13px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;">Invoice Number</td>
-                                                            <td align="right" style="font-size:14px;font-weight:700;color:#0f172a;">
+                                                            <td style="font-size:13px;font-weight:600;color:#64748b;">
+                                                                Invoice Number
+                                                            </td>
+
+                                                            <td align="right"
+                                                                style="font-size:14px;font-weight:700;color:#0f172a;">
                                                                 [[${invoice.invoiceNumber}]]
                                                             </td>
                                                         </tr>
+
                                                         <tr>
-                                                            <td height="12" style="border-bottom:1px dashed #fca5a5;"></td>
-                                                            <td height="12" style="border-bottom:1px dashed #fca5a5;"></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td height="12"></td>
-                                                            <td height="12"></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td style="font-size:13px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;">Outstanding Amount</td>
-                                                            <td align="right" style="font-size:18px;font-weight:800;color:#991b1b;">
-                                                                ₹[[${invoice.remainingAmount}]]
+                                                            <td height="12" style="border-bottom:1px dashed #fca5a5;">
+                                                            </td>
+
+                                                            <td height="12" style="border-bottom:1px dashed #fca5a5;">
                                                             </td>
                                                         </tr>
+
+                                                        <tr>
+                                                            <td height="12"></td>
+                                                            <td height="12"></td>
+                                                        </tr>
+
+                                                        <tr>
+
+                                                            <td style="font-size:13px;font-weight:600;color:#64748b;">
+                                                                Outstanding Amount
+                                                            </td>
+
+                                                            <td align="right"
+                                                                style="font-size:18px;font-weight:800;color:#991b1b;">
+
+                                                                ₹[[${invoice.remainingAmount}]]
+
+                                                            </td>
+
+                                                        </tr>
+
                                                     </table>
+
                                                 </td>
+
                                             </tr>
+
                                         </table>
+
                                     </td>
                                 </tr>
 
@@ -81,13 +114,29 @@
                                     <td height="32"></td>
                                 </tr>
 
-                                <!-- CTA -->
+                                <!-- BUTTON -->
                                 <tr>
+
                                     <td align="center">
-                                        <a href="[[${payLink}]]" style="display:inline-block;background:linear-gradient(135deg,#dc2626,#f43f5e);color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:15px;font-weight:600;box-shadow:0 4px 14px rgba(220,38,38,0.3);letter-spacing:-0.01em;">
+
+                                        <a href="[[${payLink}]]" style="
+                                                display:inline-block;
+                                                background:#dc2626;
+                                                color:#ffffff;
+                                                text-decoration:none;
+                                                padding:14px 32px;
+                                                border-radius:10px;
+                                                font-size:15px;
+                                                font-weight:600;
+                                                box-shadow:0 4px 14px rgba(220,38,38,.3);
+                                            ">
+
                                             Pay Invoice Now
+
                                         </a>
+
                                     </td>
+
                                 </tr>
 
                                 <tr>
@@ -96,9 +145,18 @@
 
                                 <!-- NOTE -->
                                 <tr>
-                                    <td style="font-size:12px;color:#64748b;line-height:1.6;text-align:center;background:#f8fafc;padding:12px;border-radius:8px;">
-                                        If you’ve already made this payment, please disregard this automated reminder. Otherwise, we appreciate your prompt attention to this invoice.
+
+                                    <td
+                                        style="font-size:12px;color:#64748b;line-height:22px;text-align:center;background:#f8fafc;padding:12px;border-radius:8px;">
+
+                                        If you've already made this payment,
+                                        please disregard this automated reminder.
+
+                                        Otherwise, we appreciate your prompt
+                                        attention to this invoice.
+
                                     </td>
+
                                 </tr>
 
                                 <tr>
@@ -116,15 +174,28 @@
 
                                 <!-- FOOTER -->
                                 <tr>
-                                    <td style="font-size:11px;color:#94a3b8;text-align:center;line-height:1.6;letter-spacing:0.01em;">
-                                        © [[${#dates.year(#dates.createNow())}]] Invoice Tracker<br>
-                                        <span style="color:#cbd5e1;">Billing & Payment System</span>
+
+                                    <td style="font-size:11px;color:#94a3b8;text-align:center;line-height:20px;">
+
+                                        © [[${#dates.year(#dates.createNow())}]]
+                                        Invoice Tracker
+
+                                        <br>
+
+                                        <span style="color:#cbd5e1;">
+                                            Billing & Payment System
+                                        </span>
+
                                     </td>
+
                                 </tr>
 
                             </table>
+
                         </td>
+
                     </tr>
+
                 </table>
 
             </td>

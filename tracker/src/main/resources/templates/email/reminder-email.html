@@ -1,23 +1,25 @@
 <!DOCTYPE html>
 <html>
 
-<body style="margin:0;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<body style="margin:0;background:#f8fafc;">
 
     <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;">
         <tr>
-            <td align="center" style="padding: 20px 0;">
+            <td align="center" style="padding:20px 0;">
 
                 <!-- CARD -->
-                <table width="500" cellpadding="0" cellspacing="0" style="background:#ffffff;margin:32px auto;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(15, 23, 42, 0.04);border: 1px solid #e2e8f0;">
+                <table width="500" cellpadding="0" cellspacing="0"
+                    style="background:#ffffff;margin:32px auto;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(15,23,42,0.04);border:1px solid #e2e8f0;">
 
-                    <!-- STATUS ACCENT BAR -->
+                    <!-- STATUS BAR -->
                     <tr>
-                        <td height="6" style="background: linear-gradient(90deg, #d97706, #f59e0b);"></td>
+                        <td height="6" style="background:linear-gradient(90deg,#d97706,#f59e0b);"></td>
                     </tr>
 
-                    <!-- MAIN CONTAINER -->
+                    <!-- CONTENT -->
                     <tr>
-                        <td style="padding: 36px;">
+                        <td style="padding:36px;">
+
                             <table width="100%" cellpadding="0" cellspacing="0">
 
                                 <!-- HEADER -->
@@ -33,9 +35,16 @@
 
                                 <!-- MESSAGE -->
                                 <tr>
-                                    <td style="font-size:15px;color:#334155;line-height:1.6;">
-                                        Hi <strong style="color:#0f172a;">[[${invoice.customerName}]]</strong>,<br><br>
-                                        This is a friendly reminder that you have an open invoice due soon. Please take a moment to review the summary details below and complete your transaction by the deadline.
+                                    <td style="font-size:15px;color:#334155;line-height:24px;">
+                                        Hi
+                                        <strong style="color:#0f172a;">
+                                            [[${invoice.customerName}]]
+                                        </strong>,
+                                        <br><br>
+
+                                        This is a friendly reminder that you have an open invoice due soon.
+                                        Please take a moment to review the summary below and complete your
+                                        payment before the due date.
                                     </td>
                                 </tr>
 
@@ -46,44 +55,92 @@
                                 <!-- INFO BOX -->
                                 <tr>
                                     <td>
-                                        <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid #fde68a;padding:20px;border-radius:12px;">
+
+                                        <table width="100%" cellpadding="0" cellspacing="0"
+                                            style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid #fde68a;padding:20px;border-radius:12px;">
+
                                             <tr>
                                                 <td>
+
                                                     <table width="100%" cellpadding="0" cellspacing="0">
+
                                                         <tr>
-                                                            <td style="font-size:13px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;">Invoice Number</td>
-                                                            <td align="right" style="font-size:14px;font-weight:700;color:#0f172a;">
+
+                                                            <td
+                                                                style="font-size:13px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;">
+                                                                Invoice Number
+                                                            </td>
+
+                                                            <td align="right"
+                                                                style="font-size:14px;font-weight:700;color:#0f172a;">
+
                                                                 [[${invoice.invoiceNumber}]]
+
                                                             </td>
+
                                                         </tr>
+
                                                         <tr>
-                                                            <td height="12" style="border-bottom:1px dashed #f59e0b;opacity:0.3;"></td>
-                                                            <td height="12" style="border-bottom:1px dashed #f59e0b;opacity:0.3;"></td>
+
+                                                            <td height="12"
+                                                                style="border-bottom:1px dashed #f59e0b;opacity:.3;">
+                                                            </td>
+
+                                                            <td height="12"
+                                                                style="border-bottom:1px dashed #f59e0b;opacity:.3;">
+                                                            </td>
+
                                                         </tr>
+
                                                         <tr>
                                                             <td height="12"></td>
                                                             <td height="12"></td>
                                                         </tr>
+
                                                         <tr>
-                                                            <td style="font-size:13px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;">Total Amount</td>
-                                                            <td align="right" style="font-size:16px;font-weight:700;color:#0f172a;">
+
+                                                            <td
+                                                                style="font-size:13px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;">
+                                                                Total Amount
+                                                            </td>
+
+                                                            <td align="right"
+                                                                style="font-size:16px;font-weight:700;color:#0f172a;">
+
                                                                 ₹[[${invoice.totalAmount}]]
+
                                                             </td>
+
                                                         </tr>
+
                                                         <tr>
                                                             <td height="10"></td>
                                                             <td height="10"></td>
                                                         </tr>
+
                                                         <tr>
-                                                            <td style="font-size:13px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;">Due Date</td>
-                                                            <td align="right" style="font-size:14px;font-weight:700;color:#b45309;">
+
+                                                            <td
+                                                                style="font-size:13px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;">
+                                                                Due Date
+                                                            </td>
+
+                                                            <td align="right"
+                                                                style="font-size:14px;font-weight:700;color:#b45309;">
+
                                                                 [[${invoice.dueDate}]]
+
                                                             </td>
+
                                                         </tr>
+
                                                     </table>
+
                                                 </td>
                                             </tr>
+
                                         </table>
+
                                     </td>
                                 </tr>
 
@@ -91,13 +148,20 @@
                                     <td height="32"></td>
                                 </tr>
 
-                                <!-- CTA -->
+                                <!-- BUTTON -->
                                 <tr>
+
                                     <td align="center">
-                                        <a href="[[${payLink}]]" style="display:inline-block;background:linear-gradient(135deg,#d97706,#f59e0b);color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:15px;font-weight:600;box-shadow:0 4px 14px rgba(217,119,6,0.3);letter-spacing:-0.01em;">
+
+                                        <a href="[[${payLink}]]"
+                                            style="display:inline-block;background:linear-gradient(135deg,#d97706,#f59e0b);color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:15px;font-weight:600;box-shadow:0 4px 14px rgba(217,119,6,.3);">
+
                                             Pay Invoice
+
                                         </a>
+
                                     </td>
+
                                 </tr>
 
                                 <tr>
@@ -106,9 +170,18 @@
 
                                 <!-- NOTE -->
                                 <tr>
-                                    <td style="font-size:12px;color:#64748b;line-height:1.6;text-align:center;background:#f8fafc;padding:12px;border-radius:8px;">
-                                        If you’ve already completed this transaction, please disregard this note. Otherwise, we appreciate your timely processing to prevent service interruptions.
+
+                                    <td
+                                        style="font-size:12px;color:#64748b;line-height:22px;text-align:center;background:#f8fafc;padding:12px;border-radius:8px;">
+
+                                        If you've already completed this transaction,
+                                        please disregard this reminder.
+
+                                        Otherwise, we appreciate your timely payment
+                                        to avoid service interruptions.
+
                                     </td>
+
                                 </tr>
 
                                 <tr>
@@ -126,15 +199,27 @@
 
                                 <!-- FOOTER -->
                                 <tr>
-                                    <td style="font-size:11px;color:#94a3b8;text-align:center;line-height:1.6;letter-spacing:0.01em;">
-                                        © [[${#dates.year(#dates.createNow())}]] Invoice Tracker<br>
-                                        <span style="color:#cbd5e1;">Billing & Payment System</span>
+
+                                    <td style="font-size:11px;color:#94a3b8;text-align:center;line-height:20px;">
+
+                                        © [[${#dates.year(#dates.createNow())}]]
+                                        Invoice Tracker
+
+                                        <br>
+
+                                        <span style="color:#cbd5e1;">
+                                            Billing & Payment System
+                                        </span>
+
                                     </td>
+
                                 </tr>
 
                             </table>
+
                         </td>
                     </tr>
+
                 </table>
 
             </td>
