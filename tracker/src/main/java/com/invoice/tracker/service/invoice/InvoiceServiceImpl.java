@@ -447,7 +447,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 Pageable pageable = PageRequest.of(0, limit);
 
                 return invoiceRepository
-                                .findRecentInvoicesWithItems(shopId, pageable)
+                                .findRecentInvoices(shopId, pageable)
                                 .stream()
                                 .map(invoiceMapper::toResponse)
                                 .toList();
@@ -470,9 +470,9 @@ public class InvoiceServiceImpl implements InvoiceService {
                                 size,
                                 Sort.by(Sort.Direction.fromString(direction), field));
 
-                Page<InvoiceResponse> pageData = invoiceRepository.findAll(
-                                InvoiceSpecification.filterInvoices(filter, shopId),
-                                pageable).map(invoiceMapper::toResponse);
+                Page<InvoiceResponse> pageData = invoiceRepository
+                                .findAll(InvoiceSpecification.filterInvoices(filter, shopId), pageable)
+                                .map(invoiceMapper::toSummaryResponse);           // toResponse
 
                 return new PageResponse<>(
                                 pageData.getContent(),
@@ -543,8 +543,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                                 .orElseThrow(() -> new ResourceNotFoundException("Shop not found"));
 
                 return new InvoicePdfResponse(
-                        invoiceMapper.toResponse(invoice),
-                        ShopMapper.toResponse(shop)
-                );
+                                invoiceMapper.toResponse(invoice),
+                                ShopMapper.toResponse(shop));
         }
 }

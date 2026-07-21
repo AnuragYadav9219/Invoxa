@@ -76,6 +76,7 @@ public class ItemServiceImpl implements ItemService {
 
     // Get all items of shop
     @Override
+    @Transactional
     public List<ItemResponse> getItems() {
 
         UUID shopId = SecurityUtils.getCurrentUserShopId();

@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.hibernate.annotations.BatchSize;
+
 import com.invoice.tracker.entity.AuditableEntity;
 import com.invoice.tracker.entity.auth.Shop;
 
@@ -47,7 +49,8 @@ public class Item extends AuditableEntity {
     @Enumerated(EnumType.STRING)
     private Unit defaultUnit;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
+    @BatchSize(size = 50)
     @CollectionTable(name = "item_units", joinColumns = @JoinColumn(name = "item_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "unit")

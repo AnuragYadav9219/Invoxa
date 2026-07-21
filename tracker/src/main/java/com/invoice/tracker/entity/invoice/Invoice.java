@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.hibernate.annotations.BatchSize;
+
 import com.invoice.tracker.entity.BaseEntity;
 import com.invoice.tracker.entity.notification.Notification;
 import com.invoice.tracker.entity.payment.Payment;
@@ -69,9 +71,10 @@ public class Invoice extends BaseEntity {
 
     @Builder.Default
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @BatchSize(size = 50)
     private List<InvoiceItem> items = new ArrayList<>();
 
-    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Payment> payments;
 
     @Builder.Default
@@ -82,7 +85,7 @@ public class Invoice extends BaseEntity {
     private boolean deleted = false;
 
     private LocalDateTime deletedAt;
-    
+
     private UUID deletedBy;
 
     @Column(unique = true)

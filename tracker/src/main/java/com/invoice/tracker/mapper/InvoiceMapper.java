@@ -71,7 +71,7 @@ public class InvoiceMapper {
                                 .status(invoice.getStatus() != null ? invoice.getStatus().name() : null)
                                 .template(invoice.getTemplate().name())
                                 
-                                .createdAt(LocalDate.now())
+                                .createdAt(invoice.getCreatedAt().toLocalDate())
                                 .dueDate(invoice.getDueDate())
                                 .build();
         }

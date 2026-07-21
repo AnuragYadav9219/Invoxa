@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -217,6 +218,7 @@ public class AuthService {
         }
 
         // ==================== RESET PASSWORD =====================
+        @CacheEvict(value = "users", key = "#request.email")
         public void resetPassword(ResetPasswordRequest request) {
 
                 otpService.verifyOtp(request.getEmail(), request.getOtp(), OtpPurpose.RESET);
@@ -297,6 +299,7 @@ public class AuthService {
 
         // ================= LOGOUT (CURRENT DEVICE) =================
         @Transactional
+        @CacheEvict(value = "users", key = "#email")
         public void logout(String refreshTokenValue, String email) {
 
                 try {
@@ -313,6 +316,7 @@ public class AuthService {
 
         // ================= LOGOUT ALL DEVICES =================
         @Transactional
+        @CacheEvict(value = "users", key = "#email")
         public void logoutAll(String email) {
 
                 User user = userRepository.findByEmail(email)
@@ -330,6 +334,7 @@ public class AuthService {
 
         // ================= LOGOUT SPECIFIC DEVICE =================
         @Transactional
+        @CacheEvict(value = "users", key = "#email")
         public void logoutDevice(String email, String deviceId) {
 
                 User user = userRepository.findByEmail(email)
