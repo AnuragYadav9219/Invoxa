@@ -1,6 +1,7 @@
 package com.invoice.tracker.mapper;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.stereotype.Component;
 
@@ -29,50 +30,30 @@ public class InvoiceMapper {
 
                                 .status(invoice.getStatus().name())
                                 .template(
-                                        invoice.getTemplate() != null 
-                                                ? invoice.getTemplate().name()
-                                                : null
-                                )
+                                                invoice.getTemplate() != null
+                                                                ? invoice.getTemplate().name()
+                                                                : null)
 
                                 .createdAt(LocalDate.now())
                                 .dueDate(invoice.getDueDate())
-                                .items(
-                                        invoice.getItems() != null
-                                                ? invoice.getItems().stream()
-                                                        .map(item -> InvoiceItemResponse.builder()
-                                                                .itemId(item.getItem() != null ? item.getItem().getId() : null)
-                                                                .itemName(item.getItemName())
-                                                                .quantity(item.getQuantity())
-                                                                .price(item.getPrice())
-                                                                .total(item.getTotal())
-                                                                .unit(item.getUnit() != null ? item.getUnit().name() : null)
-                                                                .build())
-                                                        .toList()
-                                                : null)
+                                .items(mapItems(invoice))
                                 .build();
         }
 
-        public InvoiceResponse toSummaryResponse(Invoice invoice) {
+        private List<InvoiceItemResponse> mapItems(Invoice invoice) {
+                if (invoice.getItems() == null) {
+                        return null;
+                }
 
-                return InvoiceResponse.builder()
-                                .id(invoice.getId())
-                                .invoiceNumber(invoice.getInvoiceNumber())
-                                .shopId(invoice.getShopId())
-
-                                .customerName(invoice.getCustomerName())
-                                .customerPhone(invoice.getCustomerPhone())
-                                .customerEmail(invoice.getCustomerEmail())
-                                .customerAddress(invoice.getCustomerAddress())
-
-                                .totalAmount(invoice.getTotalAmount())
-                                .paidAmount(invoice.getPaidAmount())
-                                .remainingAmount(invoice.getRemainingAmount())
-
-                                .status(invoice.getStatus() != null ? invoice.getStatus().name() : null)
-                                .template(invoice.getTemplate().name())
-                                
-                                .createdAt(invoice.getCreatedAt().toLocalDate())
-                                .dueDate(invoice.getDueDate())
-                                .build();
+                return invoice.getItems().stream()
+                                .map(item -> InvoiceItemResponse.builder()
+                                                .itemId(item.getItem() != null ? item.getItem().getId() : null)
+                                                .itemName(item.getItemName())
+                                                .quantity(item.getQuantity())
+                                                .price(item.getPrice())
+                                                .total(item.getTotal())
+                                                .unit(item.getUnit() != null ? item.getUnit().name() : null)
+                                                .build())
+                                .toList();
         }
 }

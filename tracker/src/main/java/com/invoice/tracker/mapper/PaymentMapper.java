@@ -28,6 +28,8 @@ public class PaymentMapper {
                                                 invoice != null ? invoice.getInvoiceNumber() : null)
                                 .customerName(
                                                 invoice != null ? invoice.getCustomerName() : "Unknown")
+                                .customerEmail(
+                                                invoice != null ? invoice.getCustomerEmail() : null)
                                 .build();
         }
 }

@@ -23,6 +23,7 @@ import com.invoice.tracker.dto.notification.NotificationResponse;
 import com.invoice.tracker.entity.invoice.Invoice;
 import com.invoice.tracker.entity.notification.Notification;
 import com.invoice.tracker.entity.notification.NotificationStatus;
+import com.invoice.tracker.guard.SubscriptionGuard;
 import com.invoice.tracker.mapper.NotificationMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final EmailService emailService;
     private final PdfService pdfService;
     private final NotificationMapper notificationMapper;
+    private final SubscriptionGuard subscriptionGuard;
 
     private static final Logger log = LoggerFactory.getLogger(NotificationServiceImpl.class);
 
@@ -47,6 +49,21 @@ public class NotificationServiceImpl implements NotificationService {
             throw new AccessDeniedException("Unauthorized access");
         }
 
+        try {
+            subscriptionGuard.checkEmailAccess(shopId);
+        } catch (Exception e) {
+            saveNotification(
+                    invoice,
+                    "Failed to send invoice email. The system will retry automatically.",
+                    getRecipient(invoice),
+                    "EMAIL",
+                    false);
+
+            log.error("Failed to send invoice email", e);
+            
+            return;
+        }
+
         if (!isValidRecipient(invoice))
             return;
 
@@ -55,21 +72,14 @@ public class NotificationServiceImpl implements NotificationService {
         boolean sent = false;
 
         try {
-            log.info("Generating PDF...");
-
             byte[] pdf = pdfService.generateInvoicePdf(
                     invoice.getId(),
                     invoice.getShopId(),
                     invoice.getTemplate());
-                
-            log.info("PDF generated successsfully.");
 
             sent = sendEmailSafely(() -> {
-                log.info("Sending email...");
                 emailService.sendInvoiceCreated(email, invoice, pdf);
             }, invoice);
-
-            log.info("Email sent: {}", sent);
 
         } catch (Exception e) {
             log.error("Failed to send invoice email", e);
@@ -86,6 +96,8 @@ public class NotificationServiceImpl implements NotificationService {
         if (!invoice.getShopId().equals(shopId)) {
             throw new AccessDeniedException("Unauthorized access");
         }
+
+        subscriptionGuard.checkEmailAccess(shopId);
 
         if (!isValidRecipient(invoice))
             return;
@@ -106,6 +118,8 @@ public class NotificationServiceImpl implements NotificationService {
             throw new AccessDeniedException("Unauthorized access");
         }
 
+        subscriptionGuard.checkEmailAccess(shopId);
+
         if (!isValidRecipient(invoice))
             return;
 
@@ -125,6 +139,8 @@ public class NotificationServiceImpl implements NotificationService {
             throw new AccessDeniedException("Unauthorized access");
         }
 
+        subscriptionGuard.checkEmailAccess(shopId);
+
         if (!isValidRecipient(invoice))
             return;
 
@@ -143,6 +159,8 @@ public class NotificationServiceImpl implements NotificationService {
         if (!invoice.getShopId().equals(shopId)) {
             throw new AccessDeniedException("Unauthorized access");
         }
+
+        subscriptionGuard.checkEmailAccess(shopId);
 
         if (!isValidRecipient(invoice))
             return;

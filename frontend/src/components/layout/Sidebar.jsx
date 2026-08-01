@@ -22,8 +22,8 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
   const getLinkClass = ({ isActive }) =>
     `${linkBase} ${isActive
-      ? "bg-emerald-50 text-emerald-700 font-medium before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-1 before:bg-emerald-500 before:rounded-r"
-      : "text-gray-600 hover:bg-white/60 hover:text-gray-900"
+      ? "bg-indigo-50/80 text-indigo-700 font-semibold shadow-sm shadow-indigo-100/50 before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-1.5 before:bg-indigo-600 before:rounded-r-full"
+      : "text-slate-500 font-medium hover:bg-slate-50/80 hover:text-indigo-600"
     }`;
 
   const NAV_ITEMS = [
@@ -46,22 +46,23 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       {/* MOBILE OVERLAY */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 md:hidden transition-opacity"
           onClick={handleClick}
         />
       )}
 
-      {/* SIDEBAR */}
+      {/* SIDEBAR - Improved border color to slate */}
       <aside
         className={`
           fixed top-14 left-0 h-[calc(100%-3.5rem)] flex flex-col ${isOpen
             ? "translate-x-0 w-64"
-            : "-translate-x-full md:translate-x-0 md:w-20"} bg-white/80 backdrop-blur-xl border-r border-gray-200/50 shadow-sm p-3 md:p-4 z-50 transition-all duration-300
+            : "-translate-x-full md:translate-x-0 md:w-20"
+          } bg-white/70 backdrop-blur-2xl border-r border-slate-200/60 shadow-[4px_0_24px_rgba(0,0,0,0.02)] p-3 md:p-4 z-50 transition-all duration-300
         `}
       >
 
         {/* NAV LINKS */}
-        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300">
+        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200">
           <nav className="space-y-1">
 
             {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
@@ -72,15 +73,15 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                 className={getLinkClass}
                 title={!isOpen ? label : ""}
               >
-                <Icon size={18} />
+                <Icon size={18} className="transition-transform group-hover:scale-110" />
                 {isOpen && label}
               </NavLink>
             ))}
 
-            {/* SALES */}
+            {/* SALES - Softer slate text */}
             {isOpen && (
-              <p className="text-[11px] text-gray-400 mt-5 mb-2 px-2 tracking-wider">
-                SALES
+              <p className="text-[11px] font-semibold text-slate-400/80 mt-6 mb-2 px-2 tracking-widest uppercase">
+                Sales
               </p>
             )}
 
@@ -92,15 +93,15 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                 className={getLinkClass}
                 title={!isOpen ? label : ""}
               >
-                <Icon size={18} />
+                <Icon size={18} className="transition-transform group-hover:scale-110" />
                 {isOpen && label}
               </NavLink>
             ))}
 
             {/* SYSTEM */}
             {isOpen && (
-              <p className="text-[11px] text-gray-400 mt-5 mb-2 px-2 tracking-wider">
-                SYSTEM
+              <p className="text-[11px] font-semibold text-slate-400/80 mt-6 mb-2 px-2 tracking-widest uppercase">
+                System
               </p>
             )}
 
@@ -112,7 +113,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                 className={getLinkClass}
                 title={!isOpen ? label : ""}
               >
-                <Icon size={18} />
+                <Icon size={18} className="transition-transform group-hover:scale-110" />
                 {isOpen && label}
               </NavLink>
             ))}
@@ -120,11 +121,11 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         </div>
 
         {/* PROFILE SECTION */}
-        <div className="mt-4 border-t border-gray-200/60 pt-3">
+        <div className="mt-4 border-t border-slate-200/60 pt-3">
 
           {isOpen && (
-            <p className="text-[11px] text-gray-400 mb-2 px-2 tracking-wider">
-              PERSONAL
+            <p className="text-[11px] font-semibold text-slate-400/80 mb-2 px-2 tracking-widest uppercase">
+              Personal
             </p>
           )}
 
@@ -139,7 +140,8 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           >
             {/* Avatar */}
             <div className="relative shrink-0">
-              <div className="w-9 h-9 min-w-9 min-h-9 rounded-full overflow-hidden border border-white/60 bg-linear-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
+              {/* Changed gradient to perfectly match layout (indigo/purple) */}
+              <div className="w-9 h-9 min-w-9 min-h-9 rounded-full overflow-hidden border-2 border-white bg-linear-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-sm">
                 {profile?.profileImage ? (
                   <img
                     src={profile.profileImage}
@@ -147,23 +149,23 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="text-white text-sm font-semibold">
+                  <span className="text-white text-sm font-bold">
                     {profile?.name?.charAt(0)?.toUpperCase() || "U"}
                   </span>
                 )}
               </div>
 
-              {/* Online Indicator */}
+              {/* Online Indicator - Kept green as it implies online status */}
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
             </div>
 
             {/* User Info */}
             {isOpen && (
               <div className="flex flex-col leading-tight overflow-hidden">
-                <span className="text-sm font-medium truncate">
+                <span className="text-sm font-semibold text-slate-700 truncate group-hover:text-indigo-700 transition-colors">
                   {user?.name || "User"}
                 </span>
-                <span className="text-xs text-gray-500 truncate">
+                <span className="text-xs text-slate-400 truncate">
                   {user?.email}
                 </span>
               </div>
@@ -177,7 +179,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             className={getLinkClass}
             title="Settings"
           >
-            <Settings size={18} />
+            <Settings size={18} className="transition-transform group-hover:rotate-45 group-hover:scale-110 duration-300" />
             {isOpen && "Settings"}
           </NavLink>
 

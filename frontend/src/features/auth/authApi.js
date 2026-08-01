@@ -26,6 +26,9 @@ export const authApi = baseApi.injectEndpoints({
           deviceId: deviceService.getDeviceId(),
           deviceName: deviceService.getDeviceName(),
         },
+        meta: {
+          skipGlobalError: true,
+        },
       }),
 
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
@@ -41,14 +44,8 @@ export const authApi = baseApi.injectEndpoints({
 
           showSuccess("Login successful");
 
-        } catch (err) {
-          const code = err?.error?.data?.code;
-
-          if (code === "ACCOUNT_DELETED") {
-            showError("Your account is deleted. Please recover it.");
-          } else {
-            showError(err?.error?.data?.message);
-          }
+        } catch {
+          // Handled by global axios
         }
       },
     }),
@@ -62,6 +59,9 @@ export const authApi = baseApi.injectEndpoints({
           ...data,
           deviceId: deviceService.getDeviceId(),
           deviceName: deviceService.getDeviceName(),
+        },
+        meta: {
+          skipGlobalError: true,
         },
       }),
 
@@ -78,8 +78,8 @@ export const authApi = baseApi.injectEndpoints({
 
           showSuccess("Account created successfully");
 
-        } catch (err) {
-          showError(err?.error?.data?.message || "Registration failed");
+        } catch {
+          // Handled by global axios
         }
       },
     }),
@@ -95,18 +95,23 @@ export const authApi = baseApi.injectEndpoints({
 
     /* =============== SEND OTP ================ */
     sendOtp: builder.mutation({
-      query: ({ email, purpose }) => ({
+      query: (data) => ({
         url: "/auth/send-otp",
         method: "POST",
-        body: { email, purpose },
+        body: { 
+          ...data,
+        },
+        meta: {
+          skipGlobalError: true,
+        },
       }),
 
       async onQueryStarted(arg, { queryFulfilled }) {
         try {
           await queryFulfilled;
-          showSuccess("OTP sent successfully");
-        } catch (err) {
-          showError(err?.error?.data?.message || "Failed to send OTP");
+
+        } catch {
+          // Global handled
         }
       },
     }),
@@ -121,6 +126,9 @@ export const authApi = baseApi.injectEndpoints({
           deviceId: deviceService.getDeviceId(),
           deviceName: deviceService.getDeviceName(),
         },
+        meta: {
+          skipGlobalError: true,
+        },
       }),
 
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
@@ -128,13 +136,12 @@ export const authApi = baseApi.injectEndpoints({
           const { data } = await queryFulfilled;
           const res = data.data;
 
-          if (!res.isNewUser) {
+          if (arg.purpose === "LOGIN") {
             handleAuthSuccess(dispatch, res.auth);
-            showSuccess("Login successful");
           }
 
         } catch (err) {
-          showError(err?.error?.data?.message || "OTP verification failed");
+          // Handled globally
         }
       }
     }),
@@ -145,6 +152,9 @@ export const authApi = baseApi.injectEndpoints({
         url: "/auth/forgot-password/reset",
         method: "POST",
         body: data,
+        meta: {
+          skipGlobalError: true,
+        },
       }),
 
       async onQueryStarted(arg, { queryFulfilled }) {
@@ -203,6 +213,9 @@ export const authApi = baseApi.injectEndpoints({
         url: "/auth/logout-device",
         method: "POST",
         params: { deviceId },
+        meta: {
+          skipGlobalError: true,
+        },
       }),
 
       async onQueryStarted(arg, { queryFulfilled }) {

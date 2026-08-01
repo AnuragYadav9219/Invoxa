@@ -12,18 +12,57 @@ import {
 } from 'react-icons/fi';
 
 const STICKERS = [
-  { name: 'Stripe', tag: 'Payments', icon: FiZap, color: 'from-indigo-500/20 to-purple-500/20 text-indigo-400 border-indigo-500/30' },
-  { name: 'Vercel', tag: 'Deploy', icon: FiGlobe, color: 'from-slate-500/20 to-zinc-500/20 text-slate-200 border-white/20' },
-  { name: 'Supabase', tag: 'Database', icon: FiDatabase, color: 'from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30' },
-  { name: 'Linear', tag: 'Issues', icon: FiLayers, color: 'from-violet-500/20 to-indigo-500/20 text-violet-400 border-violet-500/30' },
-  { name: 'Raycast', tag: 'Workflow', icon: FiCommand, color: 'from-rose-500/20 to-red-500/20 text-rose-400 border-rose-500/30' },
-  { name: 'GitHub', tag: 'Code', icon: FiGitBranch, color: 'from-slate-400/20 to-slate-600/20 text-slate-300 border-slate-400/30' },
-  { name: 'Resend', tag: 'Email AI', icon: FiSend, color: 'from-sky-500/20 to-blue-500/20 text-sky-400 border-sky-500/30' },
-  { name: 'Acme AI', tag: 'Engine', icon: FiCpu, color: 'from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/30' },
+  {
+    name: "PDF Invoices",
+    tag: "Professional",
+    icon: FiLayers,
+    color: "from-indigo-500/20 to-violet-500/20 text-indigo-400 border-indigo-500/30",
+  },
+  {
+    name: "Email Delivery",
+    tag: "Instant",
+    icon: FiSend,
+    color: "from-sky-500/20 to-cyan-500/20 text-sky-400 border-sky-500/30",
+  },
+  {
+    name: "Payment Tracking",
+    tag: "Smart",
+    icon: FiZap,
+    color: "from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30",
+  },
+  {
+    name: "Customer Manager",
+    tag: "CRM",
+    icon: FiDatabase,
+    color: "from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/30",
+  },
+  {
+    name: "Revenue Dashboard",
+    tag: "Analytics",
+    icon: FiCpu,
+    color: "from-pink-500/20 to-rose-500/20 text-pink-400 border-pink-500/30",
+  },
+  {
+    name: "Secure Login",
+    tag: "JWT",
+    icon: FiCommand,
+    color: "from-violet-500/20 to-fuchsia-500/20 text-violet-400 border-violet-500/30",
+  },
+  {
+    name: "Multi-Tenant",
+    tag: "Cloud",
+    icon: FiGlobe,
+    color: "from-cyan-500/20 to-blue-500/20 text-cyan-400 border-cyan-500/30",
+  },
+  {
+    name: "Overdue Alerts",
+    tag: "Automation",
+    icon: FiGitBranch,
+    color: "from-red-500/20 to-orange-500/20 text-red-400 border-red-500/30",
+  },
 ];
 
 export default function LogoTicker() {
-  // Duplicate array once for flawless infinite loop
   const duplicatedStickers = [...STICKERS, ...STICKERS];
 
   return (
@@ -37,8 +76,11 @@ export default function LogoTicker() {
       <div className="max-w-7xl mx-auto px-6 text-center mb-10">
         <p className="text-xs uppercase tracking-widest text-slate-500 font-semibold flex items-center justify-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping" />
-          Powering billing & ledgers for market leaders
+          One platform for invoicing, payments & business growth
         </p>
+        <p className="mt-3 text-sm text-slate-400">
+  Professional invoicing, customer management, payment tracking, and business insights—all in one modern platform.
+</p>
       </div>
 
       {/* Auto-Scrolling Sticker Track */}
@@ -55,7 +97,6 @@ export default function LogoTicker() {
           {duplicatedStickers.map((sticker, idx) => {
             const Icon = sticker.icon;
 
-            // Alternate gentle floating offset for sticker effect
             const floatY = idx % 2 === 0 ? [-3, 3, -3] : [3, -3, 3];
 
             return (

@@ -7,8 +7,9 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.invoice.tracker.entity.invoice.InvoiceTemplate;
+import com.invoice.tracker.entity.templates.InvoiceTemplate;
 import com.invoice.tracker.security.PrintTokenUtil;
+import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.Margin;
@@ -32,7 +33,8 @@ public class PdfService {
                         UUID shopId,
                         InvoiceTemplate template) {
 
-                BrowserContext context = browserManager.browser().newContext();
+                Browser browser = browserManager.newBrowser();
+                BrowserContext context = browser.newContext();
                 Page page = context.newPage();
 
                 try {
@@ -64,11 +66,6 @@ public class PdfService {
                                         URLEncoder.encode(token, StandardCharsets.UTF_8),
                                         template.name().toLowerCase());
 
-                        System.out.println("--------------------------------");
-                        System.out.println("Opening:");
-                        System.out.println(url);
-                        System.out.println("--------------------------------");
-
                         long totalStart = System.currentTimeMillis();
 
                         page.exposeFunction("javaTime", args -> {
@@ -84,9 +81,6 @@ public class PdfService {
                                         new Page.NavigateOptions()
                                                         .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
                                                         .setTimeout(90000));
-
-                        System.out.println("Navigate took: "
-                                        + (System.currentTimeMillis() - totalStart) + " ms");
 
                         page.waitForFunction(
                                         """
@@ -106,14 +100,9 @@ public class PdfService {
                         // allow browser to paint one more frame
                         page.evaluate("() => new Promise(requestAnimationFrame)");
 
-                        System.out.println("Ready took: "
-                                        + (System.currentTimeMillis() - totalStart) + " ms");
-
                         page.emulateMedia(
                                         new Page.EmulateMediaOptions()
                                                         .setMedia(Media.PRINT));
-
-                        long pdfStart = System.currentTimeMillis();
 
                         byte[] pdf = page.pdf(
                                         new Page.PdfOptions()
@@ -126,12 +115,6 @@ public class PdfService {
                                                                                         .setLeft("20px")
                                                                                         .setRight("20px")));
 
-                        System.out.println("PDF took: "
-                                        + (System.currentTimeMillis() - pdfStart) + " ms");
-
-                        System.out.println("Total: "
-                                        + (System.currentTimeMillis() - totalStart) + " ms");
-
                         return pdf;
 
                 } finally {
@@ -143,6 +126,11 @@ public class PdfService {
 
                         try {
                                 context.close();
+                        } catch (Exception ignored) {
+                        }
+
+                        try {
+                                browser.close();
                         } catch (Exception ignored) {
                         }
                 }

@@ -15,6 +15,7 @@ import com.invoice.tracker.dto.item.ItemResponse;
 import com.invoice.tracker.entity.auth.Shop;
 import com.invoice.tracker.entity.item.Item;
 import com.invoice.tracker.entity.item.Unit;
+import com.invoice.tracker.guard.SubscriptionGuard;
 import com.invoice.tracker.helper.item.ItemHelper;
 import com.invoice.tracker.helper.shop.ShopHelper;
 import com.invoice.tracker.mapper.ItemMapper;
@@ -31,11 +32,14 @@ public class ItemServiceImpl implements ItemService {
     private final ItemHelper itemHelper;
     private final ShopHelper shopHelper;
     private final ItemMapper itemMapper;
+    private final SubscriptionGuard subscriptionGuard;
 
     // Create item
     @Override
     @Transactional
     public ItemResponse createItem(CreateItemRequest request) {
+
+        UUID shopId = SecurityUtils.getCurrentUserShopId();
 
         Shop shop = shopHelper.getCurrentShopOrThrow();
 
@@ -60,9 +64,11 @@ public class ItemServiceImpl implements ItemService {
                 .shop(shop)
                 .build();
 
-        itemRepository.save(item);
+        subscriptionGuard.checkItemLimit(shopId);
 
-        return itemMapper.toResponse(item);
+        Item savedItem = itemRepository.save(item);
+
+        return itemMapper.toResponse(savedItem);
     }
 
     // Get single item
@@ -146,6 +152,8 @@ public class ItemServiceImpl implements ItemService {
         if (!item.isDeleted()) {
             throw new RuntimeException("Item is not deleted");
         }
+        
+        subscriptionGuard.checkItemLimit(shopId);
 
         item.setDeleted(false);
         item.setDeletedAt(null);
@@ -156,6 +164,7 @@ public class ItemServiceImpl implements ItemService {
 
     // ================ GET DELETED ITEMS ================
     @Override
+    @Transactional(readOnly = true)
     public List<ItemResponse> getDeletedItems() {
 
         UUID shopId = SecurityUtils.getCurrentUserShopId();

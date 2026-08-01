@@ -14,6 +14,7 @@ import { useState } from "react";
 import InvoiceForm from "./InvoiceForm";
 import { cn } from "@/lib/utils";
 import { useInvoiceActions } from "../hooks/useInvoiceActions";
+import { Button } from "@/components/ui/button";
 
 export default function InvoiceTable({
   invoices = [],
@@ -24,7 +25,7 @@ export default function InvoiceTable({
   const navigate = useNavigate();
   const [openForm, setOpenForm] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
-  const  {handleDelete} = useInvoiceActions();
+  const { handleDelete } = useInvoiceActions();
 
   const handleEdit = (inv) => {
     setSelectedInvoice(inv);
@@ -37,14 +38,31 @@ export default function InvoiceTable({
 
   if (!data.length) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 px-4 bg-slate-50/50 rounded-[2rem] border border-dashed border-slate-200">
-        <div className="p-4 rounded-2xl bg-white shadow-sm mb-4">
-          <Inbox className="h-8 w-8 text-slate-300" />
+      <div className="flex flex-col items-center justify-center py-20 px-4 bg-slate-50/50 dark:bg-slate-900/40 rounded-[2rem] border border-dashed border-slate-200 dark:border-slate-800">
+        <div className="p-5 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 mb-5">
+          <FileText className="h-10 w-10 text-indigo-600 dark:text-indigo-400" />
         </div>
-        <h3 className="text-slate-900 font-bold text-lg">No invoices found</h3>
-        <p className="text-sm text-slate-500 max-w-50 text-center mt-1">
-          Your invoice list is empty. Create one to get started.
+
+        <h3 className="text-xl font-bold">
+          No invoices yet
+        </h3>
+
+        <p className="mt-2 text-sm text-muted-foreground text-center max-w-sm">
+          You haven't created any invoices yet. Create your first invoice to start
+          tracking payments and revenue.
         </p>
+
+        {showActions && (
+          <Button
+            className="mt-6"
+            onClick={() => {
+              setSelectedInvoice(null);
+              setOpenForm(true);
+            }}
+          >
+            Create Invoice
+          </Button>
+        )}
       </div>
     );
   }

@@ -1,115 +1,340 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiCheck, FiArrowRight } from 'react-icons/fi';
-
-const plans = [
-  {
-    name: 'Starter',
-    desc: 'Perfect for freelancers and solo builders.',
-    priceMonthly: 19,
-    priceAnnually: 15,
-    features: ['Up to 20 automated invoices/mo', 'Basic CRM controls', '1 team seat', 'Standard email help'],
-    isPopular: false,
-  },
-  {
-    name: 'Pro',
-    desc: 'Ideal for rapidly scaling businesses.',
-    priceMonthly: 49,
-    priceAnnually: 39,
-    features: ['Unlimited custom invoices', 'Advanced identity CRM infrastructure', 'Up to 5 team seats', 'Priority 1h support matrix', 'Custom analytics suite'],
-    isPopular: true,
-  },
-  {
-    name: 'Enterprise',
-    desc: 'For massive high-velocity setups.',
-    priceMonthly: 149,
-    priceAnnually: 119,
-    features: ['Dedicated execution pipelines', 'Custom API webhooks access', 'Unlimited team seats', '24/7 dedicated account lead', 'SLA uptime parameters'],
-    isPopular: false,
-  }
-];
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { FaIndianRupeeSign, FaWandMagicSparkles } from "react-icons/fa6";
+import { toast } from "sonner";
+import { tokenService } from "@/services/tokenService";
+import {
+  useGetPlansQuery,
+  useGetDashboardQuery,
+  useCreateCheckoutMutation,
+  useVerifyPaymentMutation,
+} from "@/features/subscription/subscriptionApi";
+import { FiArrowRight, FiCheck, FiShield } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 export default function Pricing() {
+  const navigate = useNavigate();
   const [isAnnual, setIsAnnual] = useState(false);
 
-  return (
-    <section id="pricing" className="max-w-7xl mx-auto px-6 py-32 border-t border-slate-900/60 relative">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/5 blur-[120px] pointer-events-none" />
-      
-      <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-        <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-slate-100">Transparent, scalable pricing.</h2>
-        <p className="text-slate-400 text-lg">Pick the path that works for your operations. Switch scales or cancel anytime.</p>
-        
-        {/* Toggle Mechanism */}
-        <div className="pt-6 flex justify-center items-center space-x-4">
-          <span className={`text-sm ${!isAnnual ? 'text-white font-medium' : 'text-slate-500'}`}>Monthly</span>
-          <button 
-            onClick={() => setIsAnnual(!isAnnual)}
-            className="w-12 h-6 rounded-full bg-slate-900 border border-slate-800 p-1 flex items-center relative transition-colors duration-300"
-          >
-            <motion.div 
-              layout 
-              className="w-4 h-4 rounded-full bg-indigo-500 shadow-md shadow-indigo-500/50" 
-              animate={{ x: isAnnual ? 22 : 0 }} 
-              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-            />
-          </button>
-          <span className={`text-sm ${isAnnual ? 'text-white font-medium' : 'text-slate-500'} flex items-center gap-1.5`}>
-            Annually <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold">Save 20%</span>
-          </span>
+  const isLoggedIn =
+    !!tokenService.getToken() && !!localStorage.getItem("shopId");
+
+  const {
+    data: apiPlans = [],
+    isLoading,
+    isError,
+  } = useGetPlansQuery();
+
+  const { data: dashboard } = useGetDashboardQuery(undefined, {
+    skip: !isLoggedIn,
+  });
+
+  const [createCheckout, { isLoading: checkoutLoading }] =
+    useCreateCheckoutMutation();
+
+  const [verifyPayment] = useVerifyPaymentMutation();
+
+  const currentPlan = dashboard?.planName;
+
+  const planOrder = {
+    FREE: 1,
+    PRO: 2,
+    BUSINESS: 3,
+  };
+
+  const plans = [...apiPlans].sort(
+    (a, b) =>
+      (planOrder[a.name?.toUpperCase()] ?? 999) -
+      (planOrder[b.name?.toUpperCase()] ?? 999)
+  );
+
+  const handleUpgrade = async (plan) => {
+    if (!isLoggedIn) {
+      navigate(`/register?plan=${plan.name}`);
+      return;
+    }
+
+    if (plan.monthlyPrice === 0) {
+      toast.success("You are already on the starter plan!");
+      return;
+    }
+
+    try {
+      const checkout = await createCheckout(plan.id).unwrap();
+
+      if (!window.Razorpay) {
+        toast.error("Razorpay SDK not loaded.");
+        return;
+      }
+
+      const razorpay = new window.Razorpay({
+        key: checkout.key,
+        amount: checkout.amount * 100,
+        currency: checkout.currency,
+        order_id: checkout.orderId,
+        name: "Invoxa",
+        description: `${plan.name} Subscription`,
+        handler: async (response) => {
+          try {
+            await verifyPayment({
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            }).unwrap();
+
+            toast.success("Subscription activated successfully!");
+          } catch (err) {
+            console.error(err);
+            toast.error("Payment verification failed.");
+          }
+        },
+        modal: {
+          ondismiss() {
+            toast("Payment cancelled.");
+          },
+        },
+        theme: {
+          color: "#6366F1",
+        },
+      });
+
+      razorpay.open();
+    } catch (err) {
+      console.error(err);
+      toast.error("Unable to initiate payment.");
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <section className="flex min-h-[60vh] items-center justify-center bg-slate-950">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
+          <p className="text-sm font-medium text-slate-400">Loading pricing plans...</p>
         </div>
+      </section>
+    );
+  }
+
+  return (
+    <section
+      id="pricing"
+      className="relative overflow-hidden bg-slate-950 px-4 sm:px-6 lg:px-8 py-20 lg:py-32"
+    >
+      {/* Animated Glowing Background Effects */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none overflow-hidden">
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.15, 0.25, 0.15],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          className="absolute top-1/4 left-1/2 -translate-x-1/2 w-75 sm:w-150 h-75 sm:h-150 bg-indigo-600/20 rounded-full blur-[120px] sm:blur-[180px]"
+        />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start relative z-10">
-        {plans.map((plan, i) => (
-          <motion.div 
-            key={i}
-            whileHover={{ y: -4 }}
-            className={`border rounded-2xl p-8 bg-slate-950/40 backdrop-blur-sm transition-all duration-300 flex flex-col justify-between min-h-[520px] ${
-              plan.isPopular ? 'border-indigo-500 ring-1 ring-indigo-500/30 relative shadow-xl shadow-indigo-500/5' : 'border-slate-900 hover:border-slate-800'
-            }`}
+      <div className="relative mx-auto max-w-7xl">
+        {/* Header Section */}
+        <div className="mx-auto mb-14 sm:mb-20 max-w-3xl space-y-4 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3.5 py-1.5 text-xs font-medium text-indigo-300 backdrop-blur-md"
           >
-            {plan.isPopular && (
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-indigo-500 to-violet-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg shadow-indigo-500/20">
-                Most Popular
-              </span>
-            )}
-
-            <div>
-              <h3 className="text-xl font-bold text-slate-100 mb-2">{plan.name}</h3>
-              <p className="text-sm text-slate-400 leading-relaxed mb-6">{plan.desc}</p>
-              
-              <div className="mb-8 flex items-baseline">
-                <span className="text-4xl font-extrabold tracking-tight text-slate-100">
-                  ${isAnnual ? plan.priceAnnually : plan.priceMonthly}
-                </span>
-                <span className="text-slate-500 text-sm ml-2">/ month</span>
-              </div>
-
-              <ul className="space-y-4 border-t border-slate-900 pt-6">
-                {plan.features.map((feat, index) => (
-                  <li key={index} className="flex items-start text-sm text-slate-300 space-x-3">
-                    <FiCheck className="text-indigo-400 w-4 h-4 mt-0.5 flex-shrink-0" />
-                    <span>{feat}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <motion.button 
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-              className={`w-full py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-200 mt-8 flex items-center justify-center space-x-2 group ${
-                plan.isPopular 
-                  ? 'bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white shadow-md' 
-                  : 'bg-slate-900 hover:bg-slate-850 text-slate-200 border border-slate-800 hover:border-slate-700'
-              }`}
-            >
-              <span>Get Started</span>
-              <FiArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-            </motion.button>
+            <FaWandMagicSparkles className="h-3.5 w-3.5 text-indigo-400 animate-pulse" />
+            <span>Simple, Transparent Pricing</span>
           </motion.div>
-        ))}
+
+          <motion.h2
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white"
+          >
+            Plans built for every stage of growth.
+          </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="text-base sm:text-lg text-slate-400 max-w-xl mx-auto"
+          >
+            Choose the right plan to manage invoices, streamline operations, and scale your business effortlessly.
+          </motion.p>
+
+          {/* Billing Switcher */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+            className="flex flex-wrap items-center justify-center gap-3 pt-4"
+          >
+            <span className={`text-sm transition-colors ${!isAnnual ? "font-medium text-white" : "text-slate-400"}`}>
+              Monthly
+            </span>
+
+            <button
+              onClick={() => setIsAnnual(!isAnnual)}
+              aria-label="Toggle annual billing"
+              className="relative h-7 w-14 rounded-full border border-slate-800 bg-slate-900 p-1 transition-colors hover:border-slate-700 focus:outline-none"
+            >
+              <motion.div
+                animate={{ x: isAnnual ? 28 : 0 }}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                className="h-5 w-5 rounded-full bg-linear-to-r from-indigo-500 to-violet-500 shadow-md"
+              />
+            </button>
+
+            <div className="flex items-center gap-2">
+              <span className={`text-sm transition-colors ${isAnnual ? "font-medium text-white" : "text-slate-400"}`}>
+                Annually
+              </span>
+              <motion.span
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="rounded-full bg-indigo-500/10 border border-indigo-500/30 px-2 py-0.5 text-[10px] font-semibold text-indigo-300"
+              >
+                Save 20%
+              </motion.span>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Pricing Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
+          {plans.map((plan, index) => {
+            const isCurrentPlan =
+              currentPlan?.toUpperCase() === plan.name?.toUpperCase();
+
+            const isPopular = plan.name?.toUpperCase() === "PRO";
+
+            const formatLimit = (value) =>
+              value === -1 ? "Unlimited" : value;
+
+            const features = [
+              `${formatLimit(plan.invoiceLimit)} Invoices`,
+              `${formatLimit(plan.customerLimit)} Customers`,
+              `${formatLimit(plan.itemLimit)} Items`,
+              `${formatLimit(plan.userLimit)} Team Members`,
+              ...(plan.emailEnabled ? ["Email Notifications"] : []),
+              ...(plan.apiEnabled ? ["Developer API"] : []),
+              ...(plan.aiEnabled ? ["AI Assistant"] : []),
+              ...(plan.customTemplates ? ["Custom Invoice Templates"] : []),
+            ];
+
+            const calculatedPrice = isAnnual
+              ? Math.round(plan.monthlyPrice * 0.8)
+              : plan.monthlyPrice;
+
+            return (
+              <motion.div
+                key={plan.id || index}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.15 }}
+                whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                className={`relative flex flex-col justify-between rounded-3xl p-6 sm:p-8 backdrop-blur-xl transition-all duration-300 ${
+                  isPopular
+                    ? "bg-slate-900/90 border-2 border-indigo-500 shadow-2xl shadow-indigo-500/10 ring-4 ring-indigo-500/10"
+                    : "bg-slate-900/40 border border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/60"
+                }`}
+              >
+                {isPopular && (
+                  <motion.div
+                    animate={{ y: [-2, 2, -2] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-linear-to-r from-indigo-500 to-violet-600 px-4 py-1 text-xs font-semibold tracking-wide text-white shadow-lg"
+                  >
+                    Most Popular
+                  </motion.div>
+                )}
+
+                <div>
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-xl sm:text-2xl font-bold text-white">{plan.name}</h3>
+                    {isCurrentPlan && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
+                        <FiShield className="h-3 w-3" /> Active
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="mt-2 text-xs sm:text-sm text-slate-400 min-h-9">
+                    {plan.description}
+                  </p>
+
+                  <div className="mt-6 flex items-baseline gap-1">
+                    <FaIndianRupeeSign className="h-5 w-5 text-white self-center" />
+                    <span className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white">
+                      {calculatedPrice}
+                    </span>
+                    <span className="text-xs sm:text-sm font-medium text-slate-400">/ month</span>
+                  </div>
+
+                  <div className="mt-8">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4">
+                      What's included
+                    </p>
+                    <ul className="space-y-3 border-t border-slate-800/80 pt-5">
+                      {features.map((feature) => (
+                        <li
+                          key={feature}
+                          className="flex items-start gap-3 text-xs sm:text-sm text-slate-300"
+                        >
+                          <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-indigo-500/15 text-indigo-400 mt-0.5">
+                            <FiCheck className="h-2.5 w-2.5 stroke-3" />
+                          </div>
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="mt-8 pt-6 border-t border-slate-800/80">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    disabled={isLoggedIn && (isCurrentPlan || checkoutLoading)}
+                    onClick={() => handleUpgrade(plan)}
+                    className={`flex w-full items-center cursor-pointer justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold transition-all shadow-md ${
+                      isLoggedIn && isCurrentPlan
+                        ? "cursor-default bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-none"
+                        : isPopular
+                        ? "bg-linear-to-r from-indigo-500 to-violet-600 text-white hover:opacity-95 hover:shadow-lg hover:shadow-indigo-500/25"
+                        : "border border-slate-700 bg-slate-800/60 text-white hover:bg-slate-800 hover:border-slate-600"
+                    }`}
+                  >
+                    {isLoggedIn ? (
+                      isCurrentPlan ? (
+                        "Current Active Plan"
+                      ) : checkoutLoading ? (
+                        <div className="flex items-center gap-2">
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                          <span>Processing...</span>
+                        </div>
+                      ) : (
+                        "Upgrade Plan"
+                      )
+                    ) : (
+                      "Get Started"
+                    )}
+
+                    {!(isLoggedIn && isCurrentPlan) && !checkoutLoading && (
+                      <FiArrowRight className="h-4 w-4" />
+                    )}
+                  </motion.button>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

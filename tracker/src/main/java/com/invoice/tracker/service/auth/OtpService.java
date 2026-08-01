@@ -1,18 +1,22 @@
 package com.invoice.tracker.service.auth;
 
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.invoice.tracker.common.exception.BadRequestException;
+import com.invoice.tracker.dto.auth.SendOtpRequest;
 import com.invoice.tracker.entity.auth.Otp;
 import com.invoice.tracker.entity.auth.OtpPurpose;
 import com.invoice.tracker.entity.auth.User;
 import com.invoice.tracker.repository.auth.OtpRepository;
 import com.invoice.tracker.repository.auth.UserRepository;
+import com.invoice.tracker.security.SecurityUtils;
 import com.invoice.tracker.service.notification.channel.EmailService;
 
 import lombok.RequiredArgsConstructor;
@@ -36,16 +40,16 @@ public class OtpService {
 
     // ====================== SEND OTP =========================
     @Transactional
-    public void sendOtp(String email, OtpPurpose purpose) {
+    public void sendOtp(SendOtpRequest request) {
 
         log.info("Entered OtpService.sendOtp()");
 
-        email = normalizeEmail(email);
+        String email = normalizeEmail(request.getEmail());
 
         boolean userExists = userRepository.existsByEmail(email);
 
         // PURPOSE VALIDATION
-        switch (purpose) {
+        switch (request.getPurpose()) {
 
             case REGISTER -> {
                 if (userExists) {
@@ -70,29 +74,45 @@ public class OtpService {
 
                 if (user.getDeletedAt() != null &&
                         user.getDeletedAt().isBefore(LocalDateTime.now().minusDays(30))) {
-                    throw new BadRequestException("Recovery period expired");
+                    throw new BadRequestException("Recovery period expired. You can register again using this email.");
                 }
             }
 
             case DELETE_ACCOUNT -> {
-                User user = userRepository.findByEmail(email)
-                        .orElseThrow(() -> new BadRequestException("Invalid request"));
+                UUID userId = SecurityUtils.getCurrentUserId();
+
+                User user = userRepository.findById(userId)
+                        .orElseThrow(() -> new BadRequestException("User not found"));
 
                 if (user.isDeleted()) {
                     throw new BadRequestException("Account already deleted");
                 }
+
+                if (request.getPassword() == null || request.getPassword().isBlank()) {
+                    throw new BadRequestException("Password is required");
+                }
+
+                if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+                    throw new BadRequestException("Invalid password");
+                }
+
+                email = user.getEmail();
             }
 
             default -> throw new BadRequestException("Invalid OTP purpose");
         }
 
         // Rate limiting per purpose
-        otpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc(email, purpose).ifPresent(existing ->
+        otpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc(email, request.getPurpose()).ifPresent(existing -> {
+            long remainingSeconds = RESEND_COOLDOWN_SECONDS
+                    - Duration.between(existing.getCreatedAt(), LocalDateTime.now()).getSeconds();
 
-        {
-            if (existing.getCreatedAt()
-                    .isAfter(LocalDateTime.now().minusSeconds(RESEND_COOLDOWN_SECONDS))) {
-                throw new BadRequestException("Please wait before requesting another OTP");
+            if (remainingSeconds > 0) {
+                throw new BadRequestException(
+                        String.format(
+                                "Please wait %d more seconds before requesting another OTP.",
+                                remainingSeconds,
+                                remainingSeconds == 1 ? "" : "s"));
             }
         });
 
@@ -100,11 +120,11 @@ public class OtpService {
         String otp = String.valueOf(100000 + random.nextInt(900000));
 
         // Invalidate old OTPs for same purpose
-        otpRepository.invalidateAllByEmailAndPurpose(email, purpose);
+        otpRepository.invalidateAllByEmailAndPurpose(email, request.getPurpose());
 
         Otp entity = Otp.builder()
                 .email(email)
-                .purpose(purpose)
+                .purpose(request.getPurpose())
                 .otpHash(passwordEncoder.encode(otp))
                 .createdAt(LocalDateTime.now())
                 .expiryTime(LocalDateTime.now().plusMinutes(OTP_EXPIRY_MINUTES))
@@ -116,7 +136,7 @@ public class OtpService {
 
         emailService.sendOtpEmail(email, otp);
 
-        log.info("OTP sent to {} [{}]", email, purpose);
+        log.info("OTP sent to {} [{}]", email, request.getPurpose());
     }
 
     // ========================== VERIFY OTP =============================

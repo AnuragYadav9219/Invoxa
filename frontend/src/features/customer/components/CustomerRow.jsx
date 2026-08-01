@@ -1,5 +1,6 @@
 import { TableRow, TableCell } from "@/components/ui/table";
 import { formatCurrency } from "@/utils/formatters";
+import { Phone } from "lucide-react";
 
 export default function CustomerRow({ customer, navigate }) {
   const pending = Number(customer.pendingAmount || 0);
@@ -30,21 +31,21 @@ export default function CustomerRow({ customer, navigate }) {
             <p className="font-semibold text-slate-800 leading-tight group-hover:text-indigo-600 transition">
               {customer.name}
             </p>
-            <p className="text-xs text-slate-400">
-              {customer.phone}
-            </p>
           </div>
         </div>
       </TableCell>
 
       {/* PHONE */}
       <TableCell className="text-slate-600 font-medium">
-        {customer.phone}
+        <span className="bg-slate-50 w-fit px-2 py-0.5 flex items-center gap-1.5 rounded-md border border-slate-100">
+          <Phone size={13} className="text-indigo-600" />
+          {customer.phone || "—"}
+        </span>
       </TableCell>
 
       {/* TOTAL */}
       <TableCell>
-        <span className="font-bold text-emerald-600 text-sm">
+        <span className="font-bold text-slate-800 text-sm">
           {formatCurrency(customer.totalAmount)}
         </span>
       </TableCell>

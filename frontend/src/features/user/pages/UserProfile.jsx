@@ -4,6 +4,10 @@ import {
   Camera,
   Loader2,
   Pencil,
+  ShieldCheck,
+  CheckCircle2,
+  X,
+  Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -61,8 +65,10 @@ export default function UserProfile() {
     try {
       await updateProfile(form).unwrap();
       setIsEditing(false);
+      toast.success("Profile updated successfully!");
     } catch (err) {
       console.error(err);
+      toast.error(err?.data?.message || "Failed to update profile");
     }
   };
 
@@ -107,40 +113,43 @@ export default function UserProfile() {
     setPreview(localPreview);
 
     try {
-
       await uploadProfileImage(file).unwrap();
       toast.success("Profile image updated.");
-
     } catch (err) {
-
       setPreview(oldPreview);
       toast.error(err?.data?.message || "Upload failed");
     }
-  }
+  };
 
   if (profileLoading) {
     return (
-      <div className="flex justify-center items-center h-60">
-        <Loader2 className="animate-spin" />
+      <div className="flex justify-center items-center h-[70vh]">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="animate-spin text-indigo-600" size={36} />
+          <p className="text-xs font-semibold text-slate-400">Loading user profile...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 p-2">
+    <div className="max-w-5xl mx-auto space-y-6 px-4 sm:px-6 py-6">
 
-      {/* ================= HEADER ================= */}
+      {/* ================= HEADER HERO CARD ================= */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-6"
+        className="bg-white rounded-3xl border border-slate-200/80 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] p-6 sm:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative overflow-hidden"
       >
-        <div className="flex items-center gap-5">
+        {/* Decorative background accent banner */}
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-linear-to-r from-indigo-600 via-purple-600 to-pink-600" />
+
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
 
           {/* Avatar */}
-          <div className="relative group">
+          <div className="relative group shrink-0">
             <div
-              className="relative w-24 h-24 rounded-full overflow-hidden cursor-pointer shadow-lg"
+              className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-3xl overflow-hidden cursor-pointer shadow-md ring-4 ring-slate-100 transition-transform group-hover:scale-[1.02]"
               onClick={() => {
                 if (preview || user?.profileImage) {
                   setPreviewOpen(true);
@@ -154,8 +163,8 @@ export default function UserProfile() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold">
-                  {form.name?.charAt(0)}
+                <div className="w-full h-full bg-linear-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white text-3xl font-black">
+                  {form.name?.charAt(0) || "U"}
                 </div>
               )}
             </div>
@@ -166,15 +175,14 @@ export default function UserProfile() {
                 e.stopPropagation();
                 fileInputRef.current?.click();
               }}
-              className="absolute bottom-1 right-1 h-8 w-8 rounded-full bg-white shadow-lg flex items-center justify-center hover:scale-110 transition"
+              className="absolute -bottom-1 -right-1 h-9 w-9 rounded-2xl bg-white border border-slate-200 shadow-md flex items-center justify-center text-indigo-600 hover:bg-indigo-50 hover:scale-105 transition-all cursor-pointer"
+              title="Change profile picture"
             >
-
               {imageUploading ? (
-                <Loader2 className="animate-spin" size={15} />
+                <Loader2 className="animate-spin text-indigo-600" size={16} />
               ) : (
-                <Camera size={15} />
+                <Camera size={16} />
               )}
-
             </button>
 
             <input
@@ -187,40 +195,51 @@ export default function UserProfile() {
           </div>
 
           {/* Info */}
-          <div>
-            <h2 className="text-xl font-semibold">{form.name}</h2>
-            <p className="text-sm text-gray-500">{form.email}</p>
-
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full">
-                Active
+          <div className="space-y-1.5 pt-1">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">{form.name || "User Name"}</h2>
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-2.5 py-0.5 rounded-full">
+                <CheckCircle2 size={11} /> Active
               </span>
-              <span className="text-xs text-gray-400">
+            </div>
+
+            <p className="text-xs sm:text-sm text-slate-500 font-medium">{form.email}</p>
+
+            <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs text-slate-400 font-medium">
+              <span className="flex items-center gap-1 bg-slate-100/80 px-3 py-1 rounded-xl text-slate-600">
+                <ShieldCheck size={13} className="text-indigo-600" />
+                Verified Merchant Account
+              </span>
+              <span>
                 Joined on {user?.createdAt ? formatDateInMonth(user?.createdAt) : "-"}
               </span>
             </div>
           </div>
         </div>
 
+        {/* Edit Button */}
         {!isEditing && (
-          <Button onClick={() => setIsEditing(true)}>
-            <Pencil size={14} className="mr-2" />
-            Edit Profile
+          <Button
+            onClick={() => setIsEditing(true)}
+            className="cursor-pointer bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-2xl shadow-md shadow-indigo-500/20 h-11 px-5 transition-all duration-200 flex items-center justify-center gap-2 shrink-0 self-center sm:self-auto"
+          >
+            <Pencil size={15} />
+            <span>Edit Profile</span>
           </Button>
         )}
       </motion.div>
 
       {/* ================= VIEW MODE ================= */}
       {!isEditing && (
-        <>
+        <div className="space-y-6">
           <PersonalInfo user={user} isEditing={false} />
           <Shop user={user} isEditing={false} />
-        </>
+        </div>
       )}
 
       {/* ================= EDIT MODE ================= */}
       {isEditing && (
-        <>
+        <div className="space-y-6">
           <PersonalInfo
             user={user}
             isEditing={true}
@@ -235,17 +254,37 @@ export default function UserProfile() {
             onChange={handleChange}
           />
 
-          {/* ACTION BUTTONS */}
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={handleCancel}>
-              Cancel
+          {/* ACTION BUTTONS CARD */}
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-4 sm:p-5 flex flex-col sm:flex-row justify-end items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={handleCancel}
+              disabled={isLoading}
+              className="w-full sm:w-auto cursor-pointer h-11 px-5 rounded-2xl border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold text-xs"
+            >
+              <X size={15} className="mr-1.5" />
+              Cancel Changes
             </Button>
 
-            <Button onClick={handleSave} disabled={isLoading}>
-              {isLoading ? "Saving..." : "Save Changes"}
+            <Button
+              onClick={handleSave}
+              disabled={isLoading}
+              className="w-full sm:w-auto cursor-pointer h-11 px-6 bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold rounded-2xl shadow-lg shadow-emerald-500/20 text-xs transition-all"
+            >
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="animate-spin" size={15} />
+                  Saving Updates...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Save size={15} />
+                  Save Profile Changes
+                </span>
+              )}
             </Button>
           </div>
-        </>
+        </div>
       )}
 
       <ProfileImagePreview

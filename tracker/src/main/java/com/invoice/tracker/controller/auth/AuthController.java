@@ -93,7 +93,7 @@ public class AuthController {
                 request.getEmail(),
                 request.getPurpose());
 
-        otpService.sendOtp(request.getEmail(), request.getPurpose());
+        otpService.sendOtp(request);
 
         return ResponseBuilder.success(null, "OTP sent successfully");
     }

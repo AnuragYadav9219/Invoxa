@@ -5,44 +5,47 @@ import { FiZap } from 'react-icons/fi';
 
 const FEEDBACK = [
   {
-    quote: "Migrating our core balance ledgers to Invoxa cut manual engineering overhead by almost 40%. The automated billing triggers work seamlessly.",
-    author: "Elena Rostova",
-    role: "VP of Operations",
-    company: "StrataInc",
-    avatar: "ER",
-    highlight: "40% Less Overhead",
+    quote:
+      "Creating invoices, tracking payments, and managing customers is now much simpler with Invoxa. Everything is available in one clean dashboard.",
+    author: "Small Business Owner",
+    role: "Early Access User",
+    company: "Invoxa",
+    avatar: "SB",
+    highlight: "Simple Invoicing",
     rating: 5,
   },
   {
-    quote: "The programmatic execution matrix is immaculate. We handle all contract structures and invoice cycles instantly using their developer pipelines.",
-    author: "Devon Reynolds",
-    role: "Founder",
-    company: "CoreStack Systems",
-    avatar: "DR",
-    highlight: "Instant Execution",
+    quote:
+      "The PDF invoices look professional, email delivery is seamless, and payment history makes it easy to keep track of outstanding balances.",
+    author: "Freelancer",
+    role: "Beta User",
+    company: "Invoxa",
+    avatar: "FR",
+    highlight: "Professional PDFs",
     rating: 5,
   },
   {
-    quote: "Invoxa solved our global cross-border collection delays. Their dynamic dashboards give us absolute corporate cash flow velocity updates instantly.",
-    author: "Marcus Vance",
-    role: "Chief Financial Officer",
-    company: "Apex Corp",
-    avatar: "MV",
-    highlight: "Zero Payment Delays",
+    quote:
+      "From invoice creation to revenue insights, Invoxa gives me everything I need to manage my business without switching between multiple tools.",
+    author: "Startup Founder",
+    role: "Early Access User",
+    company: "Invoxa",
+    avatar: "SF",
+    highlight: "All-in-One Platform",
     rating: 5,
-  }
+  },
 ];
 
 export default function Testimonials() {
   return (
     <section id="testimonials" className="relative py-28 sm:py-36 overflow-hidden bg-slate-950">
-      
+
       {/* Background Ambient Glow & Grid Pattern */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-200 h-100 bg-indigo-600/10 blur-[140px] pointer-events-none rounded-full" />
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-size-[4rem_4rem] mask-[radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-        
+
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-24 space-y-4">
           <motion.div
@@ -61,9 +64,9 @@ export default function Testimonials() {
             transition={{ delay: 0.1 }}
             className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white"
           >
-            Validated by engineering <br />
+            Trusted by businesses <br />
             <span className="bg-linear-to-r from-indigo-300 via-indigo-100 to-violet-300 bg-clip-text text-transparent">
-              and financial leaders.
+              starting their digital journey.
             </span>
           </motion.h2>
 
@@ -74,7 +77,7 @@ export default function Testimonials() {
             transition={{ delay: 0.2 }}
             className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto"
           >
-            Discover how scale-stage platforms rely on Invoxa to keep revenue flow accurate and fully automated.
+            Create professional invoices, track payments, manage customers, and monitor your business from one modern platform.
           </motion.p>
         </div>
 
@@ -96,7 +99,7 @@ export default function Testimonials() {
                   <span className="inline-flex items-center text-[11px] font-medium tracking-wide text-indigo-300 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
                     {card.highlight}
                   </span>
-                  
+
                   <div className="flex gap-0.5 text-amber-400">
                     {[...Array(card.rating)].map((_, i) => (
                       <HiStar key={i} className="w-4 h-4" />

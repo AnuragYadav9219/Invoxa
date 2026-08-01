@@ -9,6 +9,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.invoice.tracker.common.response.ApiResponse;
 import com.invoice.tracker.common.response.ResponseBuilder;
@@ -79,11 +80,19 @@ public class GlobalExceptionHandler {
         return ResponseBuilder.error(errorMessage, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Object>> handleNoResourceFound(NoResourceFoundException ex) {
+
+        log.warn("No Resource Found: {}", ex.getMessage());
+
+        return ResponseBuilder.error(
+                "Resource not found",
+                HttpStatus.NOT_FOUND);
+    }
+
     // ================= FALLBACK (500) =================
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleException(Exception ex) {
-
-        // log.error("Unexpected Exception: {}", ex.getMessage(), ex);
 
         log.error("Unexpected Exception", ex);
 
@@ -95,7 +104,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Object>> handleDeleted(AccountDeletedException ex) {
 
         log.warn("Deleted Account Login Attempt: {}", ex.getMessage());
-        
+
         return ResponseBuilder.errorWithCode(
                 "Your account is deleted. You can recover it.",
                 "ACCOUNT_DELETED",

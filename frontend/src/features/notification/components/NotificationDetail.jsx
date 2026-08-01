@@ -34,14 +34,18 @@ export default function NotificationDetail() {
 
     if (!notification) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-                <div className="p-4 bg-red-50 rounded-full text-red-500">
-                    <AlertCircle size={40} />
+            <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4 px-4 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600 border border-red-100 shadow-2xs">
+                    <AlertCircle className="h-6 w-6" />
                 </div>
-                <p className="text-gray-500 font-medium">Notification not found</p>
-                <button onClick={() => navigate(-1)} className="text-indigo-600 hover:underline">
+                <p className="text-sm font-medium text-slate-600">Notification not found</p>
+                <Button 
+                    variant="outline" 
+                    onClick={() => navigate(-1)}
+                    className="rounded-xl border-slate-200 text-xs font-semibold text-indigo-600 hover:bg-indigo-50/50"
+                >
                     Go back
-                </button>
+                </Button>
             </div>
         );
     }
@@ -56,99 +60,105 @@ export default function NotificationDetail() {
     };
 
     const statusConfig = {
-        FAILED: { color: "bg-red-100 text-red-700", icon: <AlertCircle size={14} />, label: "Failed" },
-        RETRYING: { color: "bg-amber-100 text-amber-700", icon: <RefreshCcw size={14} className="animate-spin" />, label: "Retrying" },
-        SENT: { color: "bg-emerald-100 text-emerald-700", icon: <CheckCircle2 size={14} />, label: "Sent" },
+        FAILED: { 
+            color: "bg-red-50 text-red-700 border-red-200/60", 
+            icon: <AlertCircle className="h-3.5 w-3.5 shrink-0" />, 
+            label: "Failed" 
+        },
+        RETRYING: { 
+            color: "bg-amber-50 text-amber-700 border-amber-200/60", 
+            icon: <RefreshCcw className="h-3.5 w-3.5 animate-spin shrink-0" />, 
+            label: "Retrying" 
+        },
+        SENT: { 
+            color: "bg-emerald-50 text-emerald-700 border-emerald-200/60", 
+            icon: <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />, 
+            label: "Sent" 
+        },
     };
 
     const currentStatus = statusConfig[status];
 
     return (
-        <main className="relative min-h-screen bg-linear-to-br from-indigo-100 to-purple-300">
-
-            <div className="absolute top-0 left-0 w-72 h-72 bg-indigo-200/30 blur-3xl rounded-full" />
-            <div className="absolute bottom-0 right-0 w-72 h-72 bg-purple-200/30 blur-3xl rounded-full" />
+        <main className="relative min-h-[calc(100vh-4rem)] w-full bg-slate-50/50 sm:px-6 py-6 md:py-10 flex flex-col items-center justify-start overflow-x-hidden">
+            {/* Background Decorative Gradient Elements */}
+            <div className="absolute top-0 left-1/4 h-72 sm:h-96 w-72 sm:w-96 rounded-full bg-indigo-500/5 blur-3xl pointer-events-none" />
+            <div className="absolute top-1/3 right-1/4 h-72 sm:h-96 w-72 sm:w-96 rounded-full bg-violet-500/5 blur-3xl pointer-events-none" />
 
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="relative max-w-3xl mx-auto px-3 sm:px-4 md:px-6 py-6 md:py-10 space-y-6"
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="relative w-full max-w-md md:max-w-3xl space-y-4 sm:space-y-6 mx-auto"
             >
-
+                {/* Back Button */}
                 <Button
                     variant="outline"
                     onClick={() => navigate(-1)}
-                    className="group flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-indigo-600 transition"
+                    className="group flex items-center gap-2 rounded-xl border-slate-200/80 bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 shadow-2xs transition-all duration-200 hover:border-indigo-300 hover:bg-indigo-50/30 hover:text-indigo-600 active:scale-98"
                 >
-                    <ArrowLeft size={18} className="group-hover:-translate-x-1 transition" />
-                    Back
+                    <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
+                    <span>Back</span>
                 </Button>
 
-                <div className="relative rounded-2xl overflow-hidden shadow-md">
-
-                    <div className="absolute inset-0 bg-linear-to-br from-indigo-100 via-purple-50 to-pink-100" />
-
-                    <div className="relative bg-white/80 backdrop-blur-xl border border-white/60 rounded-2xl">
-
-                        {/* HEADER */}
-                        <div className="p-5 sm:p-6 border-b bg-linear-to-r from-indigo-50 via-white to-purple-50">
-
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-
-                                <div>
-                                    <h1 className="text-lg sm:text-xl font-semibold text-gray-800">
-                                        Notification Details
-                                    </h1>
-
-                                    <div className="text-xs text-gray-400 flex items-center gap-2 mt-1">
-                                        ID: {id.slice(0, 8)}...
-                                        <button onClick={() => handleCopy(id)}>
-                                            {copied ? (
-                                                <span className="text-emerald-500 font-semibold">Copied</span>
-                                            ) : (
-                                                <Copy size={12} />
-                                            )}
-                                        </button>
-                                    </div>
+                <div className="w-89 max-w-full sm:w-full mx-auto overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs">
+                    {/* Header */}
+                    <div className="border-b border-slate-200/60 bg-linear-to-r from-indigo-50/70 via-slate-50 to-violet-50/60 px-4 sm:px-6 py-4 sm:py-5">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                            <div className="min-w-0 flex-1">
+                                <div className="inline-flex items-center gap-1.5 rounded-md bg-indigo-50 px-2 py-0.5 text-[11px] font-medium tracking-wide text-indigo-600 mb-1.5 border border-indigo-100/80 shadow-2xs">
+                                    <Mail className="h-3 w-3 shrink-0" />
+                                    <span>Notification Log</span>
                                 </div>
+                                <h1 className="text-lg sm:text-xl font-semibold tracking-tight text-slate-800 truncate">
+                                    Notification Details
+                                </h1>
 
-                                <div className={cn(
-                                    "inline-flex w-fit items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold shadow-sm",
-                                    currentStatus.color
-                                )}>
-                                    {currentStatus.icon}
-                                    {currentStatus.label}
+                                <div className="text-xs text-slate-400 flex items-center gap-2 mt-1 font-mono flex-wrap">
+                                    <span className="truncate max-w-45 sm:max-w-none">ID: {id}</span>
+                                    <button 
+                                        onClick={() => handleCopy(id)}
+                                        className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700 transition-colors shrink-0"
+                                        aria-label="Copy ID"
+                                    >
+                                        {copied ? (
+                                            <span className="text-emerald-600 font-semibold font-sans">Copied</span>
+                                        ) : (
+                                            <Copy className="h-3 w-3" />
+                                        )}
+                                    </button>
                                 </div>
+                            </div>
 
+                            <div className={cn(
+                                "inline-flex w-fit items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold border shadow-2xs shrink-0 self-start sm:self-auto",
+                                currentStatus.color
+                            )}>
+                                {currentStatus.icon}
+                                <span>{currentStatus.label}</span>
                             </div>
                         </div>
+                    </div>
 
-                        {/* BODY */}
-                        <div className="p-5 sm:p-6 space-y-6">
+                    {/* Body Content */}
+                    <div className="p-2 sm:p-6 space-y-5 sm:space-y-6 bg-white w-full">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="w-full overflow-x-auto rounded-xl border border-slate-200/70 bg-slate-50/60 p-3.5 sm:p-4 text-xs sm:text-sm text-slate-700 whitespace-pre-wrap wrap-break-word leading-relaxed shadow-2xs"
+                        >
+                            {message}
+                        </motion.div>
 
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                className="bg-linear-to-r from-gray-50 to-gray-100 rounded-xl p-4 text-sm text-gray-700 whitespace-pre-line"
-                            >
-                                {message}
-                            </motion.div>
+                        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
+                            <InfoTile icon={<Mail className="h-4 w-4" />} label="Recipient" value={recipient} />
+                            <InfoTile icon={<CalendarDays className="h-4 w-4" />} label="Date" value={date ? formatDate(date) : "—"} />
 
-                            <div className="grid gap-4 sm:grid-cols-2">
-
-                                <InfoTile icon={<Mail size={16} />} label="Recipient" value={recipient} />
-
-                                <InfoTile icon={<CalendarDays size={16} />} label="Date" value={date ? formatDate(date) : "—"} />
-
-                                {invoiceNumber && (
-                                    <div className="sm:col-span-2">
-                                        <InfoTile icon={<Hash size={16} />} label="Invoice" value={"# " + invoiceNumber} />
-                                    </div>
-                                )}
-
-                            </div>
-
+                            {invoiceNumber && (
+                                <div className="sm:col-span-2">
+                                    <InfoTile icon={<Hash className="h-4 w-4" />} label="Invoice" value={"# " + invoiceNumber} />
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -159,13 +169,13 @@ export default function NotificationDetail() {
 
 function InfoTile({ icon, label, value }) {
     return (
-        <div className="flex items-start gap-3 p-4 rounded-xl border bg-white hover:shadow-sm transition">
-            <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+        <div className="flex items-start gap-3 p-3.5 sm:p-4 rounded-xl border border-slate-200/70 bg-white transition-all duration-200 hover:border-indigo-300 hover:shadow-xs w-full min-w-0">
+            <div className="rounded-lg bg-indigo-50 p-2 text-indigo-600 border border-indigo-100/80 shrink-0">
                 {icon}
             </div>
-            <div>
-                <p className="text-[11px] text-gray-400 uppercase">{label}</p>
-                <p className="text-sm font-medium text-gray-800 break-all">{value}</p>
+            <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase">{label}</p>
+                <p className="text-xs sm:text-sm font-semibold text-slate-800 break-all mt-0.5">{value}</p>
             </div>
         </div>
     );

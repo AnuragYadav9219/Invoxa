@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 import com.invoice.tracker.dto.invoice.InvoiceFilterRequest;
 import com.invoice.tracker.entity.invoice.Invoice;
 
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 
 public class InvoiceSpecification {
@@ -18,15 +19,16 @@ public class InvoiceSpecification {
 
         return (root, query, cb) -> {
 
+            if (!Long.class.equals(query.getResultType())) {
+                root.fetch("items", JoinType.LEFT);
+                query.distinct(true);
+            }
+
             List<Predicate> predicates = new ArrayList<>();
 
-            // Multi-tenant safety
             predicates.add(cb.equal(root.get("shopId"), shopId));
-
-            // Exclude soft deleted
             predicates.add(cb.isFalse(root.get("deleted")));
 
-            // Search
             if (filter.getSearch() != null && !filter.getSearch().isBlank()) {
 
                 String pattern = "%" + filter.getSearch().toLowerCase() + "%";
@@ -37,21 +39,28 @@ public class InvoiceSpecification {
 
                 Predicate emailMatch = cb.like(cb.lower(root.get("customerEmail")), pattern);
 
-                predicates.add(cb.or(invoiceNumberMatch, customerMatch, emailMatch));
+                predicates.add(cb.or(
+                        invoiceNumberMatch,
+                        customerMatch,
+                        emailMatch));
             }
 
-            // Status filter
             if (filter.getStatus() != null) {
                 predicates.add(cb.equal(root.get("status"), filter.getStatus()));
             }
 
-            // Date Range
             if (filter.getFromDate() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("dueDate"), filter.getFromDate()));
+                predicates.add(
+                        cb.greaterThanOrEqualTo(
+                                root.get("dueDate"),
+                                filter.getFromDate()));
             }
 
             if (filter.getToDate() != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("dueDate"), filter.getToDate()));
+                predicates.add(
+                        cb.lessThanOrEqualTo(
+                                root.get("dueDate"),
+                                filter.getToDate()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

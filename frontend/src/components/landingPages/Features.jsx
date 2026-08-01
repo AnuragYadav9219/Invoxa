@@ -7,52 +7,52 @@ import {
   FiZap,
   FiCheckCircle,
   FiLock,
-  FiCpu,
-  FiArrowRight,
   FiCode
 } from 'react-icons/fi';
 
+import { FaIndianRupeeSign } from "react-icons/fa6";
+
 const FEATURES = [
   {
-    id: 'invoicing',
-    title: 'Automated Billing Triggers',
-    desc: 'Generate dynamic invoices based on usage, milestones, or recurring schedules. Reconcile payments automatically with zero manual effort.',
+    id: "invoicing",
+    title: "Professional Invoice Management",
+    desc: "Create professional invoices in seconds, download beautiful PDFs, and send them directly to customers with built-in email support.",
     icon: FiFileText,
-    accent: 'from-indigo-500/20 via-indigo-500/10 to-transparent',
-    iconColor: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20',
-    colSpan: 'md:col-span-2 lg:col-span-2',
-    preview: 'invoice-preview'
+    accent: "from-indigo-500/20 via-indigo-500/10 to-transparent",
+    iconColor: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
+    colSpan: "md:col-span-2 lg:col-span-2",
+    preview: "invoice-preview",
   },
   {
-    id: 'security',
-    title: 'Enterprise Identity Vault',
-    desc: 'AES-256 encrypted client data storage with automated audit logging and compliance triggers.',
+    id: "security",
+    title: "Secure Business Workspace",
+    desc: "Protect your business with JWT authentication, tenant isolation, and secure access for every shop.",
     icon: FiShield,
-    accent: 'from-violet-500/20 via-violet-500/10 to-transparent',
-    iconColor: 'text-violet-400 bg-violet-500/10 border-violet-500/20',
-    colSpan: 'md:col-span-1 lg:col-span-1',
-    preview: 'security-preview'
+    accent: "from-violet-500/20 via-violet-500/10 to-transparent",
+    iconColor: "text-violet-400 bg-violet-500/10 border-violet-500/20",
+    colSpan: "md:col-span-1 lg:col-span-1",
+    preview: "security-preview",
   },
   {
-    id: 'analytics',
-    title: 'Real-Time Financial Velocity',
-    desc: 'Track collection speed, pending ledger amounts, and cash flow projections on live dynamic dashboards.',
+    id: "analytics",
+    title: "Business Insights Dashboard",
+    desc: "Monitor revenue, pending invoices, overdue payments, and customer activity from one powerful dashboard.",
     icon: FiTrendingUp,
-    accent: 'from-emerald-500/20 via-emerald-500/10 to-transparent',
-    iconColor: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
-    colSpan: 'md:col-span-1 lg:col-span-1',
-    preview: 'analytics-preview'
+    accent: "from-emerald-500/20 via-emerald-500/10 to-transparent",
+    iconColor: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+    colSpan: "md:col-span-1 lg:col-span-1",
+    preview: "analytics-preview",
   },
   {
-    id: 'developer',
-    title: 'Developer-First APIs & Webhooks',
-    desc: 'Integrate billing pipelines directly into your app using REST endpoints, SDKs, and instant webhook dispatches.',
+    id: "developer",
+    title: "Modern REST API",
+    desc: "Built on Spring Boot with a secure REST API powering every invoice, payment, customer, and dashboard operation.",
     icon: FiCode,
-    accent: 'from-sky-500/20 via-sky-500/10 to-transparent',
-    iconColor: 'text-sky-400 bg-sky-500/10 border-sky-500/20',
-    colSpan: 'md:col-span-2 lg:col-span-2',
-    preview: 'code-preview'
-  }
+    accent: "from-sky-500/20 via-sky-500/10 to-transparent",
+    iconColor: "text-sky-400 bg-sky-500/10 border-sky-500/20",
+    colSpan: "md:col-span-2 lg:col-span-2",
+    preview: "code-preview",
+  },
 ];
 
 export default function Features() {
@@ -85,7 +85,7 @@ export default function Features() {
           >
             Everything you need to{' '}
             <span className="bg-linear-to-r from-indigo-300 via-violet-300 to-pink-300 bg-clip-text text-transparent">
-              automate cash flow.
+              run your business.
             </span>
           </motion.h2>
 
@@ -96,7 +96,7 @@ export default function Features() {
             transition={{ delay: 0.2 }}
             className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto"
           >
-            Stop juggling fragmented apps. Invoxa combines smart billing, enterprise security, and cash flow analytics into a single engine.
+            Create invoices, track payments, manage customers, and monitor your business performance from one modern platform.
           </motion.p>
         </div>
 
@@ -142,13 +142,16 @@ export default function Features() {
                     <div className="p-4 rounded-2xl bg-slate-950/70 border border-white/6 space-y-3 font-mono text-xs">
                       <div className="flex justify-between items-center text-slate-400 pb-2 border-b border-white/6">
                         <span className="flex items-center gap-1.5 text-indigo-300 font-semibold">
-                          <FiCheckCircle className="text-emerald-400" /> Auto-Trigger Executed
+                          <FiCheckCircle className="text-emerald-400" /> Invoice Generated
                         </span>
-                        <span className="text-[10px] text-slate-500">2ms ago</span>
+                        <span className="text-[10px] text-slate-500">Just now</span>
                       </div>
                       <div className="flex justify-between text-slate-300">
                         <span>Inv #2026-104</span>
-                        <span className="font-semibold text-white">$8,450.00</span>
+                        <span className="flex items-center gap-1 font-semibold text-white">
+                          <FaIndianRupeeSign className="text-[10px]" />
+                          8,450.00
+                        </span>
                       </div>
                     </div>
                   )}
@@ -158,10 +161,10 @@ export default function Features() {
                     <div className="p-4 rounded-2xl bg-slate-950/70 border border-white/6 flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2 text-slate-300">
                         <FiLock className="text-violet-400" />
-                        <span className="font-medium">AES-256 Vault</span>
+                        <span className="font-medium">JWT Protected</span>
                       </div>
                       <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-semibold border border-emerald-500/20">
-                        Compliant
+                        Secure
                       </span>
                     </div>
                   )}
@@ -182,10 +185,28 @@ export default function Features() {
 
                   {/* Feature Preview 4: Code Snippet */}
                   {feat.preview === 'code-preview' && (
-                    <div className="p-4 rounded-2xl bg-slate-950/80 border border-white/6 font-mono text-[11px] text-slate-300 space-y-1 overflow-x-auto">
-                      <div className="text-slate-500">// Trigger automated invoice via API</div>
+                    <div className="p-4 rounded-2xl bg-slate-950/80 border border-white/6 font-mono text-[11px] text-slate-300 space-y-2 overflow-x-auto">
+                      <div className="text-slate-500">
+                          // Create invoice via REST API
+                      </div>
+
                       <div>
-                        <span className="text-indigo-400">await</span> invoxa.<span className="text-violet-300">invoices</span>.<span className="text-sky-300">create</span>({`{ client: `}<span className="text-emerald-300">'Acme Corp'</span>{`, amount: `}<span className="text-amber-300">8450</span>{` }`});
+                        <span className="text-sky-400">POST</span>{" "}
+                        <span className="text-white">/api/invoices</span>
+                      </div>
+
+                      <div className="text-slate-500">
+                        Authorization:
+                        <span className="text-emerald-400"> Bearer ********</span>
+                      </div>
+
+                      <div className="text-slate-500">
+                        Content-Type:
+                        <span className="text-indigo-400"> application/json</span>
+                      </div>
+
+                      <div className="text-amber-300">
+                        {"{ customerName: 'Acme Corp', totalAmount: 8450 }"}
                       </div>
                     </div>
                   )}

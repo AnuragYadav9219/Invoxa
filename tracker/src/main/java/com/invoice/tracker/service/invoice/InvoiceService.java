@@ -30,6 +30,8 @@ public interface InvoiceService {
 
     void permanentDeleteInvoice(UUID id);
 
+    int permanentDeleteAllInvoices();
+
     List<InvoiceResponse> getDeletedInvoices();
 
     byte[] getInvoicePdf(UUID invoiceId, UUID shopId, String email);

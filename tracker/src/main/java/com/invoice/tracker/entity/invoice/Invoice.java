@@ -12,6 +12,7 @@ import org.hibernate.annotations.BatchSize;
 import com.invoice.tracker.entity.BaseEntity;
 import com.invoice.tracker.entity.notification.Notification;
 import com.invoice.tracker.entity.payment.Payment;
+import com.invoice.tracker.entity.templates.InvoiceTemplate;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

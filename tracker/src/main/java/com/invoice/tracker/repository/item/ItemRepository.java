@@ -22,4 +22,6 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
     Optional<Item> findByIdAndShopIdAndDeletedFalse(UUID itemId, UUID shopId);
 
     Optional<Item> findByIdAndShopId(UUID itemId, UUID shopId);
+
+    long countByShopIdAndDeletedFalse(UUID shopId);
 }

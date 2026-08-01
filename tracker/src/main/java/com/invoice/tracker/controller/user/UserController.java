@@ -1,6 +1,5 @@
 package com.invoice.tracker.controller.user;
 
-import com.invoice.tracker.service.auth.OtpService;
 import com.invoice.tracker.service.user.UserService;
 import com.invoice.tracker.util.FileValidationUtil;
 
@@ -21,18 +20,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.invoice.tracker.common.exception.BadRequestException;
 import com.invoice.tracker.common.response.ApiResponse;
 import com.invoice.tracker.common.response.ResponseBuilder;
 import com.invoice.tracker.dto.auth.ChangePasswordRequest;
-import com.invoice.tracker.dto.auth.SendOtpRequest;
 import com.invoice.tracker.dto.cloudinary.ImageUploadResponse;
 import com.invoice.tracker.dto.user.DeleteAccountRequest;
 import com.invoice.tracker.dto.user.RecoverAccountRequest;
 import com.invoice.tracker.dto.user.UpdateProfileRequest;
 import com.invoice.tracker.dto.user.UserProfileResponse;
-import com.invoice.tracker.entity.auth.OtpPurpose;
-import com.invoice.tracker.security.SecurityUtils;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +37,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final OtpService otpService;
     private final UserService userService;
     private final FileValidationUtil fileValidationUtil;
 
@@ -103,16 +97,6 @@ public class UserController {
 
     // ======================= DELETE ACCOUNT ====================
 
-    @PostMapping("/delete/send-otp")
-    public ResponseEntity<ApiResponse<Object>> sendDeleteOtp() {
-
-        String email = SecurityUtils.getCurrentUserEmail();
-
-        otpService.sendOtp(email, OtpPurpose.DELETE_ACCOUNT);
-
-        return ResponseBuilder.success(null, "OTP sent for account deletion");
-    }
-
     @DeleteMapping("/me")
     public ResponseEntity<ApiResponse<Object>> deleteAccount(@RequestBody DeleteAccountRequest request) {
 
@@ -122,19 +106,6 @@ public class UserController {
     }
 
     // =========================== RECOVER ===========================
-
-    @PostMapping("/recover/send-otp")
-    public ResponseEntity<ApiResponse<Object>> sendRecoverOtp(
-            @Valid @RequestBody SendOtpRequest request) {
-
-        if (request.getEmail() == null) {
-            throw new BadRequestException("Email is required");
-        }
-
-        otpService.sendOtp(request.getEmail(), OtpPurpose.RECOVER);
-
-        return ResponseBuilder.success(null, "Recovery OTP sent");
-    }
 
     @PostMapping("/recover")
     public ResponseEntity<ApiResponse<Object>> recoverAccount(@RequestBody RecoverAccountRequest request) {

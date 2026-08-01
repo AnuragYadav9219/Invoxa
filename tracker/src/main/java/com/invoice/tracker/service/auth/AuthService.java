@@ -1,5 +1,6 @@
 package com.invoice.tracker.service.auth;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +36,7 @@ import com.invoice.tracker.mapper.AuthMapper;
 import com.invoice.tracker.repository.auth.UserRepository;
 import com.invoice.tracker.repository.shop.ShopRepository;
 import com.invoice.tracker.security.JwtUtil;
+import com.invoice.tracker.service.subscription.SubscriptionService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -47,6 +49,7 @@ public class AuthService {
         private final ShopRepository shopRepository;
         private final PasswordEncoder passwordEncoder;
         private final RefreshTokenService refreshTokenService;
+        private final SubscriptionService subscriptionService;
         private final AuthenticationManager authenticationManager;
         private final JwtUtil jwtUtil;
         private final DeviceHelper deviceHelper;
@@ -82,7 +85,8 @@ public class AuthService {
                                 .address(request.getAddress())
                                 .build();
 
-                shopRepository.save(shop);
+                Shop savedShop = shopRepository.save(shop);
+                subscriptionService.initializeSubscription(savedShop);
 
                 User user = User.builder()
                                 .name(request.getOwnerName())
@@ -347,5 +351,29 @@ public class AuthService {
                 // userRepository.save(user);
 
                 log.info("Logged out device | email={} | deviceId={}", email, deviceId);
+        }
+
+        public int cleanupExpiredAccounts() {
+                LocalDateTime cutoff = LocalDateTime.now().minusDays(30);
+
+                List<User> users = userRepository.findByDeletedTrueAndDeletedAtBefore(cutoff);
+
+                if (users.isEmpty()) {
+                        return 0;
+                }
+
+                for(User user : users) {
+                        permanentlyDeleteUser(user);
+                }
+
+                return users.size();
+        }
+
+        // ================ PRIVATE METHOD ==================
+        private void permanentlyDeleteUser(User user) {
+
+                log.info("Permanently deleting account: {}", user.getEmail());
+
+                userRepository.delete(user);
         }
 }

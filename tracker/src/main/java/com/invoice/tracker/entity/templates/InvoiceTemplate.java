@@ -1,4 +1,4 @@
-package com.invoice.tracker.entity.invoice;
+package com.invoice.tracker.entity.templates;
 
 public enum InvoiceTemplate {
     CLASSIC,

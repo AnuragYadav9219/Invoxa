@@ -1,26 +1,45 @@
 import { cn } from "@/lib/utils";
+import { CheckCircle2, Clock, AlertCircle, AlertTriangle } from "lucide-react";
 
 export default function StatusBadge({ status }) {
-    const styles = {
-        PAID: "bg-green-50 text-green-700 border border-green-200",
-        PENDING: "bg-yellow-50 text-yellow-700 border border-yellow-200",
-        PARTIALLY_PAID: "bg-blue-50 text-blue-700 border border-blue-200",
-        OVERDUE: "bg-red-50 text-red-700 border border-red-200",
+    const config = {
+        PAID: {
+            style: "bg-emerald-50 text-emerald-700 border border-emerald-200/80 shadow-emerald-500/5",
+            label: "Paid",
+            icon: CheckCircle2,
+        },
+        PENDING: {
+            style: "bg-amber-50 text-amber-700 border border-amber-200/80 shadow-amber-500/5",
+            label: "Pending",
+            icon: Clock,
+        },
+        PARTIALLY_PAID: {
+            style: "bg-indigo-50 text-indigo-700 border border-indigo-200/80 shadow-indigo-500/5",
+            label: "Partial",
+            icon: AlertCircle,
+        },
+        OVERDUE: {
+            style: "bg-rose-50 text-rose-700 border border-rose-200/80 shadow-rose-500/5",
+            label: "Overdue",
+            icon: AlertTriangle,
+        },
     };
 
-    const labels = {
-        PAID: "Paid",
-        PENDING: "Pending",
-        PARTIALLY_PAID: "Partial",
-        OVERDUE: "Overdue",
+    const current = config[status] || {
+        style: "bg-slate-100 text-slate-600 border border-slate-200",
+        label: status || "Unknown",
+        icon: null,
     };
+
+    const Icon = current.icon;
 
     return (
         <span className={cn(
-            "px-3 py-1 text-xs font-medium rounded-full shadow-sm",
-            styles[status] || "bg-gray-100 text-gray-600"
+            "inline-flex items-center gap-1.5 px-1.5 py-1 text-xs font-bold tracking-tight rounded-full shadow-2xs transition-all",
+            current.style
         )}>
-            {labels[status] || status}
+            {Icon && <Icon size={12} className="shrink-0" />}
+            <span>{current.label}</span>
         </span>
     );
 }

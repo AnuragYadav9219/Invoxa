@@ -9,5 +9,5 @@ public interface RazorpayService {
     
     CreateOrderResponse createOrder(UUID invoiceId) throws Exception;
 
-    void verifyPayment(VerifyPaymentRequest request);
+    void verifyPayment(UUID invoiceId, VerifyPaymentRequest request);
 }

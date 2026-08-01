@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import com.invoice.tracker.entity.notification.Notification;
 import com.invoice.tracker.entity.notification.NotificationStatus;
 import com.invoice.tracker.repository.notification.NotificationRepository;
-import com.invoice.tracker.service.notification.channel.EmailService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,58 +19,49 @@ import lombok.extern.slf4j.Slf4j;
 public class NotificationRetryScheduler {
 
     private final NotificationRepository notificationRepository;
-    private final EmailService emailService;
 
     private static final int MAX_RETRY = 3;
 
-    // ====================== RETRY FAILED NOTIFICATION =========================
-    @Scheduled(fixedRate = 300000)
+    @Scheduled(fixedRate = 300000) // Every 5 minutes
     public void retryFailedNotifications() {
 
         log.info("Running notification retry scheduler...");
 
-        List<Notification> failedNotifications = notificationRepository.findBySentFalseAndRetryCountLessThan(MAX_RETRY);
+        List<Notification> notifications = notificationRepository
+                .findBySentFalseAndRetryCountLessThan(MAX_RETRY);
 
-        for (Notification notification : failedNotifications) {
+        for (Notification notification : notifications) {
 
             if (!isReadyForRetry(notification)) {
                 continue;
             }
 
-            try {
-                log.info("Retrying notification to {}", notification.getRecipient());
+            notification.setRetryCount(notification.getRetryCount() + 1);
+            notification.setLastTriedAt(LocalDateTime.now());
 
-                emailService.sendHtml(
-                        notification.getRecipient(),
-                        buildRetrySubject(notification),
-                        notification.getMessage());
+            if (notification.getRetryCount() >= MAX_RETRY) {
 
-                notification.setSent(true);
-                notification.setStatus(NotificationStatus.SENT);
-                notification.setLastTriedAt(LocalDateTime.now());
-                notification.setSentAt(LocalDateTime.now());
+                notification.setStatus(NotificationStatus.FAILED);
 
-                log.info("Notification sent successfully to {}", notification.getRecipient());
+                log.warn(
+                        "Notification permanently marked as FAILED for {}",
+                        notification.getRecipient());
 
-            } catch (Exception e) {
+            } else {
 
-                notification.setRetryCount(notification.getRetryCount() + 1);
-                notification.setLastTriedAt(LocalDateTime.now());
+                notification.setStatus(NotificationStatus.RETRYING);
 
-                if (notification.getRetryCount() >= MAX_RETRY) {
-                    notification.setStatus(NotificationStatus.FAILED);
-                    log.error("Notification permanently failed for {}", notification.getRecipient());
-                } else {
-                    notification.setStatus(NotificationStatus.RETRYING);
-                    log.error("Retry {} failed for {}", notification.getRetryCount(), notification.getRecipient());
-                }
+                log.info(
+                        "Notification {} scheduled for retry ({}/{})",
+                        notification.getId(),
+                        notification.getRetryCount(),
+                        MAX_RETRY);
             }
 
             notificationRepository.save(notification);
         }
     }
 
-    // ====================== RETRY STRATEGY =====================
     private boolean isReadyForRetry(Notification notification) {
 
         if (notification.getLastTriedAt() == null) {
@@ -80,16 +70,9 @@ public class NotificationRetryScheduler {
 
         int retry = notification.getRetryCount();
 
-        int delayMinutes = (int) Math.pow(2, retry) * 5;
+        long delayMinutes = (long) Math.pow(2, retry) * 5;
 
-        LocalDateTime nextRetryTime = notification.getLastTriedAt().plusMinutes(delayMinutes);
-
-        return LocalDateTime.now().isAfter(nextRetryTime);
-    }
-
-    private String buildRetrySubject(Notification notification) {
-        return "Retry: " + (notification.getType() != null
-                ? notification.getType()
-                : "Notification");
+        return LocalDateTime.now().isAfter(
+                notification.getLastTriedAt().plusMinutes(delayMinutes));
     }
 }

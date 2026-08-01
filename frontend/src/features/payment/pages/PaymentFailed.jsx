@@ -9,7 +9,6 @@ export default function PaymentFailed() {
     const [params] = useSearchParams();
     const token = params.get("token");
 
-    // Stagger animation container variants for children text/button elements
     const containerVariants = {
         hidden: { opacity: 0 },
         show: {

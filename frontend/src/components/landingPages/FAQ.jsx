@@ -29,11 +29,11 @@ export default function FAQ() {
   const [openIndex, setOpenIndex] = useState(0); // First item open by default
 
   return (
-    <section id="faq" className="relative py-28 sm:py-36 bg-slate-950 overflow-hidden border-t border-white/[0.08]">
+    <section id="faq" className="relative py-28 sm:py-36 bg-slate-950 overflow-hidden border-t border-white/8">
 
       {/* Background Ambient Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-indigo-600/10 blur-[140px] pointer-events-none rounded-full" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-87.5 bg-indigo-600/10 blur-[140px] pointer-events-none rounded-full" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-size-[4rem_4rem] mask-[radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
 
       <div className="max-w-4xl mx-auto px-6 lg:px-8 relative z-10">
 
@@ -83,7 +83,7 @@ export default function FAQ() {
                 transition={{ duration: 0.4, delay: index * 0.08 }}
                 className={`border rounded-2xl transition-all duration-300 overflow-hidden backdrop-blur-xl ${isOpen
                     ? 'border-indigo-500/40 bg-slate-900/60 shadow-lg shadow-indigo-500/5 ring-1 ring-indigo-500/20'
-                    : 'border-white/[0.08] bg-slate-900/30 hover:border-white/20'
+                    : 'border-white/8 bg-slate-900/30 hover:border-white/20'
                   }`}
               >
                 <button
@@ -97,7 +97,7 @@ export default function FAQ() {
                   <motion.div
                     animate={{ rotate: isOpen ? 45 : 0 }}
                     transition={{ duration: 0.2, ease: "easeInOut" }}
-                    className={`p-2 rounded-xl border flex-shrink-0 transition-colors ${isOpen
+                    className={`p-2 rounded-xl border shrink-0 transition-colors ${isOpen
                         ? 'bg-indigo-600 text-white border-indigo-500'
                         : 'bg-slate-950/60 text-slate-400 border-white/10'
                       }`}
@@ -114,7 +114,7 @@ export default function FAQ() {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.25, ease: 'easeInOut' }}
                     >
-                      <div className="px-6 pb-6 pt-0 text-sm sm:text-base text-slate-400 leading-relaxed border-t border-white/[0.04] mt-1">
+                      <div className="px-6 pb-6 pt-0 text-sm sm:text-base text-slate-400 leading-relaxed border-t border-white/4 mt-1">
                         <p className="pt-4">{faq.a}</p>
                       </div>
                     </motion.div>
@@ -131,7 +131,7 @@ export default function FAQ() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.4 }}
-          className="mt-12 p-6 sm:p-8 rounded-3xl border border-white/[0.08] bg-slate-900/40 backdrop-blur-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
+          className="mt-12 p-6 sm:p-8 rounded-3xl border border-white/8 bg-slate-900/40 backdrop-blur-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
         >
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
@@ -144,7 +144,7 @@ export default function FAQ() {
           </div>
 
           <a
-            href="mailto:support@invoxa.com"
+            href="mailto:noreply.invoxa@gmail.com"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 hover:text-white text-xs sm:text-sm font-semibold transition-all whitespace-nowrap"
           >
             <span>Contact Support</span>

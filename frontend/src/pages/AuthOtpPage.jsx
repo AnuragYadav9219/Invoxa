@@ -11,6 +11,7 @@ import {
   EyeOff,
   ShieldCheck,
   CheckCircle2,
+  Sparkles,
 } from "lucide-react";
 
 import {
@@ -24,15 +25,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 const containerVars = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+  initial: { opacity: 0, y: 25, scale: 0.98 },
+  animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
   exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
 };
 
 const stepVars = {
-  initial: { opacity: 0, x: 20 },
-  animate: { opacity: 1, x: 0 },
-  exit: { opacity: 0, x: -20 },
+  initial: { opacity: 0, x: 30, filter: "blur(4px)" },
+  animate: { opacity: 1, x: 0, filter: "blur(0px)", transition: { duration: 0.3, ease: "easeOut" } },
+  exit: { opacity: 0, x: -30, filter: "blur(4px)", transition: { duration: 0.2 } },
 };
 
 export default function AuthOtpPage() {
@@ -57,8 +58,6 @@ export default function AuthOtpPage() {
       return () => clearTimeout(timer);
     }
   }, [resendTimer]);
-
-  // ================= LOGIC HANDLERS =================
 
   const handleOtpChange = (value, index) => {
     if (!/^\d*$/.test(value)) return;
@@ -92,7 +91,7 @@ export default function AuthOtpPage() {
       await sendOtp({ email, purpose: "RESET" }).unwrap();
       setStep(2);
       setResendTimer(30);
-      showSuccess("Code sent to your inbox");
+      showSuccess("Recovery code sent to your inbox");
     } catch (err) {
       showError(err?.data?.message || "Check your email and try again");
     }
@@ -120,65 +119,110 @@ export default function AuthOtpPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 bg-[radial-gradient(ellipse_at_top_right,var(--tw-gradient-stops))] from-slate-50 via-indigo-50 to-slate-100">
-
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
-        <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-indigo-200/50 rounded-full blur-3xl" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-purple-200/50 rounded-full blur-3xl" />
+    <div className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden bg-slate-950 font-sans">
+      {/* Animated Mesh / Gradient Blobs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            x: [0, 40, 0],
+            y: [0, -30, 0],
+          }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-[-10%] right-[-10%] w-125 h-125 bg-indigo-600/20 rounded-full blur-[120px]"
+        />
+        <motion.div
+          animate={{
+            scale: [1, 1.3, 1],
+            x: [0, -40, 0],
+            y: [0, 40, 0],
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-[-10%] left-[-10%] w-125 h-125 bg-purple-600/20 rounded-full blur-[120px]"
+        />
       </div>
 
-      <motion.div variants={containerVars} initial="initial" animate="animate" className="w-full max-w-md">
-        <Card className="backdrop-blur-md bg-white/90 shadow-[0_20px_50px_rgba(79,70,229,0.1)] border-white/50 rounded-[2.5rem] overflow-hidden">
-          <div className="h-2 w-full bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500" />
+      <motion.div variants={containerVars} initial="initial" animate="animate" className="w-full max-w-md relative z-10">
+        <Card className="backdrop-blur-xl bg-slate-900/80 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] border-slate-800/80 rounded-[2.5rem] overflow-hidden text-slate-100">
+          
+          {/* Top Animated Progress Strip */}
+          <div className="h-1.5 w-full bg-slate-800 relative overflow-hidden">
+            <motion.div
+              className="absolute top-0 left-0 h-full bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500"
+              animate={{ width: `${(step / 3) * 100}%` }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+            />
+          </div>
 
           <CardContent className="p-8 sm:p-10 space-y-8">
+            
+            {/* Header Section */}
             <div className="text-center relative">
               {step > 1 && (
-                <button
+                <motion.button
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
                   onClick={() => setStep(step - 1)}
-                  className="absolute left-0 top-1 p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-all"
+                  className="absolute left-0 top-1 p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-full transition-all cursor-pointer"
                 >
                   <ArrowLeft size={20} />
-                </button>
+                </motion.button>
               )}
-              <div className="mx-auto w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-4 text-indigo-600 shadow-inner">
+
+              {/* Step indicator tag */}
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-semibold mb-4 border border-indigo-500/20">
+                <Sparkles size={12} />
+                <span>Step {step} of 3</span>
+              </div>
+
+              <motion.div
+                key={step}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="mx-auto w-16 h-16 bg-linear-to-br from-indigo-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center mb-4 text-indigo-400 border border-indigo-500/30 shadow-inner"
+              >
                 {step === 1 && <Mail size={28} />}
                 {step === 2 && <ShieldCheck size={28} />}
                 {step === 3 && <Lock size={28} />}
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                {step === 1 && "Forgot Password"}
-                {step === 2 && "Verify your Identity"}
-                {step === 3 && "Secure your Account"}
+              </motion.div>
+
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                {step === 1 && "Forgot Password?"}
+                {step === 2 && "Verify Identity"}
+                {step === 3 && "Secure Account"}
               </h1>
-              <p className="text-slate-500 mt-2 text-sm sm:text-base leading-relaxed">
-                {step === 1 && "Enter your email to receive a recovery code"}
-                {step === 2 && `We've sent a 6-digit code to your inbox`}
-                {step === 3 && "Please choose a strong new password"}
+              
+              <p className="text-slate-400 mt-2 text-sm sm:text-base leading-relaxed">
+                {step === 1 && "No worries! Enter your email to get a reset code."}
+                {step === 2 && `We've dispatched a secure code to ${email}`}
+                {step === 3 && "Choose a robust password to secure your portal."}
               </p>
             </div>
 
             <AnimatePresence mode="wait">
+              
               {/* --- STEP 1: EMAIL --- */}
               {step === 1 && (
                 <motion.div key="s1" variants={stepVars} initial="initial" animate="animate" exit="exit" className="space-y-6">
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1">Email Address</label>
                     <div className="relative group">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-500 transition-colors" size={20} />
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors" size={20} />
                       <Input
                         type="email"
                         placeholder="name@company.com"
-                        className="pl-12 h-14 bg-slate-50/50 border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 transition-all text-base"
+                        className="pl-12 h-14 bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-600 rounded-2xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all text-base"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                       />
                     </div>
                   </div>
+                  
                   <Button
                     onClick={handleSendOtp}
                     disabled={!email || sending}
-                    className="w-full h-14 rounded-2xl cursor-pointer bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all active:scale-[0.98]"
+                    className="w-full h-14 rounded-2xl cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/25 transition-all active:scale-[0.98]"
                   >
                     {sending ? <Loader2 className="animate-spin" /> : "Send Recovery Code"}
                   </Button>
@@ -199,7 +243,7 @@ export default function AuthOtpPage() {
                         maxLength={1}
                         onChange={(e) => handleOtpChange(e.target.value, i)}
                         onKeyDown={(e) => handleKeyDown(e, i)}
-                        className="w-full h-14 sm:h-16 text-center text-2xl font-bold bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-50 transition-all outline-none"
+                        className="w-full h-14 sm:h-16 text-center text-2xl font-bold bg-slate-950/60 border-2 border-slate-800 text-white rounded-2xl focus:border-indigo-500 focus:bg-slate-950 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
                       />
                     ))}
                   </div>
@@ -208,18 +252,19 @@ export default function AuthOtpPage() {
                     <Button
                       onClick={handleVerifyOtp}
                       disabled={otp.join("").length !== 6}
-                      className="w-full h-14 rounded-2xl cursor-pointer bg-indigo-600 hover:bg-indigo-700 shadow-lg transition-all"
+                      className="w-full h-14 rounded-2xl cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/25 transition-all"
                     >
                       Verify & Continue
                     </Button>
+                    
                     <div className="text-center">
                       <button
                         disabled={resendTimer > 0 || sending}
                         onClick={handleSendOtp}
-                        className="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800 disabled:text-slate-400 transition-colors"
+                        className="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-indigo-400 hover:text-indigo-300 disabled:text-slate-600 transition-colors"
                       >
                         <RefreshCw size={14} className={sending ? "animate-spin" : ""} />
-                        {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend Code"}
+                        {resendTimer > 0 ? `Resend code in ${resendTimer}s` : "Resend Code"}
                       </button>
                     </div>
                   </div>
@@ -230,56 +275,59 @@ export default function AuthOtpPage() {
               {step === 3 && (
                 <motion.div key="s3" variants={stepVars} initial="initial" animate="animate" exit="exit" className="space-y-6">
                   <div className="space-y-4">
+                    
                     <div className="relative group">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-500 transition-colors" size={20} />
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors" size={20} />
                       <Input
                         type={showPassword ? "text" : "password"}
                         placeholder="New Password"
-                        className="pl-12 pr-12 h-14 bg-slate-50/50 border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 transition-all"
+                        className="pl-12 pr-12 h-14 bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-600 rounded-2xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute cursor-pointer right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                        className="absolute cursor-pointer right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
                       >
                         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
 
                     <div className="relative group">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-500 transition-colors" size={20} />
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors" size={20} />
                       <Input
                         type={showPassword ? "text" : "password"}
                         placeholder="Confirm Password"
-                        className="pl-12 h-14 bg-slate-50/50 border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 transition-all"
+                        className="pl-12 h-14 bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-600 rounded-2xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                       />
                       {password === confirmPassword && confirmPassword.length > 5 && (
-                        <CheckCircle2 className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500" size={20} />
+                        <CheckCircle2 className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-400" size={20} />
                       )}
                     </div>
+
                   </div>
 
                   <Button
                     onClick={handleResetPassword}
                     disabled={!password || password !== confirmPassword || resetting}
-                    className="w-full h-14 cursor-pointer rounded-2xl bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200"
+                    className="w-full h-14 cursor-pointer rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/25 transition-all"
                   >
                     {resetting ? <Loader2 className="animate-spin" /> : "Reset Password"}
                   </Button>
                 </motion.div>
               )}
+
             </AnimatePresence>
           </CardContent>
         </Card>
 
         {/* Footer Link */}
-        <p className="text-center mt-8 text-slate-500 text-sm">
+        <p className="text-center mt-8 text-slate-400 text-sm">
           Remembered your password?{" "}
-          <button onClick={() => navigate("/login")} className="text-indigo-600 cursor-pointer font-bold hover:underline underline-offset-4">
+          <button onClick={() => navigate("/login")} className="text-indigo-400 cursor-pointer font-bold hover:underline underline-offset-4 transition-all">
             Log in
           </button>
         </p>

@@ -13,8 +13,10 @@ import lombok.Setter;
 public class SendOtpRequest {
     
     @NotBlank
-    @Email
+    @Email(message = "Invalid email")
     private String email;
+
+    private String password;
 
     @NotNull(message = "OTP purpose is required")
     private OtpPurpose purpose;

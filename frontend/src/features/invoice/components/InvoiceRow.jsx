@@ -54,7 +54,7 @@ export default function InvoiceRow({
               {inv.customerName?.charAt(0) || <User size={14} />}
             </div>
             <div className="flex flex-col">
-              <p className="font-semibold text-slate-700 leading-tight">
+              <p className="font-semibold text-slate-900 leading-tight">
                 {inv.customerName}
               </p>
               <p className="text-xs text-slate-400 truncate max-w-35">
@@ -65,7 +65,7 @@ export default function InvoiceRow({
         </TableCell>
 
         {/* 3. AMOUNTS */}
-        <TableCell className="font-semibold text-slate-700">
+        <TableCell className="font-semibold text-slate-800">
           {formatCurrency(inv.totalAmount)}
         </TableCell>
 

@@ -6,11 +6,15 @@ import {
     User,
     Mail,
     ArrowRight,
+    Loader2,
+    Shield,
+    AlertTriangle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { DeleteAccountDialog } from "../DeleteAccountDialog";
 import { ChangePasswordDialog } from "../ChangePasswordDialog";
 import { useGetProfileQuery } from "../../userApi";
+import { motion } from "framer-motion";
 
 export default function AccountTab() {
     const navigate = useNavigate();
@@ -20,90 +24,121 @@ export default function AccountTab() {
     const user = data?.data;
 
     const initials = user?.name
-        .split(" ")
+        ?.split(" ")
         .map((n) => n[0])
-        .join("");
+        .join("") || "U";
+
+    if (isLoading) {
+        return (
+            <div className="flex h-72 items-center justify-center bg-white rounded-3xl border border-slate-200/80 shadow-xl w-full">
+                <div className="space-y-3 text-center">
+                    <Loader2 className="mx-auto h-8 w-8 animate-spin text-indigo-600" />
+                    <p className="text-xs font-semibold text-slate-500">
+                        Loading account details...
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
 
             {/* ================= ACCOUNT OVERVIEW ================= */}
-            <Card className="rounded-2xl shadow-sm border bg-white">
-                <CardHeader className="flex flex-row items-center gap-4">
-                    <Avatar className="h-12 w-12">
-                        <AvatarImage
-                            src={user?.profileImage}
-                            alt={user?.name || user?.fullName}
-                        />
-                        
-                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                            {initials}
-                        </AvatarFallback>
-                    </Avatar>
+            <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xl p-6 sm:p-8 space-y-6 relative overflow-hidden transition-all">
 
-                    <div>
-                        <CardTitle className="text-base font-semibold">
-                            {user?.name}
-                        </CardTitle>
-                        <CardDescription>
-                            Manage your account details and profile
-                        </CardDescription>
+                {/* Top Accent Gradient Bar */}
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-linear-to-r from-indigo-600 via-purple-600 to-pink-600" />
+
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-6">
+                    <div className="flex items-center gap-4">
+                        <Avatar className="h-16 w-16 border-2 border-indigo-100 shadow-md">
+                            <AvatarImage
+                                src={user?.profileImage}
+                                alt={user?.name || user?.fullName}
+                            />
+                            <AvatarFallback className="bg-indigo-50 text-indigo-700 font-black text-lg">
+                                {initials}
+                            </AvatarFallback>
+                        </Avatar>
+
+                        <div className="space-y-1">
+                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                Workspace Account
+                            </h3>
+                            <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                                {user?.name || "User Profile"}
+                            </h2>
+                            <p className="text-xs sm:text-sm text-slate-500 font-medium">
+                                Manage your identity credentials and personal configuration.
+                            </p>
+                        </div>
                     </div>
-                </CardHeader>
-
-                <CardContent className="space-y-5">
-
-                    <ProfileRow icon={<User size={16} />} label="Full Name" value={user?.name} />
-                    <ProfileRow icon={<Mail size={16} />} label="Email Address" value={user?.email} />
-
-                    <Separator />
 
                     <Button
                         variant="outline"
-                        className="justify-between cursor-pointer group"
+                        className="cursor-pointer group h-11 px-5 rounded-xl border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 font-semibold text-xs transition-all shadow-sm active:scale-95 shrink-0"
                         onClick={() => navigate("/profile")}
                     >
-                        Manage Profile
+                        <span>Manage Full Profile</span>
                         <ArrowRight
                             size={14}
-                            className="transition-transform group-hover:translate-x-1"
+                            className="ml-2 transition-transform group-hover:translate-x-1"
                         />
                     </Button>
+                </div>
 
-                </CardContent>
-            </Card>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    <ProfileRow icon={<User size={16} />} label="Full Name" value={user?.name || "Not added"} />
+                    <ProfileRow icon={<Mail size={16} />} label="Email Address" value={user?.email || "Not added"} />
+                </div>
+            </div>
 
             {/* ================= SECURITY ================= */}
-            <Card className="rounded-2xl shadow-sm border bg-white">
-                <CardHeader>
-                    <CardTitle className="text-base font-semibold">
-                        Security
-                    </CardTitle>
-                    <CardDescription>
-                        Update your password and secure your account
-                    </CardDescription>
-                </CardHeader>
+            <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xl p-6 sm:p-8 space-y-6 relative overflow-hidden">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                    <div className="p-2.5 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 shrink-0">
+                        <Shield className="h-5 w-5" />
+                    </div>
+                    <div>
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                            Authentication
+                        </h3>
+                        <h2 className="text-base font-black text-slate-900 tracking-tight">
+                            Security Credentials
+                        </h2>
+                    </div>
+                </div>
 
-                <CardContent>
+                <div className="border rounded-xl border-slate-400">
                     <ChangePasswordDialog />
-                </CardContent>
-            </Card>
+                </div>
+            </div>
 
             {/* ================= DANGER ZONE ================= */}
-            <Card className="rounded-2xl shadow-sm border border-red-200 bg-red-50/40">
-                <CardHeader>
-                    <CardTitle className="text-base font-semibold text-red-600">
-                        Danger Zone
-                    </CardTitle>
-                    <CardDescription>
-                        Permanently delete your account and all data
-                    </CardDescription>
-                </CardHeader>
+            <div className="bg-white rounded-3xl border border-rose-200/80 shadow-xl p-6 sm:p-8 space-y-6 relative overflow-hidden">
 
-                <CardContent>
+                {/* Top Destructive Accent Bar */}
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-linear-to-r from-rose-500 via-red-600 to-rose-700" />
+
+                <div className="flex items-center gap-3 border-b border-rose-100 pb-4">
+                    <div className="p-2.5 rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 shrink-0">
+                        <AlertTriangle className="h-5 w-5" />
+                    </div>
+                    <div>
+                        <h3 className="text-xs font-bold text-rose-500 uppercase tracking-wider">
+                            Irreversible Actions
+                        </h3>
+                        <h2 className="text-base font-black text-slate-900 tracking-tight">
+                            Danger Zone
+                        </h2>
+                    </div>
+                </div>
+
+                <div className="border rounded-xl border-slate-400">
                     <DeleteAccountDialog />
-                </CardContent>
-            </Card>
+                </div>
+            </div>
 
         </div>
     );
@@ -111,15 +146,29 @@ export default function AccountTab() {
 
 /* ================= REUSABLE ================= */
 
-function ProfileRow({ icon, label, value }) {
+export function ProfileRow({ icon, label, value, action }) {
     return (
-        <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition">
-            <div className="text-muted-foreground">{icon}</div>
+        <div className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50/60 border border-slate-300 transition-all hover:bg-slate-50 hover:border-slate-200 group">
+            <div className="flex items-center gap-3.5 min-w-0">
+                <div className="p-2.5 rounded-xl bg-white text-indigo-600 shadow-sm border border-slate-100 shrink-0 group-hover:scale-105 transition-transform">
+                    {icon}
+                </div>
 
-            <div className="flex-1">
-                <p className="text-xs text-muted-foreground">{label}</p>
-                <p className="text-sm font-medium">{value}</p>
+                <div className="space-y-0.5 min-w-0">
+                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
+                        {label}
+                    </p>
+                    <p className="text-sm font-bold text-slate-800 truncate tracking-tight">
+                        {value}
+                    </p>
+                </div>
             </div>
+
+            {action && (
+                <div className="shrink-0">
+                    {action}
+                </div>
+            )}
         </div>
     );
 }

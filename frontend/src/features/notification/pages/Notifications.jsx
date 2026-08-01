@@ -53,29 +53,31 @@ export default function Notifications() {
     }
 
     return (
-        <main className="relative min-h-screen overflow-hidden">
+        <main className="relative min-h-screen bg-linear-to-br from-indigo-50/50 via-slate-50 to-purple-50/40 w-[96vw] overflow-x-hidden">
 
-            <div className="absolute inset-0 bg-linear-to-br" />
+            {/* AMBIENT BACKGROUND GLOW EFFECTS */}
+            <div className="absolute top-0 left-1/4 w-72 sm:w-96 h-72 sm:h-96 bg-indigo-300/20 blur-[100px] rounded-full pointer-events-none" />
+            <div className="absolute bottom-1/4 right-5 sm:right-10 w-72 sm:w-96 h-72 sm:h-96 bg-purple-300/20 blur-[100px] rounded-full pointer-events-none" />
 
-            <div className="absolute top-0 left-0 w-72 h-72 bg-indigo-200/30 blur-3xl rounded-full" />
-            <div className="absolute bottom-0 right-0 w-72 h-72 bg-purple-200/30 blur-3xl rounded-full" />
+            <div className="relative max-w-7xl mx-auto sm:px-6 lg:px-8 py-4 sm:py-8 lg:py-10">
 
-            <div className="relative mx-auto sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+                <div className="flex flex-col gap-4 sm:gap-8 max-w-full">
 
-                <div className="flex flex-col gap-6 md:gap-8 py-2 px-1.5 rounded-sm">
 
-                    <div className="animate-fade-in">
+
+                    {/* METRIC HEADER COMPONENT */}
+                    <div className="animate-fade-in w-full overflow-hidden">
                         <NotificationHeader {...counts} />
                     </div>
 
-                    <div className="sticky top-14 md:top-16 z-20">
+                    {/* STICKY INTERACTIVE NAVIGATION TABS */}
+                    <div className="sticky top-2 sm:top-6 z-30 transition-all w-full">
+                        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg shadow-indigo-100/60 border border-indigo-100/80 bg-white/80 backdrop-blur-xl">
+                            
+                            {/* GRADIENT BORDER ACCENT OVERLAY */}
+                            <div className="absolute inset-0 bg-linear-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 pointer-events-none" />
 
-                        <div className="relative rounded-2xl overflow-hidden shadow-md">
-
-                            <div className="absolute inset-0 bg-linear-to-r from-indigo-200 via-purple-200 to-pink-200 opacity-40" />
-
-                            <div className="relative rounded-2xl bg-white/80 backdrop-blur-xl border border-white/60 px-2 py-2">
-
+                            <div className="relative p-1.5 sm:p-3 overflow-x-auto scrollbar-none">
                                 <NotificationTabs
                                     tab={tab}
                                     setTab={setTab}
@@ -83,47 +85,49 @@ export default function Notifications() {
                                 />
 
                                 {isFetching && (
-                                    <div className="flex items-center gap-2 text-[11px] text-gray-500 mt-2 px-2">
-                                        <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
-                                        Syncing latest updates...
+                                    <div className="flex items-center gap-2 text-xs font-medium text-indigo-600 mt-2 px-3 py-1 bg-indigo-50/80 rounded-xl w-fit border border-indigo-100 animate-pulse">
+                                        <span className="h-2 w-2 rounded-full bg-indigo-600 animate-ping" />
+                                        Syncing latest events...
                                     </div>
                                 )}
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex justify-end px-2">
+                    {/* ACTION TOOLBAR: DELETE ALL */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-1 w-full">
+                        <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                            Showing: <span className="text-indigo-600 capitalize">{tab}</span> ({filtered.length})
+                        </div>
 
                         <ConfirmDialog
                             type="delete"
                             title="Delete all notifications?"
-                            description="This action will permanently remove all notifications from your account."
+                            description="This action will permanently remove all notifications history from your account."
                             onConfirm={deleteAllNotifications}
                         >
-
                             <Button
                                 disabled={deletingAll || data.length === 0}
                                 variant="destructive"
-                                className="rounded-xl shadow-sm hover:shadow-md cursor-pointer transition-all duration-200"
+                                className="w-full sm:w-auto rounded-xl sm:rounded-2xl shadow-md shadow-rose-100 hover:shadow-lg bg-rose-600 hover:bg-rose-700 text-white cursor-pointer transition-all duration-300 hover:scale-102 font-medium px-4 py-2 text-xs sm:text-sm"
                             >
                                 {deletingAll ? (
                                     <>
                                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                        Deleting...
+                                        Deleting All...
                                     </>
                                 ) : (
                                     <>
                                         <Trash2 className="w-4 h-4 mr-2" />
-                                        Delete All
+                                        Clear All History
                                     </>
                                 )}
                             </Button>
-
                         </ConfirmDialog>
-
                     </div>
 
-                    <div className="animate-fade-in">
+                    {/* NOTIFICATION FEED LIST */}
+                    <div className="animate-fade-in pb-12 w-full">
                         <NotificationList data={filtered} isLoading={isLoading} />
                     </div>
 

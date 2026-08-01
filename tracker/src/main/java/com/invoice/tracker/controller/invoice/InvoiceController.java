@@ -25,7 +25,7 @@ import com.invoice.tracker.dto.common.PageResponse;
 import com.invoice.tracker.dto.invoice.CreateInvoiceRequest;
 import com.invoice.tracker.dto.invoice.InvoiceFilterRequest;
 import com.invoice.tracker.dto.invoice.InvoiceResponse;
-import com.invoice.tracker.entity.invoice.InvoiceTemplate;
+import com.invoice.tracker.entity.templates.InvoiceTemplate;
 import com.invoice.tracker.security.SecurityUtils;
 import com.invoice.tracker.service.invoice.InvoiceService;
 import com.invoice.tracker.service.pdf.PdfService;
@@ -147,6 +147,7 @@ public class InvoiceController {
         }
 
         // ========================= PERMANENT DELETE =======================
+
         @PreAuthorize("hasRole('OWNER')")
         @DeleteMapping("/{id}/permanent")
         public ResponseEntity<ApiResponse<Void>> permanentDelete(@PathVariable UUID id) {
@@ -154,6 +155,15 @@ public class InvoiceController {
                 invoiceService.permanentDeleteInvoice(id);
 
                 return ResponseBuilder.success(null, "Invoice deleted permanently");
+        }
+
+        @PreAuthorize("hasRole('OWNER')")
+        @DeleteMapping("/trash")
+        public ResponseEntity<ApiResponse<Integer>> permanentDeleteAllInvoices() {
+
+                int count = invoiceService.permanentDeleteAllInvoices();
+
+                return ResponseBuilder.success(count, "Invoices deleted permanently");
         }
 
         // ======================= VIEW + DOWNLOAD INVOICE ========================

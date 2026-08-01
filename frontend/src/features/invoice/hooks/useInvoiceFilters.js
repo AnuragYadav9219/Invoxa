@@ -55,6 +55,7 @@ export default function useInvoiceFilters({
         data,
         isLoading,
         isFetching,
+        isError,
         error,
         refetch,
     } = useGetInvoicesQuery(queryParams, {
@@ -69,6 +70,7 @@ export default function useInvoiceFilters({
         totalElements: data?.totalElements || 0,
         isLoading,
         isFetching,
+        isError,
         error,
         refetch,
     };

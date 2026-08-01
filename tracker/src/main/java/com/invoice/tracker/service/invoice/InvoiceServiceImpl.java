@@ -36,6 +36,7 @@ import com.invoice.tracker.entity.invoice.InvoiceStatus;
 import com.invoice.tracker.entity.item.Item;
 import com.invoice.tracker.entity.item.Unit;
 import com.invoice.tracker.event.invoice.InvoiceCreatedEvent;
+import com.invoice.tracker.guard.SubscriptionGuard;
 import com.invoice.tracker.helper.invoice.InvoiceHelper;
 import com.invoice.tracker.helper.item.ItemHelper;
 import com.invoice.tracker.mapper.InvoiceMapper;
@@ -59,6 +60,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         private final InvoiceHelper invoiceHelper;
         private final ItemHelper itemHelper;
         private final PaymentService paymentService;
+        private final SubscriptionGuard subscriptionGuard;
         private final InvoiceNumberGenerator invoiceNumberGenerator;
         private final ApplicationEventPublisher eventPublisher;
 
@@ -157,11 +159,10 @@ public class InvoiceServiceImpl implements InvoiceService {
                 invoiceItems.forEach(i -> i.setInvoice(invoice));
                 invoice.setItems(invoiceItems);
 
+                subscriptionGuard.checkInvoiceLimit(shopId);
                 Invoice savedInvoice = invoiceRepository.saveAndFlush(invoice);
 
-                String email = SecurityUtils.getCurrentUserEmail() != null
-                                ? request.getCustomerEmail()
-                                : SecurityUtils.getCurrentUserEmail();
+                String email = request.getCustomerEmail();
 
                 eventPublisher.publishEvent(
                                 new InvoiceCreatedEvent(savedInvoice.getId(), shopId, email));
@@ -201,6 +202,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         // ====================== GET CUSTOMER's INVOICES =====================
         @Override
+        @Transactional(readOnly = true)
         public List<InvoiceResponse> getInvoicesByCustomer(String customerName) {
 
                 UUID shopId = SecurityUtils.getCurrentUserShopId();
@@ -208,7 +210,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 return invoiceRepository
                                 .findByShopIdAndCustomerNameIgnoreCase(shopId, customerName)
                                 .stream()
-                                .map(invoiceMapper::toSummaryResponse)
+                                .map(invoiceMapper::toResponse)
                                 .toList();
         }
 
@@ -413,6 +415,21 @@ public class InvoiceServiceImpl implements InvoiceService {
                 invoiceRepository.delete(invoice);
         }
 
+        @Override
+        @Transactional
+        public int permanentDeleteAllInvoices() {
+
+                UUID shopId = SecurityUtils.getCurrentUserShopId();
+
+                List<Invoice> invoices = invoiceRepository.findByShopIdAndDeletedTrue(shopId);
+
+                int count = invoices.size();
+
+                invoiceRepository.deleteAll(invoices);
+
+                return count;
+        }
+
         // ======================= GET DELETED INVOICES ====================
         @Override
         public List<InvoiceResponse> getDeletedInvoices() {
@@ -472,7 +489,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
                 Page<InvoiceResponse> pageData = invoiceRepository
                                 .findAll(InvoiceSpecification.filterInvoices(filter, shopId), pageable)
-                                .map(invoiceMapper::toSummaryResponse);           // toResponse
+                                .map(invoiceMapper::toResponse); // toResponse
 
                 return new PageResponse<>(
                                 pageData.getContent(),

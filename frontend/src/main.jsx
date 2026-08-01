@@ -5,11 +5,20 @@ import App from './App.jsx';
 
 import { Provider } from 'react-redux';
 import { store } from './app/store';
+import AppErrorBoundary from './components/errorWrapper/AppErrorBoundary';
+import GlobalErrorProvider from './features/error/GlobalErrorProvider';
+import { BrowserRouter } from 'react-router-dom';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
-      <App />
+      <BrowserRouter>
+        <GlobalErrorProvider>
+          <AppErrorBoundary>
+            <App />
+          </AppErrorBoundary>
+        </GlobalErrorProvider>
+      </BrowserRouter>
     </Provider>
   </StrictMode>,
 )

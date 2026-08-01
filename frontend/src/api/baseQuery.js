@@ -64,8 +64,24 @@ export const axiosBaseQuery =
         return { data: result.data };
 
       } catch (error) {
+
+        /* =============== NETWORK / TIMEOUT ================ */
+        if (!error.response) {
+          const isTimeout =
+            error.code === "ECONNABORTED" ||
+            error.message?.toLowerCase().includes("timeout");
+
+          return {
+            error: {
+              status: isTimeout ? "TIMEOUT_ERROR" : "FETCH_ERROR",
+              error: error.message,
+              data: null,
+            },
+          };
+        }
+
         const status = error.response?.status;
-        const errorData = error.response?.data;
+        const errorData = error.response.data;
         const code = errorData?.code;
 
         /* ================= SAFETY: NO URL ================= */
@@ -152,13 +168,15 @@ export const axiosBaseQuery =
         /* ================= GLOBAL ERROR ================= */
         const feature = meta?.feature || "common";
 
-        const message = getErrorMessage(
-          status,
-          feature,
-          errorData?.message
-        );
+        if (!meta?.skipGlobalError) {
+          const message = getErrorMessage(
+            status,
+            feature,
+            errorData?.message
+          );
 
-        showError(message, { id: message });
+          showError(message, { id: message });
+        }
 
         return {
           error: {

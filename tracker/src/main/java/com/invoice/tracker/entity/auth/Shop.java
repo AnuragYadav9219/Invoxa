@@ -3,7 +3,7 @@ package com.invoice.tracker.entity.auth;
 import java.util.UUID;
 
 import com.invoice.tracker.entity.AuditableEntity;
-import com.invoice.tracker.entity.invoice.InvoiceTemplate;
+import com.invoice.tracker.entity.templates.InvoiceTemplate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

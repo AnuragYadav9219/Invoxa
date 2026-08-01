@@ -4,27 +4,13 @@ import {
     useVerifyPaymentMutation,
 } from "../paymentApi";
 import { useNavigate } from "react-router-dom";
+import { loadRazorpay } from "@/utils/loadRazorpay";
 
 export default function useRazorpayPayment() {
     const navigate = useNavigate();
 
     const [createOrder, { isLoading }] = useCreateOrderMutation();
     const [verifyPayment] = useVerifyPaymentMutation();
-
-    // ================= LOAD RAZORPAY SDK =================
-    const loadRazorpay = () => {
-        return new Promise((resolve) => {
-            if (window.Razorpay) {
-                return resolve(true);
-            }
-
-            const script = document.createElement("script");
-            script.src = "https://checkout.razorpay.com/v1/checkout.js";
-            script.onload = () => resolve(true);
-            script.onerror = () => resolve(false);
-            document.body.appendChild(script);
-        });
-    };
 
     // ================= PAY NOW =================
     const payNow = async (invoice, refetch = null) => {

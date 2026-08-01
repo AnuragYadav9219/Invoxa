@@ -1,6 +1,6 @@
 package com.invoice.tracker.dto.invoice;
 
-import com.invoice.tracker.entity.invoice.InvoiceTemplate;
+import com.invoice.tracker.entity.templates.InvoiceTemplate;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -3,7 +3,6 @@ import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Toaster } from "sonner";
 
 export default function Layout({ children }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,46 +13,42 @@ export default function Layout({ children }) {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-linear-to-br from-indigo-100 via-purple-100 to-pink-100">
-
-      <div className="absolute top-0 left-0 w-72 h-72 bg-purple-400/30 blur-3xl rounded-full animate-pulse"></div>
-      <div className="absolute bottom-0 right-0 w-72 h-72 bg-pink-400/30 blur-3xl rounded-full animate-pulse"></div>
+    <div className="relative min-h-screen overflow-hidden bg-linear-to-br from-indigo-100 via-purple-100 to-pink-100">
+      
+      <div className="pointer-events-none absolute -left-10 top-0 h-96 w-96 animate-pulse rounded-full bg-purple-400/30 blur-[100px] will-change-transform" />
+      <div className="pointer-events-none absolute -right-10 bottom-0 h-96 w-96 animate-pulse rounded-full bg-pink-400/30 blur-[100px] will-change-transform" />
 
       <Navbar isOpen={isOpen} setIsOpen={setIsOpen} />
 
-      <div className="flex pt-14 relative z-10">
-
+      {/* --- Layout Wrapper --- */}
+      <div className="relative z-10 flex pt-14">
+        
         <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} />
 
+        {/* --- Main Content Area --- */}
         <main
-          className={`flex-1 transition-all duration-300 ease-in-out sm:p-4 md:p-3 ${isOpen ? "md:ml-64" : "md:ml-20"
-            }`}
+          className={`flex-1 transition-[margin] duration-300 ease-in-out p-1 sm:p-4 md:p-6 ${
+            isOpen ? "md:ml-64" : "md:ml-20"
+          }`}
         >
+          {/* Page Transition Wrapper */}
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 15, scale: 0.99 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="relative min-h-[calc(100vh-5rem)] overflow-hidden rounded-2xl border border-white/60 bg-white/50 px-1 shadow-xl backdrop-blur-xl md:p-6"
+          >
+            {/* Inner Glass Highlights */}
+            <div className="pointer-events-none absolute inset-0 rounded-3xl bg-linear-to-br from-white/40 to-transparent" />
 
-          <div className="p-px rounded-3xl bg-linear-to-r from-indigo-200 via-purple-200 to-pink-200">
-
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, y: 20, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.3 }}
-              className="relative bg-white/70 backdrop-blur-2xl border p-1 border-white/40 rounded-sm shadow-xl min-h-[calc(100vh-100px)] overflow-hidden bg-linear-to-r from-indigo-200 via-purple-200 to-pink-200"
-            >
-
-              <div className="absolute inset-0 bg-linear-to-br from-white/40 to-transparent pointer-events-none"></div>
-
-              <div className="relative z-10 md:p-2 ">
-                {children}
-              </div>
-
-            </motion.div>
-
-          </div>
-
+            <div className="relative z-10">
+              {children}
+            </div>
+            
+          </motion.div>
         </main>
       </div>
-
-      <Toaster position="top-right" richColors />
     </div>
   );
 }

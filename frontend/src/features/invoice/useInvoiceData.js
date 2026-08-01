@@ -9,13 +9,15 @@ export default function useInvoiceData(id) {
     const {
         data: invoice,
         isLoading,
+        isError,
+        refetch,
         error
     } = useGetInvoiceByIdQuery(id);
 
     const {
         data: shopData
     } = useGetShopQuery(user?.shopId, {
-        skip: !user?.shopid
+        skip: !user?.shopId
     });
 
     const shop = shopData?.data;
@@ -29,6 +31,8 @@ export default function useInvoiceData(id) {
         shop,
         user,
         isLoading,
+        isError,
+        refetch,
         error,
         downloadPDF,
         isDownloading

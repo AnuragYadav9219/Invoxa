@@ -16,6 +16,7 @@ import lombok.Setter;
 public class PaymentResponse {
 
     private UUID id;
+    private String customerEmail;
 
     private String paymentNumber;
 

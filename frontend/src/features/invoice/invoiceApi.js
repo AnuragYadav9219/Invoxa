@@ -250,9 +250,22 @@ export const invoiceApi = baseApi.injectEndpoints({
     }),
 
     /* ================= PERMANENT DELETE ================= */
+
     permanentDeleteInvoice: builder.mutation({
       query: (id) => ({
         url: `/invoices/${id}/permanent`,
+        method: "DELETE",
+      }),
+
+      invalidatesTags: [
+        { type: "Invoice", id: "LIST" },
+        { type: "Invoice", id: "TRASH" },
+      ],
+    }),
+
+    permanentDeleteAllInvoices: builder.mutation({
+      query: () => ({
+        url: "/invoices/trash",
         method: "DELETE",
       }),
 
@@ -321,10 +334,13 @@ export const {
   useGetInvoiceByIdQuery,
   useGetInvoicesByCustomerQuery,
   useGetCustomerSummaryQuery,
+
   useCreateInvoiceMutation,
   useUpdateInvoiceMutation,
   useDeleteInvoiceMutation,
+  usePermanentDeleteAllInvoicesMutation,
   useRestoreInvoiceMutation,
+
   useGetDeletedInvoicesQuery,
   usePermanentDeleteInvoiceMutation,
   useDownloadInvoicePDFMutation,

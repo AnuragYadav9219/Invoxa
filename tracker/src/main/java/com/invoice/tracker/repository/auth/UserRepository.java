@@ -1,5 +1,7 @@
 package com.invoice.tracker.repository.auth;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,5 +22,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     boolean existsByEmail(String email);
 
+    List<User> findByDeletedTrueAndDeletedAtBefore(LocalDateTime cutoff);
+
     Optional<User> findByEmailAndShopId(String email, UUID shopId);
+
+    long countByShopIdAndDeletedFalse(UUID shopId);
 }
