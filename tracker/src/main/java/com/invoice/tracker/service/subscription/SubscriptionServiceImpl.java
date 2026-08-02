@@ -279,7 +279,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                                                         .plan(freePlan)
                                                         .status(SubscriptionStatus.ACTIVE)
                                                         .startDate(LocalDate.now())
-                                                        .endDate(null)
+                                                        .endDate(LocalDate.now().plusYears(100))
                                                         .autoRenew(false)
                                                         .build();
 
