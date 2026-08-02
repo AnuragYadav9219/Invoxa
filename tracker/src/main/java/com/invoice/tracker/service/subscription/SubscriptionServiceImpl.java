@@ -25,6 +25,7 @@ import com.invoice.tracker.mapper.SubscriptionPaymentMapper;
 import com.invoice.tracker.repository.auth.UserRepository;
 import com.invoice.tracker.repository.invoice.InvoiceRepository;
 import com.invoice.tracker.repository.item.ItemRepository;
+import com.invoice.tracker.repository.shop.ShopRepository;
 import com.invoice.tracker.repository.subscription.ShopSubscriptionRepository;
 import com.invoice.tracker.repository.subscription.SubscriptionPaymentRepository;
 import com.invoice.tracker.repository.subscription.SubscriptionPlanRepository;
@@ -43,6 +44,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         private final SubscriptionPaymentRepository paymentRepository;
         private final SubscriptionPaymentMapper paymentMapper;
         private final ShopSubscriptionRepository shopSubscriptionRepository;
+        private final ShopRepository shopRepository;
         private final InvoiceRepository invoiceRepository;
         private final ItemRepository itemRepository;
         private final UserRepository userRepository;
@@ -52,9 +54,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         @Transactional(readOnly = true)
         public CurrentSubscriptionResponse getCurrentSubscription(UUID shopId) {
 
-                ShopSubscription subscription = subscriptionRepository
-                                .findByShopId(shopId)
-                                .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
+                ShopSubscription subscription = getOrCreateSubscription(shopId);
 
                 return CurrentSubscriptionResponse.builder()
                                 .planName(subscription.getPlan().getName())
@@ -71,17 +71,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                         SubscriptionPlan plan,
                         String paymentId) {
 
-                ShopSubscription subscription = subscriptionRepository
-                                .findByShopId(shopId)
-                                .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
+                ShopSubscription subscription = getOrCreateSubscription(shopId);
 
                 LocalDate today = LocalDate.now();
 
-                /*
-                 * Renewal:
-                 * Existing subscription still active.
-                 */
-
+                // Renewal
                 if (subscription.getStatus() == SubscriptionStatus.ACTIVE
                                 && subscription.getEndDate() != null
                                 && subscription.getEndDate().isAfter(today)) {
@@ -107,9 +101,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                         UUID shopId,
                         String paymentId) {
 
-                ShopSubscription subscription = subscriptionRepository
-                                .findByShopId(shopId)
-                                .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
+                ShopSubscription subscription = getOrCreateSubscription(shopId);
 
                 subscription.setEndDate(
                                 subscription.getEndDate().plusMonths(1));
@@ -181,9 +173,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         @Transactional(readOnly = true)
         public SubscriptionDashboardResponse getDashboard(UUID shopId) {
 
-                ShopSubscription subscription = shopSubscriptionRepository
-                                .findByShopId(shopId)
-                                .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
+                ShopSubscription subscription = getOrCreateSubscription(shopId);
 
                 SubscriptionPlan plan = subscription.getPlan();
 
@@ -247,8 +237,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         @Transactional(readOnly = true)
         public BillingInformationResponse getBillingInformation(UUID shopId) {
 
-                ShopSubscription subscription = shopSubscriptionRepository.findByShopId(shopId)
-                                .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
+                ShopSubscription subscription = getOrCreateSubscription(shopId);
 
                 if (subscription.getPlan().getName().equalsIgnoreCase("FREE")) {
                         return BillingInformationResponse.builder()
@@ -268,5 +257,33 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                                 .nextBillingDate(subscription.getEndDate())
                                 .currency("INR")
                                 .build();
+        }
+
+        // ====================== PRIVATE METHODS =========================
+
+        private ShopSubscription getOrCreateSubscription(UUID shopId) {
+
+                return shopSubscriptionRepository.findByShopId(shopId)
+                                .orElseGet(() -> {
+
+                                        Shop shop = shopRepository.findById(shopId)
+                                                        .orElseThrow(() -> new ResourceNotFoundException(
+                                                                        "Shop not found"));
+
+                                        SubscriptionPlan freePlan = planRepository.findByNameIgnoreCase("FREE")
+                                                        .orElseThrow(() -> new ResourceNotFoundException(
+                                                                        "FREE subscription plan not found"));
+
+                                        ShopSubscription subscription = ShopSubscription.builder()
+                                                        .shop(shop)
+                                                        .plan(freePlan)
+                                                        .status(SubscriptionStatus.ACTIVE)
+                                                        .startDate(LocalDate.now())
+                                                        .endDate(null)
+                                                        .autoRenew(false)
+                                                        .build();
+
+                                        return shopSubscriptionRepository.save(subscription);
+                                });
         }
 }
