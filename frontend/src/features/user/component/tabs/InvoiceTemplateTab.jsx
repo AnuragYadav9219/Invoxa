@@ -9,7 +9,7 @@ import {
 } from "@/features/shop/shopApi";
 import InvoiceTemplateGrid from "../template/component/InvoiceTemplateGrid";
 import { motion, AnimatePresence } from "framer-motion";
-import { useGetDashboardQuery } from "@/features/subscription/subscriptionApi";
+import { useGetSubscriptionDashboardQuery } from "@/features/subscription/subscriptionApi";
 
 export default function InvoiceTemplateTab() {
     const user = useSelector((state) => state.auth.user);
@@ -36,7 +36,7 @@ export default function InvoiceTemplateTab() {
         isLoading: dashboardLoading,
         isError: dashboardError,
         error,
-    } = useGetDashboardQuery(undefined, {
+    } = useGetSubscriptionDashboardQuery(undefined, {
         skip: !shopId,
     });
 

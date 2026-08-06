@@ -18,7 +18,9 @@ public interface SubscriptionPaymentRepository
 
         boolean existsByPaymentId(String paymentId);
 
-        List<SubscriptionPayment> findByShopIdOrderByCreatedAtDesc(UUID shopId);
+        // List<SubscriptionPayment> findByShopIdOrderByCreatedAtDesc(UUID shopId);
+
+        List<SubscriptionPayment> findByShopIdAndStatusInOrderByCreatedAtDesc(UUID shopId, List<SubscriptionPaymentStatus> statuses);
 
         List<SubscriptionPayment> findByShopId(UUID shopId);
 

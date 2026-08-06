@@ -25,18 +25,20 @@ public class DashboardServiceImpl implements DashboardService {
 
     private final InvoiceRepository invoiceRepository;
 
+    private static final int DASHBOARD_DAYS = 30;
+
     @Override
-    public DashboardResponse getDashboard(int days) {
+    public DashboardResponse getDashboard() {
 
         UUID shopId = SecurityUtils.getCurrentUserShopId();
 
-        LocalDateTime startDate = getStartDate(days);
+        LocalDateTime startDate = getStartDate(DASHBOARD_DAYS);
 
         RevenueMetrics revenueMetrics = getRevenueMetrics(shopId, startDate);
 
         InvoiceMetrics invoiceMetrics = getInvoiceMetrics(shopId, startDate);
 
-        double revenueChange = calculateRevenueTrend(shopId, days);
+        double revenueChange = calculateRevenueTrend(shopId);
 
         Map<String, BigDecimal> monthlyRevenue = getMonthlyRevenue(shopId, startDate);
 
@@ -59,11 +61,11 @@ public class DashboardServiceImpl implements DashboardService {
     // =================== REVENUE TREND ===================
 
     @Override
-    public List<RevenueTrend> getRevenueTrend(int days) {
+    public List<RevenueTrend> getRevenueTrend() {
 
         UUID shopId = SecurityUtils.getCurrentUserShopId();
 
-        LocalDateTime start = getStartDate(days);
+        LocalDateTime start = getStartDate(DASHBOARD_DAYS);
 
         List<Object[]> result = invoiceRepository.getRevenueTrend(shopId, start);
 
@@ -114,13 +116,13 @@ public class DashboardServiceImpl implements DashboardService {
                 overdue);
     }
 
-    private double calculateRevenueTrend(UUID shopId, int days) {
+    private double calculateRevenueTrend(UUID shopId) {
 
         LocalDateTime endDate = LocalDateTime.now();
 
-        LocalDateTime currentStart = endDate.minusDays(days);
+        LocalDateTime currentStart = endDate.minusDays(DASHBOARD_DAYS);
 
-        LocalDateTime previousStart = currentStart.minusDays(days);
+        LocalDateTime previousStart = currentStart.minusDays(DASHBOARD_DAYS);
 
         BigDecimal currentRevenue = defaultZero(
                 invoiceRepository.getRevenueBetween(

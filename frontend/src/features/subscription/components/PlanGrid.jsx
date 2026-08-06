@@ -11,9 +11,12 @@ export default function PlanGrid({
     plans = [],
     currentPlan,
     checkoutLoading,
+    loadingPlanId,
     onUpgrade,
 }) {
-    const currentPlanLevel = planOrder[currentPlan?.planName?.toUpperCase()] ?? 0;
+
+    const currentPlanLevel =
+        planOrder[currentPlan?.planName?.toUpperCase()] ?? 0;
 
     const sortedPlans = [...plans].sort(
         (a, b) =>
@@ -32,33 +35,37 @@ export default function PlanGrid({
                         <FiLayers className="h-3 w-3" />
                         <span>Pricing</span>
                     </div>
+
                     <h3 className="text-xl font-semibold tracking-tight text-slate-800">
                         Available Plans
                     </h3>
+
                     <p className="text-xs text-slate-500 mt-0.5">
                         Choose the right plan to scale your business seamlessly.
                     </p>
                 </div>
 
                 <span className="inline-flex items-center rounded-full bg-slate-200/70 px-2.5 py-1 text-xs font-medium text-slate-600 self-start sm:self-auto">
-                    {sortedPlans.length} {sortedPlans.length === 1 ? 'Plan' : 'Plans'} Available
+                    {sortedPlans.length}{" "}
+                    {sortedPlans.length === 1 ? "Plan" : "Plans"} Available
                 </span>
             </div>
 
-            {/* Grid layout matching previous cards */}
             <div className="grid gap-6 lg:grid-cols-3">
                 {sortedPlans.map((plan) => (
                     <PlanCard
                         key={plan.id}
                         plan={plan}
-                        checkoutLoading={checkoutLoading}
                         current={
-                            currentPlan?.planName?.toUpperCase() === plan.name?.toUpperCase()
+                            currentPlan?.planName?.toUpperCase() ===
+                            plan.name?.toUpperCase()
                         }
                         isDowngrade={
                             (planOrder[plan.name?.toUpperCase()] ?? 0) <
                             currentPlanLevel
                         }
+                        checkoutLoading={checkoutLoading}
+                        loadingPlanId={loadingPlanId}
                         onUpgrade={() => onUpgrade(plan)}
                     />
                 ))}

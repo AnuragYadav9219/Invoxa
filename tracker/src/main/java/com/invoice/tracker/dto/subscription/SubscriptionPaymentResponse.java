@@ -28,5 +28,11 @@ public class SubscriptionPaymentResponse {
 
     private String transactionId;
 
+    private String orderId;
+
+    private String paymentId;
+
+    private String failureReason;
+
     private LocalDateTime paidAt;
 }

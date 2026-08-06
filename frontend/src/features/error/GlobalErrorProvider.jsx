@@ -14,14 +14,17 @@ export default function GlobalErrorProvider({ children }) {
         if (!error) return;
         if (location.pathname === "/error") return;
 
+        if(location.state?.fromError) return;
+
         navigate("/error", {
             replace: true,
             state: {
                 error,
                 from: location.pathname,
+                fromError: true,
             },
         });
-    }, [error]);
+    }, [error, location, navigate]);
 
     return children;
 }

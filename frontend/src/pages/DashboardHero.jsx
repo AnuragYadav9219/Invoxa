@@ -16,6 +16,7 @@ import { useGetCustomerSummaryQuery } from "@/features/invoice/invoiceApi";
 
 export default function DashboardHero({ stats }) {
   const { data, isLoading: profileLoading } = useGetProfileQuery();
+
   const user = data?.data;
 
   const { data: customers = [], isLoading, isFetching } = useGetCustomerSummaryQuery();

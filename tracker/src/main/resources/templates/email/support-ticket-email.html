@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Support Ticket</title>
+</head>
+
+<body
+    style="margin: 0; padding: 0; background-color: #090d16; font-family: Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+        style="background-color: #090d16; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <!-- Main Container -->
+                <table role="presentation" width="600" cellspacing="0" cellpadding="0"
+                    style="background-color: #0f172a; border: 1px solid #1e293b; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);">
+
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding: 32px 32px 24px 32px; border-bottom: 1px solid #1e293b;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td>
+                                        <span
+                                            style="display: inline-block; background-color: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; padding: 6px 12px; border-radius: 20px;">
+                                            New Ticket
+                                        </span>
+                                        <h2
+                                            style="margin: 16px 0 0 0; color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">
+                                            Support Request Received
+                                        </h2>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Body Content -->
+                    <tr>
+                        <td style="padding: 32px;">
+
+                            <!-- Metadata Grid / List -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                                style="margin-bottom: 24px;">
+                                <tr>
+                                    <td style="padding-bottom: 12px; color: #94a3b8; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;"
+                                        width="35%">Ticket Number</td>
+                                    <td style="padding-bottom: 12px; color: #34d399; font-size: 15px; font-family: monospace; font-weight: bold;"
+                                        th:text="${ticket.ticketNumber}">INV-1042</td>
+                                </tr>
+                                <tr>
+                                    <td
+                                        style="padding-bottom: 12px; color: #94a3b8; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Name</td>
+                                    <td style="padding-bottom: 12px; color: #f1f5f9; font-size: 15px;"
+                                        th:text="${ticket.name}">John Doe</td>
+                                </tr>
+                                <tr>
+                                    <td
+                                        style="padding-bottom: 12px; color: #94a3b8; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Email</td>
+                                    <td style="padding-bottom: 12px; color: #818cf8; font-size: 15px;"
+                                        th:text="${ticket.email}">john@example.com</td>
+                                </tr>
+                                <tr>
+                                    <td
+                                        style="padding-bottom: 12px; color: #94a3b8; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Category</td>
+                                    <td style="padding-bottom: 12px; color: #f1f5f9; font-size: 15px;"
+                                        th:text="${ticket.type}">BUG</td>
+                                </tr>
+                                <tr>
+                                    <td
+                                        style="color: #94a3b8; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Subject</td>
+                                    <td style="color: #ffffff; font-size: 15px; font-weight: 600;"
+                                        th:text="${ticket.subject}">Invoice PDF is not downloading</td>
+                                </tr>
+                            </table>
+
+                            <!-- Message Box -->
+                            <div style="margin-top: 24px;">
+                                <p
+                                    style="margin: 0 0 8px 0; color: #94a3b8; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    Message</p>
+                                <div style="background-color: #020617; border: 1px solid #1e293b; padding: 20px; border-radius: 12px; color: #cbd5e1; font-size: 14px; line-height: 1.6;"
+                                    th:text="${ticket.message}">
+                                    User message content goes here...
+                                </div>
+                            </div>
+
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td
+                            style="background-color: #020617; padding: 20px 32px; border-top: 1px solid #1e293b; text-align: center;">
+                            <p style="margin: 0; color: #64748b; font-size: 12px;">
+                                Submitted securely from <strong style="color: #94a3b8;">Invoxa Support Center</strong>
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+
+</body>
+
+</html>

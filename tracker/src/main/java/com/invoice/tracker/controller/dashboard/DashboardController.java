@@ -26,10 +26,9 @@ public class DashboardController {
 
     @PreAuthorize("hasRole('OWNER')")
     @GetMapping
-    public ResponseEntity<ApiResponse<DashboardResponse>> getDashboard(
-            @RequestParam(defaultValue = "30") int days) {
+    public ResponseEntity<ApiResponse<DashboardResponse>> getDashboard() {
 
-        DashboardResponse data = dashboardService.getDashboard(days);
+        DashboardResponse data = dashboardService.getDashboard();
 
         return ResponseBuilder.success(
                 data,
@@ -41,7 +40,7 @@ public class DashboardController {
     public ResponseEntity<ApiResponse<List<RevenueTrend>>> revenueTrend(
             @RequestParam(defaultValue = "30") int days) {
 
-        List<RevenueTrend> revenueTrend = dashboardService.getRevenueTrend(days);
+        List<RevenueTrend> revenueTrend = dashboardService.getRevenueTrend();
 
         return ResponseBuilder.success(
                 revenueTrend,

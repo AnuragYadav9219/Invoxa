@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Feedback Received</title>
+</head>
+
+<body
+    style="margin: 0; padding: 0; background-color: #090d16; font-family: Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+        style="background-color: #090d16; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <!-- Main Container -->
+                <table role="presentation" width="600" cellspacing="0" cellpadding="0"
+                    style="background-color: #0f172a; border: 1px solid #1e293b; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);">
+
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding: 32px 32px 24px 32px; border-bottom: 1px solid #1e293b;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td>
+                                        <span
+                                            style="display: inline-block; background-color: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; padding: 6px 12px; border-radius: 20px;">
+                                            ⭐ Customer Feedback
+                                        </span>
+                                        <h2
+                                            style="margin: 16px 0 0 0; color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">
+                                            New Submission Received
+                                        </h2>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Body Content -->
+                    <tr>
+                        <td style="padding: 32px;">
+
+                            <!-- Rating Highlight Card -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                                style="background-color: #020617; border: 1px solid #1e293b; border-radius: 12px; margin-bottom: 24px;">
+                                <tr>
+                                    <td style="padding: 20px; text-align: center;">
+                                        <p
+                                            style="margin: 0 0 6px 0; color: #94a3b8; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
+                                            Overall Rating</p>
+                                        <h1 style="margin: 0; color: #818cf8; font-size: 36px; font-weight: 800;"
+                                            th:text="${feedback.rating + '/5'}">4/5</h1>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Metadata List -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                                style="margin-bottom: 24px;">
+                                <tr>
+                                    <td style="padding-bottom: 12px; color: #94a3b8; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;"
+                                        width="35%">Name</td>
+                                    <td style="padding-bottom: 12px; color: #f1f5f9; font-size: 15px;"
+                                        th:text="${feedback.name}">John Doe</td>
+                                </tr>
+                                <tr>
+                                    <td
+                                        style="padding-bottom: 12px; color: #94a3b8; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Email</td>
+                                    <td style="padding-bottom: 12px; color: #818cf8; font-size: 15px;"
+                                        th:text="${feedback.email}">john@example.com</td>
+                                </tr>
+                                <tr>
+                                    <td
+                                        style="padding-bottom: 12px; color: #94a3b8; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Category</td>
+                                    <td style="padding-bottom: 12px; color: #f1f5f9; font-size: 15px;"
+                                        th:text="${feedback.category}">UI/UX</td>
+                                </tr>
+                                <tr>
+                                    <td
+                                        style="padding-bottom: 12px; color: #94a3b8; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Recommendation</td>
+                                    <td style="padding-bottom: 12px; color: #34d399; font-size: 15px; font-weight: 600;"
+                                        th:text="${feedback.recommendation}">Yes</td>
+                                </tr>
+                            </table>
+
+                            <!-- What they liked Section -->
+                            <div style="margin-bottom: 20px;">
+                                <p
+                                    style="margin: 0 0 8px 0; color: #94a3b8; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    🟢 What they liked</p>
+                                <div style="background-color: #020617; border: 1px solid #1e293b; padding: 16px; border-radius: 12px; color: #cbd5e1; font-size: 14px; line-height: 1.6;"
+                                    th:text="${feedback.liked}">
+                                    User feedback content goes here...
+                                </div>
+                            </div>
+
+                            <!-- Suggested improvements Section -->
+                            <div style="margin-top: 20px;">
+                                <p
+                                    style="margin: 0 0 8px 0; color: #94a3b8; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    💡 Suggested improvements</p>
+                                <div style="background-color: #020617; border: 1px solid #1e293b; padding: 16px; border-radius: 12px; color: #cbd5e1; font-size: 14px; line-height: 1.6;"
+                                    th:text="${feedback.improvement}">
+                                    User suggestions content goes here...
+                                </div>
+                            </div>
+
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td
+                            style="background-color: #020617; padding: 20px 32px; border-top: 1px solid #1e293b; text-align: center;">
+                            <p style="margin: 0; color: #64748b; font-size: 12px;">
+                                Sent automatically from <strong style="color: #94a3b8;">Invoxa Feedback Center</strong>
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+
+</body>
+
+</html>

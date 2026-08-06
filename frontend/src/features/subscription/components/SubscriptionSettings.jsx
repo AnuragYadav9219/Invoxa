@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import PlanGrid from "../components/PlanGrid";
 import { useSubscription } from "../hooks/useSubscription";
 import BillingInformationCard from "./BillingInformationCard";
@@ -8,10 +9,15 @@ export default function SubscriptionSettings() {
     const {
         plans,
         currentPlan,
+        payments,
+        paymentLoading,
         loading,
         upgrade,
         checkoutLoading,
+        loadingPlanId,
     } = useSubscription();
+
+    console.log("Settings: ", currentPlan)
 
     if (loading) {
         return (
@@ -40,12 +46,14 @@ export default function SubscriptionSettings() {
                 plans={plans}
                 currentPlan={currentPlan}
                 checkoutLoading={checkoutLoading}
+                loadingPlanId={loadingPlanId}
                 onUpgrade={upgrade}
             />
 
             {/* Payment History */}
             <PaymentHistory
-                payments={[]}
+                payments={payments}
+                loading={paymentLoading}
             />
         </div>
     );

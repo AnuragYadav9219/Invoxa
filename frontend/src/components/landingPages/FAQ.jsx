@@ -82,8 +82,8 @@ export default function FAQ() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: index * 0.08 }}
                 className={`border rounded-2xl transition-all duration-300 overflow-hidden backdrop-blur-xl ${isOpen
-                    ? 'border-indigo-500/40 bg-slate-900/60 shadow-lg shadow-indigo-500/5 ring-1 ring-indigo-500/20'
-                    : 'border-white/8 bg-slate-900/30 hover:border-white/20'
+                  ? 'border-indigo-500/40 bg-slate-900/60 shadow-lg shadow-indigo-500/5 ring-1 ring-indigo-500/20'
+                  : 'border-white/8 bg-slate-900/30 hover:border-white/20'
                   }`}
               >
                 <button
@@ -98,8 +98,8 @@ export default function FAQ() {
                     animate={{ rotate: isOpen ? 45 : 0 }}
                     transition={{ duration: 0.2, ease: "easeInOut" }}
                     className={`p-2 rounded-xl border shrink-0 transition-colors ${isOpen
-                        ? 'bg-indigo-600 text-white border-indigo-500'
-                        : 'bg-slate-950/60 text-slate-400 border-white/10'
+                      ? 'bg-indigo-600 text-white border-indigo-500'
+                      : 'bg-slate-950/60 text-slate-400 border-white/10'
                       }`}
                   >
                     <FiPlus className="w-4 h-4" />
@@ -124,34 +124,6 @@ export default function FAQ() {
             );
           })}
         </div>
-
-        {/* Support Callout Banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.4 }}
-          className="mt-12 p-6 sm:p-8 rounded-3xl border border-white/8 bg-slate-900/40 backdrop-blur-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
-        >
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-              <FiMessageSquare className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-white">Still have questions?</h3>
-              <p className="text-xs sm:text-sm text-slate-400">Our engineering support team is available 24/7 to assist with migration.</p>
-            </div>
-          </div>
-
-          <a
-            href="mailto:noreply.invoxa@gmail.com"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 hover:text-white text-xs sm:text-sm font-semibold transition-all whitespace-nowrap"
-          >
-            <span>Contact Support</span>
-            <FiArrowRight />
-          </a>
-        </motion.div>
-
       </div>
     </section>
   );

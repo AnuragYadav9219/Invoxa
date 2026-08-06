@@ -5,13 +5,18 @@ import {
     useVerifyPaymentMutation,
 } from "../subscriptionApi";
 import { loadRazorpay } from "@/utils/loadRazorpay";
+import { useState } from "react";
 
 export function useCheckout() {
 
+    const [loadingPlanId, setLoadingPlanId] = useState(null);
     const [createCheckout, checkoutState] = useCreateCheckoutMutation();
     const [verifyPayment] = useVerifyPaymentMutation();
 
     const checkout = async (plan, currentPlan) => {
+
+        setLoadingPlanId(plan.id);
+
         if (currentPlan?.plan?.id === plan.id) {
             toast.info("You're already subscribed to this plan.");
             return { success: false };
@@ -94,11 +99,14 @@ export function useCheckout() {
         } catch (e) {
             toast.error("Unable to create checkout.");
             throw e;
+        } finally {
+            setLoadingPlanId(null);
         }
     };
 
     return {
         checkout,
         checkoutLoading: checkoutState.isLoading,
+        loadingPlanId,
     };
 }

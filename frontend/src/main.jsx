@@ -8,11 +8,14 @@ import { store } from './app/store';
 import AppErrorBoundary from './components/errorWrapper/AppErrorBoundary';
 import GlobalErrorProvider from './features/error/GlobalErrorProvider';
 import { BrowserRouter } from 'react-router-dom';
+import ScrollToTop from './components/common/ScrollToTop';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
       <BrowserRouter>
+        <ScrollToTop />
+
         <GlobalErrorProvider>
           <AppErrorBoundary>
             <App />

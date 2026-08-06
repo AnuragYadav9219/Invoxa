@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Crown, LayoutTemplate, Lock, Sparkles, ShieldCheck } from "lucide-react";
 import { templateData } from "@/features/user/component/template/data/templateData";
-import { useGetDashboardQuery } from "@/features/subscription/subscriptionApi";
+import { useGetSubscriptionDashboardQuery } from "@/features/subscription/subscriptionApi";
 
 export default function InvoiceDetails() {
   const { id } = useParams();
@@ -23,7 +23,7 @@ export default function InvoiceDetails() {
     downloadPDF,
   } = useInvoiceData(id);
 
-  const { data: subscription } = useGetDashboardQuery();
+  const { data: subscription } = useGetSubscriptionDashboardQuery();
 
   const [selectedTemplate, setSelectedTemplate] = useState(
     shop?.invoiceTemplate?.toLowerCase() || "classic"

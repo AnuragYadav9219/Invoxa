@@ -9,4 +9,9 @@ public interface SubscriptionPaymentService {
     void completePayment(
             String orderId,
             String paymentId);
+
+    void markPaymentFailed(
+            String orderId,
+            String paymentId,
+            String reason);
 }

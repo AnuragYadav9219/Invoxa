@@ -18,7 +18,12 @@ public class SubscriptionPaymentMapper {
                 .currency(payment.getCurrency())
                 .gateway(payment.getGateway())
                 .status(payment.getStatus())
+
                 .transactionId(payment.getTransactionId())
+                .orderId(payment.getOrderId())
+                .paymentId(payment.getPaymentId())
+                .failureReason(payment.getFailureReason())
+
                 .paidAt(payment.getPaidAt())
                 .build();
     }

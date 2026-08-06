@@ -30,8 +30,11 @@ public class SubscriptionPaymentServiceImpl
         private final SubscriptionService subscriptionService;
 
         @Override
-        public void verifyPayment(
-                        VerifySubscriptionPaymentRequest request) {
+        public void verifyPayment(VerifySubscriptionPaymentRequest request) {
+
+                SubscriptionPayment payment = paymentRepository
+                                .findByOrderId(request.getRazorpayOrderId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Subscription payment not found"));
 
                 boolean valid = gatewayService.verifyPayment(
                                 request.getRazorpayOrderId(),
@@ -39,6 +42,10 @@ public class SubscriptionPaymentServiceImpl
                                 request.getRazorpaySignature());
 
                 if (!valid) {
+                        payment.setStatus(SubscriptionPaymentStatus.FAILED);
+                        payment.setFailureReason("Invalid payment signature");
+                        paymentRepository.save(payment);
+
                         throw new BadRequestException("Invalid payment signature");
                 }
 
@@ -66,55 +73,163 @@ public class SubscriptionPaymentServiceImpl
                         return;
                 }
 
-                Payment razorpayPayment = gatewayService.fetchPayment(paymentId);
+                if (payment.getStatus() == SubscriptionPaymentStatus.FAILED) {
 
-                String status = razorpayPayment.get("status").toString();
+                        log.info(
+                                        "Subscription payment already failed. OrderId={}",
+                                        orderId);
 
-                if (!"captured".equalsIgnoreCase(status)) {
-                        throw new BadRequestException("Payment not captured");
+                        return;
                 }
 
-                String razorpayOrderId = razorpayPayment.get("order_id").toString();
+                try {
 
-                if (!orderId.equals(razorpayOrderId)) {
-                        throw new BadRequestException("Payment does not belong to the this order.");
+                        Payment razorpayPayment = gatewayService.fetchPayment(paymentId);
+
+                        String status = razorpayPayment.get("status").toString();
+
+                        if (!"captured".equalsIgnoreCase(status)) {
+
+                                payment.setStatus(
+                                                SubscriptionPaymentStatus.FAILED);
+
+                                payment.setFailureReason(
+                                                "Payment status: " + status);
+
+                                paymentRepository.save(payment);
+
+                                throw new BadRequestException(
+                                                "Payment not captured");
+                        }
+
+                        String razorpayOrderId = razorpayPayment.get("order_id").toString();
+
+                        if (!orderId.equals(razorpayOrderId)) {
+
+                                payment.setStatus(
+                                                SubscriptionPaymentStatus.FAILED);
+
+                                payment.setFailureReason(
+                                                "Order ID mismatch");
+
+                                paymentRepository.save(payment);
+
+                                throw new BadRequestException(
+                                                "Payment does not belong to this order.");
+                        }
+
+                        Object amountObj = razorpayPayment.get("amount");
+
+                        BigDecimal paidAmount;
+
+                        if (amountObj instanceof Number number) {
+
+                                paidAmount = BigDecimal.valueOf(
+                                                number.longValue())
+                                                .divide(BigDecimal.valueOf(100));
+
+                        } else {
+
+                                paidAmount = new BigDecimal(
+                                                amountObj.toString())
+                                                .divide(BigDecimal.valueOf(100));
+                        }
+
+                        if (paidAmount.compareTo(payment.getAmount()) != 0) {
+
+                                payment.setStatus(
+                                                SubscriptionPaymentStatus.FAILED);
+
+                                payment.setFailureReason(
+                                                "Amount mismatch");
+
+                                paymentRepository.save(payment);
+
+                                throw new BadRequestException(
+                                                "Subscription amount mismatch.");
+                        }
+
+                        String method = razorpayPayment.get("method").toString();
+
+                        log.info(
+                                        "Subscription paid using {}",
+                                        method);
+
+                        payment.setPaymentId(paymentId);
+                        payment.setTransactionId(paymentId);
+                        payment.setPaidAt(LocalDateTime.now());
+                        payment.setStatus(
+                                        SubscriptionPaymentStatus.SUCCESS);
+                        payment.setFailureReason(null);
+
+                        paymentRepository.save(payment);
+
+                        log.info(
+                                        "Subscription payment marked SUCCESS. PaymentId={}",
+                                        paymentId);
+
+                        subscriptionService.activateSubscription(
+                                        payment.getShop().getId(),
+                                        payment.getPlan(),
+                                        paymentId);
+
+                } catch (Exception ex) {
+
+                        if (payment.getStatus() != SubscriptionPaymentStatus.SUCCESS) {
+
+                                payment.setStatus(
+                                                SubscriptionPaymentStatus.FAILED);
+
+                                if (payment.getFailureReason() == null) {
+                                        payment.setFailureReason(ex.getMessage());
+                                }
+
+                                paymentRepository.save(payment);
+                        }
+
+                        throw ex;
+                }
+        }
+
+        @Override
+        public void markPaymentFailed(
+                        String orderId,
+                        String paymentId,
+                        String reason) {
+
+                SubscriptionPayment payment = paymentRepository
+                                .findByOrderId(orderId)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Subscription payment not found"));
+
+                if (payment.getStatus() == SubscriptionPaymentStatus.SUCCESS) {
+
+                        log.info(
+                                        "Ignoring failed webhook because payment is already SUCCESS. OrderId={}",
+                                        orderId);
+
+                        return;
                 }
 
-                Object amountObj = razorpayPayment.get("amount");
+                if (payment.getStatus() == SubscriptionPaymentStatus.FAILED) {
 
-                BigDecimal paidAmount;
+                        log.info(
+                                        "Payment already marked FAILED. OrderId={}",
+                                        orderId);
 
-                if (amountObj instanceof Number number) {
-                        paidAmount = BigDecimal.valueOf(number.longValue())
-                                        .divide(BigDecimal.valueOf(100));
-                } else {
-                        paidAmount = new BigDecimal(amountObj.toString())
-                                        .divide(BigDecimal.valueOf(100));
+                        return;
                 }
-
-                if (paidAmount.compareTo(payment.getAmount()) != 0) {
-                        throw new BadRequestException("Subscription amount mismatch.");
-                }
-
-                // 4. (Optional) Log payment method
-                String method = razorpayPayment.get("method").toString();
-
-                log.info("Subscription paid using {}", method);
 
                 payment.setPaymentId(paymentId);
                 payment.setTransactionId(paymentId);
-                payment.setPaidAt(LocalDateTime.now());
-                payment.setStatus(SubscriptionPaymentStatus.SUCCESS);
+                payment.setStatus(
+                                SubscriptionPaymentStatus.FAILED);
+                payment.setFailureReason(reason);
 
                 paymentRepository.save(payment);
 
                 log.info(
-                                "Subscription payment marked SUCCESS. PaymentId={}",
-                                paymentId);
-
-                subscriptionService.activateSubscription(
-                                payment.getShop().getId(),
-                                payment.getPlan(),
-                                paymentId);
+                                "Subscription payment marked FAILED. OrderId={}",
+                                orderId);
         }
 }

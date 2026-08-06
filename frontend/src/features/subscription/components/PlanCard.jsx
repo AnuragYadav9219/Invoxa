@@ -7,9 +7,12 @@ export default function PlanCard({
     current,
     isDowngrade,
     checkoutLoading,
+    loadingPlanId,
     onUpgrade,
 }) {
     const isPopular = plan.name?.toUpperCase() === "PRO";
+
+    const isLoading = checkoutLoading && loadingPlanId === plan.id;
 
     const formatLimit = (value) => (value === -1 ? "Unlimited" : value);
 
@@ -99,7 +102,7 @@ export default function PlanCard({
             {/* Action Button */}
             <div className="mt-8">
                 <button
-                    disabled={current || checkoutLoading || isDowngrade}
+                    disabled={current || isLoading || isDowngrade}
                     onClick={onUpgrade}
                     className={`flex w-full items-center justify-center gap-2 rounded-xl py-2.5 px-4 text-xs sm:text-sm font-semibold transition-all duration-200 
                         ${current
@@ -115,7 +118,7 @@ export default function PlanCard({
                         "Current Plan"
                     ) : isDowngrade ? (
                         "Downgrade Not Available"
-                    ) : checkoutLoading ? (
+                    ) : isLoading ? (
                         <div className="flex items-center gap-2">
                             <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                             <span>Processing...</span>

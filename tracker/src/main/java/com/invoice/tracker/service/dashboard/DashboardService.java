@@ -7,7 +7,7 @@ import com.invoice.tracker.dto.dashboard.RevenueTrend;
 
 public interface DashboardService {
     
-    DashboardResponse getDashboard(int days);
+    DashboardResponse getDashboard();
 
-    List<RevenueTrend> getRevenueTrend(int days);
+    List<RevenueTrend> getRevenueTrend();
 }

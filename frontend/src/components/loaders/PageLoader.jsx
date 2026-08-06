@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import Spinner from "./Spinner";
 
-export default function PageLoader({ text = "Loading dashboard..." }) {
+export default function PageLoader({ text = "Loading..." }) {
     return (
         <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-linear-to-br from-indigo-50 via-purple-50 to-pink-50">
 

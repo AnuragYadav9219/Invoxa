@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
     Clock,
     AlertTriangle,
@@ -6,20 +5,12 @@ import {
     TrendingUp,
     Wallet,
     IndianRupee,
-    Filter,
     Calendar,
 } from "lucide-react";
 
 import DashboardSkeleton from "@/components/loaders/DashboardSkeleton";
 import Spinner from "@/components/loaders/Spinner";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 
 import DashboardHero from "./DashboardHero";
 import RevenueChart from "@/features/dashboard/components/RevenueChart";
@@ -33,9 +24,8 @@ import InvoiceDistributionChart from "@/features/dashboard/components/InvoiceDis
 import { FallbackPage } from "@/components/errorWrapper/components";
 
 export default function Dashboard() {
-    const [days, setDays] = useState("30");
 
-    const { data: dashboardData, isLoading: dashboardLoading, } = useGetDashboardQuery(Number(days));
+    const { data: dashboardData, isLoading: dashboardLoading, } = useGetDashboardQuery();
 
     const stats = dashboardData || {};
 
@@ -85,26 +75,7 @@ export default function Dashboard() {
                                     Financial performance for selected timeline
                                 </p>
                             </div>
-                        </div>
-
-                        {/* Filter Dropdown */}
-                        <div className="flex items-center gap-2 self-end sm:self-auto">
-                            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                                <Filter size={13} />
-                                <span>Period:</span>
-                            </div>
-                            <Select value={days} onValueChange={setDays}>
-                                <SelectTrigger className="w-40 bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 shadow-2xs font-medium text-xs rounded-xl h-9">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl border-slate-200 dark:border-slate-800">
-                                    <SelectItem value="7">Last 7 Days</SelectItem>
-                                    <SelectItem value="30">Last 30 Days</SelectItem>
-                                    <SelectItem value="90">Last 90 Days</SelectItem>
-                                    <SelectItem value="365">Last Year</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                        </div>                        
                     </div>
 
                     {/* Primary Cards Grid */}
@@ -176,7 +147,7 @@ export default function Dashboard() {
                 {/* CHARTS SECTION */}
                 <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 items-stretch">
                     <div className="lg:col-span-7 h-full">
-                        <RevenueChart days={Number(days)} />
+                        <RevenueChart />
                     </div>
 
                     <div className="lg:col-span-3 h-full">

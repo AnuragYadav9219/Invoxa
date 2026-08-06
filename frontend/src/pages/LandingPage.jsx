@@ -6,6 +6,7 @@ import LogoTicker from '@/components/landingPages/LogoTicker';
 import Navbar from '@/components/landingPages/Navbar';
 import Pricing from '@/components/landingPages/Pricing';
 import Testimonials from '@/components/landingPages/Testimonials';
+import Footer from '@/components/layout/Footer';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -27,8 +28,10 @@ export default function LandingPage() {
             <FAQ />
             <BottomCTA />
 
+            <Footer />
+
             {/* Footer */}
-            <footer className="border-t border-slate-900 bg-slate-950 py-12 text-xs text-slate-600">
+            {/* <footer className="border-t border-slate-900 bg-slate-950 py-12 text-xs text-slate-600">
                 <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
                     <div className="flex items-center space-x-2 opacity-80">
                         <span className="font-bold tracking-tight text-slate-400">
@@ -53,7 +56,7 @@ export default function LandingPage() {
                         </Link>
                     </div>
                 </div>
-            </footer>
+            </footer> */}
         </div>
     );
 }

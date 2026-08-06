@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Loader2,
@@ -14,7 +14,7 @@ import {
 
 import { useLoginMutation } from "@/features/auth/authApi";
 import { useAuth } from "@/hooks/authHooks";
-import { showSuccess, showError } from "@/components/toast/toast";
+import { showError } from "@/components/toast/toast";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,17 +29,16 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [focusedInput, setFocusedInput] = useState(null);
 
-  useEffect(() => {
-    if (isAuthenticated) navigate("/dashboard");
-  }, [isAuthenticated, navigate]);
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       await login(form).unwrap();
 
-      showSuccess("Welcome back!");
-      navigate("/dashboard");
+      navigate("/loading");
     } catch (err) {
       const code = err?.data?.code;
 

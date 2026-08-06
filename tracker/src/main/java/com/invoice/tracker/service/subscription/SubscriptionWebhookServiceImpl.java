@@ -15,79 +15,84 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class SubscriptionWebhookServiceImpl
-                implements SubscriptionWebhookService {
+        implements SubscriptionWebhookService {
 
-        private final RazorpayGatewayService gatewayService;
-        private final SubscriptionPaymentService paymentService;
-        private final ObjectMapper objectMapper;
+    private final RazorpayGatewayService gatewayService;
+    private final SubscriptionPaymentService paymentService;
+    private final ObjectMapper objectMapper;
 
-        @Override
-        @Transactional
-        public void processWebhook(
-                        String signature,
-                        String payload) {
+    @Override
+    @Transactional
+    public void processWebhook(
+            String signature,
+            String payload) {
 
-                try {
+        try {
 
-                        if (!gatewayService.verifyWebhook(payload, signature)) {
-                                throw new BadRequestException(
-                                                "Invalid webhook signature");
-                        }
+            if (!gatewayService.verifyWebhook(payload, signature)) {
+                throw new BadRequestException("Invalid webhook signature");
+            }
 
-                        JsonNode root = objectMapper.readTree(payload);
+            JsonNode root = objectMapper.readTree(payload);
 
-                        String event = root.path("event").asText();
+            String event = root.path("event").asText();
 
-                        log.info("Webhook Event : {}", event);
+            log.info("Subscription Webhook Event: {}", event);
 
-                        switch (event) {
-                                case "payment.captured" -> {
+            JsonNode entity = root.path("payload")
+                    .path("payment")
+                    .path("entity");
 
-                                        JsonNode entity = root.path("payload")
-                                                        .path("payment")
-                                                        .path("entity");
+            String orderId = entity.path("order_id").asText();
+            String paymentId = entity.path("id").asText();
 
-                                        paymentService.completePayment(
-                                                        entity.path("order_id").asText(),
-                                                        entity.path("id").asText());
-                                }
+            switch (event) {
 
-                                default -> log.debug(
-                                                "Ignoring Razorpay event: {}",
-                                                event);
-                        }
+                case "payment.captured" -> {
 
-                        JsonNode entity = root.path("payload")
-                                        .path("payment")
-                                        .path("entity");
+                    paymentService.completePayment(
+                            orderId,
+                            paymentId);
 
-                        String orderId = entity.path("order_id").asText();
-
-                        String paymentId = entity.path("id").asText();
-
-                        log.info("Webhook Order={}, Payment={}",
-                                        orderId,
-                                        paymentId);
-
-                        paymentService.completePayment(
-                                        orderId,
-                                        paymentId);
-
-                        log.info(
-                                        "Subscription payment processed successfully. PaymentId={}",
-                                        paymentId);
-
-                } catch (BadRequestException ex) {
-                        throw ex;
-                } catch (Exception ex) {
-
-                        log.error(
-                                        "Failed to process subscription webhook",
-                                        ex);
-
-                        throw new RuntimeException(
-                                        "Webhook processing failed",
-                                        ex);
+                    log.info(
+                            "Subscription payment completed successfully. PaymentId={}",
+                            paymentId);
                 }
+
+                case "payment.failed" -> {
+
+                    String reason = entity
+                            .path("error_description")
+                            .asText("Payment failed");
+
+                    paymentService.markPaymentFailed(
+                            orderId,
+                            paymentId,
+                            reason);
+
+                    log.info(
+                            "Subscription payment failed. PaymentId={}",
+                            paymentId);
+                }
+
+                default -> log.debug(
+                        "Ignoring Razorpay event: {}",
+                        event);
+            }
+
+        } catch (BadRequestException ex) {
+
+            throw ex;
+
+        } catch (Exception ex) {
+
+            log.error(
+                    "Failed to process subscription webhook",
+                    ex);
+
+            throw new RuntimeException(
+                    "Webhook processing failed",
+                    ex);
         }
+    }
 }

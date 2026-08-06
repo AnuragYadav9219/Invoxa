@@ -12,7 +12,9 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import com.invoice.tracker.common.exception.BadRequestException;
+import com.invoice.tracker.entity.feedback.Feedback;
 import com.invoice.tracker.entity.invoice.Invoice;
+import com.invoice.tracker.entity.support.SupportTicket;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,9 @@ public class EmailService {
 
     @Value("${resend.from}")
     private String from;
+
+    @Value("${support.admin.email}")
+    private String supportAdminEmail;
 
     private final RestClient resendRestClient;
     private final TemplateEngine templateEngine;
@@ -177,6 +182,37 @@ public class EmailService {
         sendHtml(
                 invoice.getCustomerEmail(),
                 "Action required: Invoice " + invoice.getInvoiceNumber() + " is overdue",
+                html);
+    }
+
+    public void sendSupportTicketNotification(SupportTicket ticket) {
+
+        Context context = new Context();
+        context.setVariable("ticket", ticket);
+
+        String html = templateEngine.process(
+                "email/support-ticket-email",
+                context);
+
+        sendHtml(
+                supportAdminEmail,
+                "New Support Ticket - " + ticket.getTicketNumber(),
+                html);
+    }
+
+    public void sendFeedbackNotification(Feedback feedback) {
+
+        Context context = new Context();
+
+        context.setVariable("feedback", feedback);
+
+        String html = templateEngine.process(
+                "email/feedback-email",
+                context);
+
+        sendHtml(
+                supportAdminEmail,
+                "New Feedback (" + feedback.getRating() + "/5)",
                 html);
     }
 

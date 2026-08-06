@@ -18,6 +18,7 @@ import com.invoice.tracker.dto.subscription.TemplateResponse;
 import com.invoice.tracker.entity.auth.Shop;
 import com.invoice.tracker.entity.subscription.PlanType;
 import com.invoice.tracker.entity.subscription.ShopSubscription;
+import com.invoice.tracker.entity.subscription.SubscriptionPaymentStatus;
 import com.invoice.tracker.entity.subscription.SubscriptionPlan;
 import com.invoice.tracker.entity.subscription.SubscriptionStatus;
 import com.invoice.tracker.mapper.SubscriptionMapper;
@@ -144,7 +145,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                         UUID shopId) {
 
                 return paymentRepository
-                                .findByShopIdOrderByCreatedAtDesc(shopId)
+                                .findByShopIdAndStatusInOrderByCreatedAtDesc(
+                                                shopId,
+                                                List.of(
+                                                                SubscriptionPaymentStatus.SUCCESS,
+                                                                SubscriptionPaymentStatus.FAILED))
                                 .stream()
                                 .map(paymentMapper::toResponse)
                                 .toList();

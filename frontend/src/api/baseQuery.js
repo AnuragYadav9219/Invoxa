@@ -110,7 +110,9 @@ export const axiosBaseQuery =
           url.includes("/recover") ||
           url.includes("/send-otp") ||
           url.includes("/verify-otp") ||
-          url.includes("/delete");
+          url.includes("/delete") ||
+          url.includes("/support") ||
+          url.includes("/feedback");
 
         if (isAuthFlow || meta?.skipAuth) {
           return {

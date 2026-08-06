@@ -5,12 +5,14 @@ import { toast } from "sonner";
 import { tokenService } from "@/services/tokenService";
 import {
   useGetPlansQuery,
-  useGetDashboardQuery,
   useCreateCheckoutMutation,
   useVerifyPaymentMutation,
+  useGetSubscriptionDashboardQuery,
 } from "@/features/subscription/subscriptionApi";
 import { FiArrowRight, FiCheck, FiShield } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import PricingCardSkeleton from "../loaders/PricingCardSkeleton";
+import { Skeleton } from "../ui/skeleton";
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -25,7 +27,7 @@ export default function Pricing() {
     isError,
   } = useGetPlansQuery();
 
-  const { data: dashboard } = useGetDashboardQuery(undefined, {
+  const { data: dashboard } = useGetSubscriptionDashboardQuery(undefined, {
     skip: !isLoggedIn,
   });
 
@@ -107,10 +109,24 @@ export default function Pricing() {
 
   if (isLoading) {
     return (
-      <section className="flex min-h-[60vh] items-center justify-center bg-slate-950">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
-          <p className="text-sm font-medium text-slate-400">Loading pricing plans...</p>
+      <section
+        id="pricing"
+        className="bg-slate-950 px-4 py-20 sm:px-6 lg:px-8 lg:py-32"
+      >
+        <div className="mx-auto max-w-7xl">
+          {/* Header Skeleton */}
+          <div className="mx-auto mb-16 max-w-3xl text-center">
+            <Skeleton className="mx-auto h-8 w-48 rounded-full bg-slate-800" />
+            <Skeleton className="mx-auto mt-6 h-12 w-3/4 bg-slate-800" />
+            <Skeleton className="mx-auto mt-4 h-5 w-2/3 bg-slate-800" />
+          </div>
+
+          {/* Cards */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((item) => (
+              <PricingCardSkeleton key={item} />
+            ))}
+          </div>
         </div>
       </section>
     );
@@ -182,7 +198,7 @@ export default function Pricing() {
             <button
               onClick={() => setIsAnnual(!isAnnual)}
               aria-label="Toggle annual billing"
-              className="relative h-7 w-14 rounded-full border border-slate-800 bg-slate-900 p-1 transition-colors hover:border-slate-700 focus:outline-none"
+              className="relative cursor-pointer h-7 w-14 rounded-full border border-slate-800 bg-slate-900 p-1 transition-colors hover:border-slate-700 focus:outline-none"
             >
               <motion.div
                 animate={{ x: isAnnual ? 28 : 0 }}
@@ -205,6 +221,10 @@ export default function Pricing() {
             </div>
           </motion.div>
         </div>
+
+        {/* <p className="mt-6 text-center text-sm text-slate-500">
+          Waking up our servers... Pricing will appear automatically.
+        </p> */}
 
         {/* Pricing Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
@@ -239,11 +259,10 @@ export default function Pricing() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.15 }}
                 whileHover={{ y: -6, transition: { duration: 0.2 } }}
-                className={`relative flex flex-col justify-between rounded-3xl p-6 sm:p-8 backdrop-blur-xl transition-all duration-300 ${
-                  isPopular
-                    ? "bg-slate-900/90 border-2 border-indigo-500 shadow-2xl shadow-indigo-500/10 ring-4 ring-indigo-500/10"
-                    : "bg-slate-900/40 border border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/60"
-                }`}
+                className={`relative flex flex-col justify-between rounded-3xl p-6 sm:p-8 backdrop-blur-xl transition-all duration-300 ${isPopular
+                  ? "bg-slate-900/90 border-2 border-indigo-500 shadow-2xl shadow-indigo-500/10 ring-4 ring-indigo-500/10"
+                  : "bg-slate-900/40 border border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/60"
+                  }`}
               >
                 {isPopular && (
                   <motion.div
@@ -303,13 +322,12 @@ export default function Pricing() {
                     whileTap={{ scale: 0.98 }}
                     disabled={isLoggedIn && (isCurrentPlan || checkoutLoading)}
                     onClick={() => handleUpgrade(plan)}
-                    className={`flex w-full items-center cursor-pointer justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold transition-all shadow-md ${
-                      isLoggedIn && isCurrentPlan
-                        ? "cursor-default bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-none"
-                        : isPopular
+                    className={`flex w-full items-center cursor-pointer justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold transition-all shadow-md ${isLoggedIn && isCurrentPlan
+                      ? "cursor-default bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-none"
+                      : isPopular
                         ? "bg-linear-to-r from-indigo-500 to-violet-600 text-white hover:opacity-95 hover:shadow-lg hover:shadow-indigo-500/25"
                         : "border border-slate-700 bg-slate-800/60 text-white hover:bg-slate-800 hover:border-slate-600"
-                    }`}
+                      }`}
                   >
                     {isLoggedIn ? (
                       isCurrentPlan ? (

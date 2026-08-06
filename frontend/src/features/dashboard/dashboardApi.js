@@ -6,10 +6,9 @@ export const dashboardApi = baseApi.injectEndpoints({
         // ================= Dashboard =================
 
         getDashboard: builder.query({
-            query: (days = 30) => ({
+            query: () => ({
                 url: "/dashboard",
                 method: "GET",
-                params: { days },
             }),
 
             transformResponse: ({ data }) => data,
@@ -20,10 +19,9 @@ export const dashboardApi = baseApi.injectEndpoints({
         // ================= Revenue Trend =================
 
         getRevenueTrend: builder.query({
-            query: (days = 30) => ({
+            query: () => ({
                 url: "/dashboard/revenue-trend",
                 method: "GET",
-                params: { days },
             }),
 
             transformResponse: ({ data }) => data,

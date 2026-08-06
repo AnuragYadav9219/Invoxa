@@ -13,12 +13,27 @@ export const subscriptionApi = baseApi.injectEndpoints({
             providesTags: ["Subscription"],
         }),
 
+        /* ================== GET CURRENT SUBSCRIPTION ================== */
+        getCurrentSubscription: builder.query({
+            query: () => ({
+                url: "/subscriptions/current",
+                method: "GET",
+            }),
+
+            providesTags: [{ type: "Subscription", id: "CURRENT" }],
+        }),
+
         /* ================== GET DASHBOARD ================== */
-        getDashboard: builder.query({
+        getSubscriptionDashboard: builder.query({
             query: () => ({
                 url: "/subscriptions/dashboard",
                 method: "GET",
             }),
+
+             transformResponse: (response) => {
+        console.log("Subscription API Response:", response);
+        return response.data ?? response;
+    },
 
             providesTags: ["Subscription"],
         }),
@@ -69,8 +84,9 @@ export const subscriptionApi = baseApi.injectEndpoints({
 
 export const {
     useGetPlansQuery,
-    useGetDashboardQuery,
-    useLazyGetPaymentHistoryQuery,
+    useGetCurrentSubscriptionQuery,
+    useGetSubscriptionDashboardQuery,
+    useGetPaymentHistoryQuery,
     useCreateCheckoutMutation,
     useVerifyPaymentMutation,
     useGetBillingInformationQuery,

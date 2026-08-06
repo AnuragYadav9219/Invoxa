@@ -4,6 +4,12 @@ import { logout as logoutAction, setCredentials } from "./authSlice";
 import { deviceService } from "@/services/deviceService";
 import { showError, showSuccess } from "@/components/toast/toast";
 
+import { userApi } from "@/features/user/userApi";
+import { dashboardApi } from "@/features/dashboard/dashboardApi";
+import { invoiceApi } from "@/features/invoice/invoiceApi";
+import { notificationApi } from "@/features/notification/notificationApi";
+import { subscriptionApi } from "@/features/subscription/subscriptionApi";
+
 const handleAuthSuccess = (dispatch, res) => {
   tokenService.setToken(res.accessToken);
   tokenService.setUser(res.user);
@@ -34,20 +40,57 @@ export const authApi = baseApi.injectEndpoints({
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
+
           handleAuthSuccess(dispatch, data.data);
 
-          dispatch(
+          // Wait for profile to finish loading
+          await dispatch(
             userApi.endpoints.getProfile.initiate(undefined, {
+              forceRefetch: true,
+            })
+          ).unwrap();
+
+          // Prefetch other important dashboard APIs
+          dispatch(
+            dashboardApi.endpoints.getDashboard.initiate(undefined, {
+              forceRefetch: true,
+            })
+          );
+
+          dispatch(
+            invoiceApi.endpoints.getRecentInvoice.initiate(5, {
+              forceRefetch: true,
+            })
+          );
+
+          dispatch(
+            invoiceApi.endpoints.getCustomerSummary.initiate(undefined, {
+              forceRefetch: true,
+            })
+          );
+
+          dispatch(
+            notificationApi.endpoints.getUnreadCount.initiate(undefined, {
+              forceRefetch: true,
+            })
+          );
+
+          dispatch(
+            subscriptionApi.endpoints.getDashboard.initiate(undefined, {
               forceRefetch: true,
             })
           );
 
           showSuccess("Login successful");
 
-        } catch {
-          // Handled by global axios
+        } catch (err) {
+          showError(
+            err?.error?.data?.message ||
+            err?.error?.data ||
+            "Invalid email or password"
+          );
         }
-      },
+      }
     }),
 
     /* ================= REGISTER ================= */
@@ -98,7 +141,7 @@ export const authApi = baseApi.injectEndpoints({
       query: (data) => ({
         url: "/auth/send-otp",
         method: "POST",
-        body: { 
+        body: {
           ...data,
         },
         meta: {

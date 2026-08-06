@@ -1,5 +1,6 @@
 import {
-    useGetDashboardQuery,
+    useGetSubscriptionDashboardQuery,
+    useGetPaymentHistoryQuery,
     useGetPlansQuery,
 } from "../subscriptionApi";
 
@@ -14,10 +15,15 @@ export function useSubscription() {
 
     const plansQuery = useGetPlansQuery();
 
-    const dashboardQuery =
-        useGetDashboardQuery(undefined, {
-            skip: !isLoggedIn,
-        });
+    const dashboardQuery = useGetSubscriptionDashboardQuery(undefined, {
+        skip: !isLoggedIn,
+    });
+
+    console.log("Dashboard Query", dashboardQuery.data);
+
+    const paymentHistoryQuery = useGetPaymentHistoryQuery(undefined, {
+        skip: !isLoggedIn,
+    });
 
     const {
         checkout,
@@ -25,32 +31,42 @@ export function useSubscription() {
     } = useCheckout();
 
     const upgrade = async (plan) => {
+
         const result = await checkout(
             plan,
             dashboardQuery.data
         );
 
-        if (result?.success && !dashboardQuery.isUninitialized) {
+        if (result?.success) {
             await dashboardQuery.refetch();
+            await paymentHistoryQuery.refetch();
         }
     };
 
     return {
-
         plans: plansQuery.data ?? [],
 
         currentPlan: dashboardQuery.data,
 
-        loading: plansQuery.isLoading || dashboardQuery.isLoading,
+        payments: paymentHistoryQuery.data ?? [],
 
-        isLoggedIn,
+        loading:
+            plansQuery.isLoading ||
+            dashboardQuery.isLoading,
+
+        paymentLoading:
+            paymentHistoryQuery.isLoading,
 
         checkoutLoading,
 
         upgrade,
 
+        isLoggedIn,
+
         refetchPlans: plansQuery.refetch,
 
         refetchDashboard: dashboardQuery.refetch,
+
+        refetchPayments: paymentHistoryQuery.refetch,
     };
 }

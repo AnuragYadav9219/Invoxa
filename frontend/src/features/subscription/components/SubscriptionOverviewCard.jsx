@@ -20,28 +20,30 @@ export default function SubscriptionOverviewCard({ currentPlan }) {
         );
     }
 
+    console.log(currentPlan)
+
     const usage = [
         {
             label: "Invoices",
-            used: currentPlan.invoiceUsed ?? 0,
+            used: currentPlan.invoiceUsage ?? 0,
             limit: currentPlan.invoiceLimit,
             icon: <FiFileText className="h-4 w-4" />,
         },
         {
             label: "Customers",
-            used: currentPlan.customerUsed ?? 0,
+            used: currentPlan.customerUsage ?? 0,
             limit: currentPlan.customerLimit,
             icon: <FiUsers className="h-4 w-4" />,
         },
         {
             label: "Items",
-            used: currentPlan.itemUsed ?? 0,
+            used: currentPlan.itemUsage ?? 0,
             limit: currentPlan.itemLimit,
             icon: <FiPackage className="h-4 w-4" />,
         },
         {
             label: "Users",
-            used: currentPlan.userUsed ?? 1,
+            used: currentPlan.userUsage ?? 0,
             limit: currentPlan.userLimit,
             icon: <FiLayers className="h-4 w-4" />,
         },

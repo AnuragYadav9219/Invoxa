@@ -6,6 +6,9 @@ import GlobalErrorPage from "./components/errorWrapper/GlobalErrorPage";
 import ComingSoonPayments from "./features/payment/components/ComingSoonPayments";
 import TermsOfService from "./components/landingPages/TermsOfService";
 import PrivacyPolicy from "./components/landingPages/PrivacyPolicy";
+import LoadingPage from "./components/common/LoadingPage";
+import Support from "./features/support/pages/Support";
+import Feedback from "./features/feedback/pages/Feedback";
 
 const AppLayoutRoute = lazy(() => import("./routes/AppLayoutRoute"));
 const RoleRoute = lazy(() => import("./routes/RoleRoute"));
@@ -162,6 +165,8 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/auth-otp" element={<AuthOtpPage />} />
           <Route path="/recover" element={<RecoverPage />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/feedback" element={<Feedback />} />
           <Route path="/pdf/:invoiceId" element={<InvoicePdfPage />} />
           <Route path="/pay/:paymentToken" element={<CustomerPayment />} />
           <Route path="/payments/coming-soon" element={<ComingSoonPayments />} />
@@ -169,6 +174,7 @@ export default function App() {
           <Route path="/terms-of-service" element={<TermsOfService />} />
 
           {/* PROTECTED */}
+          <Route path="/loading" element={<AppLayoutRoute><LoadingPage /></AppLayoutRoute>} />
           <Route path="/dashboard" element={<AppLayoutRoute><Dashboard /></AppLayoutRoute>} />
           <Route path="/settings" element={<AppLayoutRoute><SettingsPage /></AppLayoutRoute>} />
           <Route path="/profile" element={<AppLayoutRoute><UserProfile /></AppLayoutRoute>} />

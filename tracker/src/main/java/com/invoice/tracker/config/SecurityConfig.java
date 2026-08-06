@@ -78,7 +78,9 @@ public class SecurityConfig {
                                 "/pay/**",
                                 "/api/users/recover/send-otp",
                                 "/api/users/recover",
-                                "/api/subscriptions/**"
+                                "/api/subscriptions/**",
+                                "/api/support",
+                                "/api/feedback"
                         ).permitAll()
 
                         .anyRequest().authenticated())
