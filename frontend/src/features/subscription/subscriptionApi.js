@@ -31,7 +31,6 @@ export const subscriptionApi = baseApi.injectEndpoints({
             }),
 
             transformResponse: (response) => {
-                console.log("Subscription API Response:", response);
                 return response.data ?? response;
             },
 

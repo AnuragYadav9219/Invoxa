@@ -15,12 +15,12 @@ export function useCheckout() {
 
     const checkout = async (plan, currentPlan) => {
 
-        setLoadingPlanId(plan.id);
-
         if (currentPlan?.plan?.id === plan.id) {
             toast.info("You're already subscribed to this plan.");
             return { success: false };
         }
+
+        setLoadingPlanId(plan.id);
 
         try {
 
