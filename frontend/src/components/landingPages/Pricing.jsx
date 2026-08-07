@@ -48,34 +48,26 @@ export default function Pricing() {
       (planOrder[b.name?.toUpperCase()] ?? 999)
   );
 
-  const handleUpgrade = async (plan) => {
-    if (!isLoggedIn) {
-      navigate(
-        `/login?redirect=${encodeURIComponent(
+  const handleUpgrade = (plan) => {
+    toast.loading("Redirecting to subscription...", {
+      id: "subscription-redirect",
+    });
+
+    setTimeout(() => {
+      toast.dismiss("subscription-redirect");
+
+      if (!isLoggedIn) {
+        navigate(
+          `/login?redirect=${encodeURIComponent(
+            `/settings?tab=subscription&planId=${plan.id}`
+          )}`
+        );
+      } else {
+        navigate(
           `/settings?tab=subscription&planId=${plan.id}`
-        )}`
-      );
-      return;
-    }
-
-    if (plan.monthlyPrice === 0) {
-      toast.success("You are already on the starter plan!");
-      return;
-    }
-
-    try {
-      const result = await checkout(
-        plan,
-        dashboard
-      );
-
-      if (result?.success) {
-        window.location.reload();
+        );
       }
-
-    } catch (err) {
-      console.error(err);
-    }
+    }, 1000);
   };
 
   if (isLoading) {
