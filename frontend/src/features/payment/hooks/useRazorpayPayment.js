@@ -18,31 +18,39 @@ export default function useRazorpayPayment() {
             const loaded = await loadRazorpay();
 
             if (!loaded) {
-                toast.error("Unable to load Razorpay.");
+                toast.error("Unable to load payment gateway.");
                 return { success: false };
             }
 
             const order = await createOrder(invoice.id).unwrap();
 
-            return new Promise((resolve, reject) => {
+            if (!order?.key || !order?.orderId) {
+                toast.error("Unable to initialize payment.");
+                return { success: false };
+            }
+
+            return new Promise((resolve) => {
                 const razorpay = new window.Razorpay({
                     key: order.key,
-                    amount: order.amountInPaise ?? Number(order.amount) * 100,
+
+                    amount:
+                        order.amountInPaise ??
+                        Number(order.amount) * 100,
+
                     currency: order.currency,
                     order_id: order.orderId,
-
+                    name: "Invoxa",
+                    description: `Invoice ${invoice.invoiceNumber}`,
                     image: "/logo.png",
 
-                    name: "Invoxa",
-
-                    description: `Invoice ${invoice.invoiceNumber}`,
-
-                    prefill: {
-                        name: invoice.customerName,
-                        email: invoice.customerEmail,
-                        contact: invoice.customerPhone
-                            ?.replace(/\D/g, "")
-                            .slice(-10),
+                    config: {
+                        display: {
+                            hide: [
+                                { method: "paylater" },
+                                { method: "emi" },
+                                { method: "wallet" },
+                            ],
+                        },
                     },
 
                     notes: {
@@ -59,11 +67,10 @@ export default function useRazorpayPayment() {
                         color: "#4f46e5",
                     },
 
-                    remember_customer: true,
-
                     modal: {
+                        escape: true,
                         ondismiss() {
-                            toast.info("Payment cancelled");
+                            toast.info("Payment cancelled.");
 
                             resolve({
                                 success: false,
@@ -75,62 +82,113 @@ export default function useRazorpayPayment() {
                         try {
                             await verifyPayment({
                                 invoiceId: invoice.id,
-                                razorpayOrderId: response.razorpay_order_id,
-                                razorpayPaymentId: response.razorpay_payment_id,
-                                razorpaySignature: response.razorpay_signature,
-                            }).unwrap();
 
-                            toast.success("Payment Successful");
+                                razorpayOrderId:
+                                    response.razorpay_order_id,
+
+                                razorpayPaymentId:
+                                    response.razorpay_payment_id,
+
+                                razorpaySignature:
+                                    response.razorpay_signature,
+                            }).unwrap();
 
                             if (refetch) {
                                 await refetch();
                             }
 
-                            navigate("/payment/success");
+                            toast.success(
+                                "Payment completed successfully."
+                            );
 
                             resolve({
                                 success: true,
                             });
 
-                        } catch (e) {
-
-                            toast.error("Payment verification failed");
-
                             navigate(
-                                `/payment/failed?token=${invoice.paymentToken}`
+                                "/payment/success",
+                                {
+                                    replace: true,
+                                }
                             );
 
-                            reject(e);
+                        } catch (err) {
+                            console.error(
+                                "Verification Failed",
+                                err
+                            );
+
+                            toast.error(
+                                err?.data?.message ??
+                                "Payment verification failed."
+                            );
+
+                            resolve({
+                                success: false,
+                            });
+
+                            navigate(
+                                `/payment/failed?token=${invoice.paymentToken}`,
+                                {
+                                    replace: true,
+                                }
+                            );
                         }
                     },
                 });
 
-                razorpay.on("payment.failed", (response) => {
-                    toast.error(
-                        response.error.description
-                    );
+                razorpay.on(
+                    "payment.failed",
+                    ({ error }) => {
 
-                    navigate(
-                        `/payment/failed?token=${invoice.paymentToken}`
-                    );
+                        console.error(
+                            "Payment Failed",
+                            error
+                        );
 
-                    reject(response.error);
-                });
+                        toast.error(
+                            error?.description ??
+                            "Payment failed."
+                        );
 
+                        resolve({
+                            success: false,
+                        });
+
+                        navigate(
+                            `/payment/failed?token=${invoice.paymentToken}`,
+                            {
+                                replace: true,
+                            }
+                        );
+                    }
+                );
                 razorpay.open();
             });
 
-        } catch (e) {
+        } catch (err) {
+
+            console.error(
+                "Create Order Failed",
+                err
+            );
+
             toast.error(
-                e?.data?.message ??
+                err?.data?.message ??
+                err?.message ??
                 "Unable to initiate payment."
             );
 
             navigate(
-                `/payment/failed?token=${invoice.paymentToken}`
+                `/payment/failed?token=${invoice.paymentToken}`,
+                {
+                    replace: true,
+                }
             );
 
-            throw e;
+            return {
+                success: false,
+            };
         }
     };
 
