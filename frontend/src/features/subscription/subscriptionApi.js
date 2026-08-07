@@ -30,10 +30,10 @@ export const subscriptionApi = baseApi.injectEndpoints({
                 method: "GET",
             }),
 
-             transformResponse: (response) => {
-        console.log("Subscription API Response:", response);
-        return response.data ?? response;
-    },
+            transformResponse: (response) => {
+                console.log("Subscription API Response:", response);
+                return response.data ?? response;
+            },
 
             providesTags: ["Subscription"],
         }),

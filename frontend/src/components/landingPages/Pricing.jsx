@@ -17,6 +17,7 @@ import { Skeleton } from "../ui/skeleton";
 export default function Pricing() {
   const navigate = useNavigate();
   const [isAnnual, setIsAnnual] = useState(false);
+  const [loadingPlanId, setLoadingPlanId] = useState(null);
 
   const isLoggedIn =
     !!tokenService.getToken() && !!localStorage.getItem("shopId");
@@ -31,8 +32,7 @@ export default function Pricing() {
     skip: !isLoggedIn,
   });
 
-  const [createCheckout, { isLoading: checkoutLoading }] =
-    useCreateCheckoutMutation();
+  const [createCheckout, { isLoading: checkoutLoading }] = useCreateCheckoutMutation();
 
   const [verifyPayment] = useVerifyPaymentMutation();
 
@@ -62,7 +62,11 @@ export default function Pricing() {
     }
 
     try {
-      const checkout = await createCheckout(plan.id).unwrap();
+      setLoadingPlanId(plan.id);
+
+      const checkout = await createCheckout({
+        planId: plan.id,
+      }).unwrap();
 
       if (!window.Razorpay) {
         toast.error("Razorpay SDK not loaded.");
@@ -101,9 +105,13 @@ export default function Pricing() {
       });
 
       razorpay.open();
+
     } catch (err) {
       console.error(err);
       toast.error("Unable to initiate payment.");
+
+    } finally {
+      setLoadingPlanId(null);
     }
   };
 
@@ -222,10 +230,6 @@ export default function Pricing() {
           </motion.div>
         </div>
 
-        {/* <p className="mt-6 text-center text-sm text-slate-500">
-          Waking up our servers... Pricing will appear automatically.
-        </p> */}
-
         {/* Pricing Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
           {plans.map((plan, index) => {
@@ -320,7 +324,7 @@ export default function Pricing() {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    disabled={isLoggedIn && (isCurrentPlan || checkoutLoading)}
+                    disabled={isLoggedIn && (isCurrentPlan || loadingPlanId === plan.id)}
                     onClick={() => handleUpgrade(plan)}
                     className={`flex w-full items-center cursor-pointer justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold transition-all shadow-md ${isLoggedIn && isCurrentPlan
                       ? "cursor-default bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-none"
@@ -332,7 +336,7 @@ export default function Pricing() {
                     {isLoggedIn ? (
                       isCurrentPlan ? (
                         "Current Active Plan"
-                      ) : checkoutLoading ? (
+                      ) : loadingPlanId === plan.id ? (
                         <div className="flex items-center gap-2">
                           <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                           <span>Processing...</span>
@@ -344,7 +348,7 @@ export default function Pricing() {
                       "Get Started"
                     )}
 
-                    {!(isLoggedIn && isCurrentPlan) && !checkoutLoading && (
+                    {!(isLoggedIn && isCurrentPlan) && loadingPlanId !== plan.id && (
                       <FiArrowRight className="h-4 w-4" />
                     )}
                   </motion.button>
