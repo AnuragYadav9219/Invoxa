@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Loader2,
@@ -22,6 +22,8 @@ import { Label } from "@/components/ui/label";
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const { isAuthenticated } = useAuth();
   const [login, { isLoading }] = useLoginMutation();
 
@@ -35,14 +37,29 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
     try {
       await login(form).unwrap();
 
-      navigate("/loading");
+      const params = new URLSearchParams(location.search);
+      const redirect = params.get("redirect");
+
+      if (redirect) {
+        navigate(redirect, {
+          replace: true,
+        });
+      } else {
+        navigate("/loading", {
+          replace: true
+        });
+      }
+
     } catch (err) {
+
       const code = err?.data?.code;
 
       if (code === "ACCOUNT_DELETED") {
+
         showError("Your account is deleted. Please recover it.");
 
         navigate("/recover", {
@@ -51,6 +68,10 @@ export default function Login() {
 
         return;
       }
+
+      showError(
+        err?.data?.message || "Invalid email or password."
+      );
     }
   };
 

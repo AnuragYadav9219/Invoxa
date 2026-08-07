@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import PlanGrid from "../components/PlanGrid";
 import { useSubscription } from "../hooks/useSubscription";
 import BillingInformationCard from "./BillingInformationCard";
@@ -16,8 +15,6 @@ export default function SubscriptionSettings() {
         checkoutLoading,
         loadingPlanId,
     } = useSubscription();
-
-    console.log("Settings: ", currentPlan)
 
     if (loading) {
         return (

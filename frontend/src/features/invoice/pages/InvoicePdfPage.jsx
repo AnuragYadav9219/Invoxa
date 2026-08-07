@@ -22,36 +22,24 @@ export default function InvoicePdfPage() {
     });
 
     useEffect(() => {
-
         window.__PDF_READY__ = false;
         window.__PDF_ERROR__ = null;
 
-        // window.javaTime?.();
-
         return () => {
-
             window.__PDF_READY__ = false;
             window.__PDF_ERROR__ = null;
-
         };
-
     }, []);
 
     useEffect(() => {
-
         let cancelled = false;
-
         const controller = new AbortController();
 
         async function load() {
-
             try {
-
                 if (!invoiceId || !token) {
                     throw new Error("Missing invoiceId or token");
                 }
-
-                // console.time("Fetch Invoice");
 
                 const response = await fetch(
                     `${API_BASE_URL}/public/print/${invoiceId}`,
@@ -63,14 +51,11 @@ export default function InvoicePdfPage() {
                     }
                 );
 
-                // console.timeEnd("Fetch Invoice");
-
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
                 }
 
                 const json = await response.json();
-
                 if (cancelled) return;
 
                 setState({
@@ -83,11 +68,8 @@ export default function InvoicePdfPage() {
             }
 
             catch (e) {
-
                 console.error(e);
-
                 if (cancelled) return;
-
                 window.__PDF_ERROR__ = e.message;
 
                 setState({
@@ -96,24 +78,18 @@ export default function InvoicePdfPage() {
                     invoice: null,
                     shop: null
                 });
-
             }
-
         }
 
         load();
 
         return () => {
-
             cancelled = true;
             controller.abort();
-
         };
-
     }, [invoiceId, token]);
 
     useEffect(() => {
-
         if (
             state.loading ||
             state.error ||
@@ -126,49 +102,34 @@ export default function InvoicePdfPage() {
         requestAnimationFrame(() => {
 
             const root = document.getElementById("invoice-root");
-
             if (!root) {
-
                 window.__PDF_ERROR__ = "invoice-root missing";
-
                 return;
-
             }
 
             if (root.offsetHeight === 0) {
-
                 window.__PDF_ERROR__ = "invoice-root empty";
-
                 return;
-
             }
 
             window.__PDF_READY__ = true;
-
-            // console.log("PDF READY");
-
         });
-
     }, [state]);
 
     if (state.loading) {
-
         return (
             <div className="flex min-h-screen items-center justify-center">
                 Loading invoice...
             </div>
         );
-
     }
 
     if (state.error) {
-
         return (
             <div className="flex min-h-screen items-center justify-center">
                 Invoice not found
             </div>
         );
-
     }
 
     const data = mapInvoice(
@@ -178,9 +139,7 @@ export default function InvoicePdfPage() {
     );
 
     return (
-
         <div id="invoice-root">
-
             <InvoiceRenderer
                 template={
                     templateParam ||
@@ -190,9 +149,6 @@ export default function InvoicePdfPage() {
                 }
                 data={data}
             />
-
         </div>
-
     );
-
 }

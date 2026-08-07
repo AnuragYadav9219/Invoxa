@@ -5,20 +5,17 @@ import { toast } from "sonner";
 import { tokenService } from "@/services/tokenService";
 import {
   useGetPlansQuery,
-  useCreateCheckoutMutation,
-  useVerifyPaymentMutation,
   useGetSubscriptionDashboardQuery,
 } from "@/features/subscription/subscriptionApi";
 import { FiArrowRight, FiCheck, FiShield } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import PricingCardSkeleton from "../loaders/PricingCardSkeleton";
 import { Skeleton } from "../ui/skeleton";
-import { loadRazorpay } from "@/utils/loadRazorpay";
+import { useCheckout } from "@/features/subscription/hooks/useCheckout";
 
 export default function Pricing() {
   const navigate = useNavigate();
   const [isAnnual, setIsAnnual] = useState(false);
-  const [loadingPlanId, setLoadingPlanId] = useState(null);
 
   const isLoggedIn =
     !!tokenService.getToken() && !!localStorage.getItem("shopId");
@@ -26,16 +23,16 @@ export default function Pricing() {
   const {
     data: apiPlans = [],
     isLoading,
-    isError,
   } = useGetPlansQuery();
 
   const { data: dashboard } = useGetSubscriptionDashboardQuery(undefined, {
     skip: !isLoggedIn,
   });
 
-  const [createCheckout, { isLoading: checkoutLoading }] = useCreateCheckoutMutation();
-
-  const [verifyPayment] = useVerifyPaymentMutation();
+  const {
+    checkout,
+    loadingPlanId,
+  } = useCheckout();
 
   const currentPlan = dashboard?.planName;
 
@@ -53,7 +50,11 @@ export default function Pricing() {
 
   const handleUpgrade = async (plan) => {
     if (!isLoggedIn) {
-      navigate(`/register?plan=${plan.name}`);
+      navigate(
+        `/login?redirect=${encodeURIComponent(
+          `/settings?tab=subscription&planId=${plan.id}`
+        )}`
+      );
       return;
     }
 
@@ -63,58 +64,17 @@ export default function Pricing() {
     }
 
     try {
-      setLoadingPlanId(plan.id);
+      const result = await checkout(
+        plan,
+        dashboard
+      );
 
-      const loaded = await loadRazorpay();
-
-      if (!loaded) {
-        toast.error("Unable to load Razorpay.");
-        return;
+      if (result?.success) {
+        window.location.reload();
       }
-
-      const checkout = await createCheckout({
-        planId: plan.id,
-      }).unwrap();
-
-      const razorpay = new window.Razorpay({
-        key: checkout.key,
-        amount: checkout.amount * 100,
-        currency: checkout.currency,
-        order_id: checkout.orderId,
-        name: "Invoxa",
-        description: `${plan.name} Subscription`,
-        handler: async (response) => {
-          try {
-            await verifyPayment({
-              razorpayOrderId: response.razorpay_order_id,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpaySignature: response.razorpay_signature,
-            }).unwrap();
-
-            toast.success("Subscription activated successfully!");
-          } catch (err) {
-            console.error(err);
-            toast.error("Payment verification failed.");
-          }
-        },
-        modal: {
-          ondismiss() {
-            toast("Payment cancelled.");
-          },
-        },
-        theme: {
-          color: "#6366F1",
-        },
-      });
-
-      razorpay.open();
 
     } catch (err) {
       console.error(err);
-      toast.error("Unable to initiate payment.");
-
-    } finally {
-      setLoadingPlanId(null);
     }
   };
 
