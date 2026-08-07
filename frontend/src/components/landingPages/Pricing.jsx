@@ -13,6 +13,7 @@ import { FiArrowRight, FiCheck, FiShield } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import PricingCardSkeleton from "../loaders/PricingCardSkeleton";
 import { Skeleton } from "../ui/skeleton";
+import { loadRazorpay } from "@/utils/loadRazorpay";
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -64,14 +65,16 @@ export default function Pricing() {
     try {
       setLoadingPlanId(plan.id);
 
+      const loaded = await loadRazorpay();
+
+      if (!loaded) {
+        toast.error("Unable to load Razorpay.");
+        return;
+      }
+
       const checkout = await createCheckout({
         planId: plan.id,
       }).unwrap();
-
-      if (!window.Razorpay) {
-        toast.error("Razorpay SDK not loaded.");
-        return;
-      }
 
       const razorpay = new window.Razorpay({
         key: checkout.key,
