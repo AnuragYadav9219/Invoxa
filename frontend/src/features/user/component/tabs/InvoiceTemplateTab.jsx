@@ -51,7 +51,7 @@ export default function InvoiceTemplateTab() {
     const handleTemplateChange = async (templateId) => {
 
         const template = templates.find(
-            t => t.code.toLowerCase() === templateId.toLowerCase()
+            (t) => t.code.toLowerCase() === templateId.toLowerCase()
         );
 
         if (!template?.accessible) {
@@ -59,7 +59,7 @@ export default function InvoiceTemplateTab() {
             return;
         }
 
-        if (template.code.toLowerCase() === selectedTemplate.toLowerCase()) return;
+        if (templateId.toLowerCase() === selectedTemplate.toLowerCase()) return;
 
         try {
             await updateInvoiceTemplate({
@@ -67,9 +67,10 @@ export default function InvoiceTemplateTab() {
                 invoiceTemplate: template.code.toUpperCase(),
             }).unwrap();
 
-            setSelectedTemplate(template);
+            setSelectedTemplate(templateId.toLowerCase());
             toast.success("Invoice template updated successfully.");
             refetch();
+
         } catch (error) {
             toast.error(
                 error?.data?.message || "Failed to update invoice template."
@@ -143,7 +144,7 @@ export default function InvoiceTemplateTab() {
                         Active Layout Theme
                     </p>
                     <h3 className="mt-0.5 text-lg font-black capitalize text-slate-900 tracking-tight">
-                        {selectedTemplate.name} Template
+                        {selectedTemplate} Template
                     </h3>
                 </div>
 
