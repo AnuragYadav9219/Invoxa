@@ -18,7 +18,8 @@ function InvoiceTemplateCard({
     unlocked,
 }) {
     const navigate = useNavigate();
-    const isSelected = selectedTemplate === template.id;
+    const isSelected =
+        String(selectedTemplate).trim().toLowerCase() === String(template?.id).trim().toLowerCase();
 
     return (
         <motion.div variants={itemVariants} className="h-full">
