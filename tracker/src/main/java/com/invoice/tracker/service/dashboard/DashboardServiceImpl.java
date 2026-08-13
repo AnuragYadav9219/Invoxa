@@ -1,9 +1,6 @@
 package com.invoice.tracker.service.dashboard;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,70 +22,99 @@ public class DashboardServiceImpl implements DashboardService {
 
     private final InvoiceRepository invoiceRepository;
 
-    private static final int DASHBOARD_DAYS = 30;
-
     @Override
     public DashboardResponse getDashboard() {
 
         UUID shopId = SecurityUtils.getCurrentUserShopId();
 
-        LocalDateTime startDate = getStartDate(DASHBOARD_DAYS);
+        RevenueMetrics revenueMetrics = getRevenueMetrics(shopId);
 
-        RevenueMetrics revenueMetrics = getRevenueMetrics(shopId, startDate);
+        InvoiceMetrics invoiceMetrics = getInvoiceMetrics(shopId);
 
-        InvoiceMetrics invoiceMetrics = getInvoiceMetrics(shopId, startDate);
-
-        double revenueChange = calculateRevenueTrend(shopId);
-
-        Map<String, BigDecimal> monthlyRevenue = getMonthlyRevenue(shopId, startDate);
+        Map<String, BigDecimal> monthlyRevenue =
+                getMonthlyRevenue(shopId);
 
         return DashboardResponse.builder()
+
+                // ================= REVENUE =================
+
                 .totalRevenue(revenueMetrics.totalRevenue())
+
                 .totalPending(revenueMetrics.totalPending())
+
                 .totalOverdue(revenueMetrics.totalOverdue())
 
+                // ================= INVOICES =================
+
                 .totalInvoices(invoiceMetrics.totalInvoices())
+
                 .paidInvoices(invoiceMetrics.paidInvoices())
+
                 .pendingInvoices(invoiceMetrics.pendingInvoices())
-                .partiallyPaidInvoices(invoiceMetrics.partiallyPaidInvoices())
-                .overdueInvoices(invoiceMetrics.overdueInvoices())
+
+                .partiallyPaidInvoices(
+                        invoiceMetrics.partiallyPaidInvoices())
+
+                .overdueInvoices(
+                        invoiceMetrics.overdueInvoices())
+
+                // ================= CHART =================
 
                 .monthlyRevenue(monthlyRevenue)
-                .revenueChangePercent(revenueChange)
+
                 .build();
     }
 
-    // =================== REVENUE TREND ===================
+    // =========================================================
+    // REVENUE TREND
+    // =========================================================
 
     @Override
     public List<RevenueTrend> getRevenueTrend() {
 
         UUID shopId = SecurityUtils.getCurrentUserShopId();
 
-        LocalDateTime start = getStartDate(DASHBOARD_DAYS);
-
-        List<Object[]> result = invoiceRepository.getRevenueTrend(shopId, start);
+        List<Object[]> result =
+                invoiceRepository.getRevenueTrend(shopId);
 
         return result.stream()
                 .map(row -> new RevenueTrend(
                         ((java.sql.Date) row[0]).toLocalDate(),
-                        defaultZero((BigDecimal) row[1])))
+                        defaultZero((BigDecimal) row[1])
+                ))
                 .toList();
     }
 
-    // ===================== PRIVATE METHODS =======================
+    // =========================================================
+    // REVENUE METRICS
+    // =========================================================
 
-    private RevenueMetrics getRevenueMetrics(UUID shopId, LocalDateTime startDate) {
+    private RevenueMetrics getRevenueMetrics(UUID shopId) {
 
         return new RevenueMetrics(
-                defaultZero(invoiceRepository.getTotalRevenue(shopId, startDate)),
-                defaultZero(invoiceRepository.getTotalPending(shopId, startDate)),
-                defaultZero(invoiceRepository.getTotalOverdue(shopId, startDate)));
+
+                defaultZero(
+                        invoiceRepository.getTotalRevenue(shopId)
+                ),
+
+                defaultZero(
+                        invoiceRepository.getTotalPending(shopId)
+                ),
+                
+                defaultZero(
+                        invoiceRepository.getTotalOverdue(shopId)
+                )
+        );
     }
 
-    private InvoiceMetrics getInvoiceMetrics(UUID shopId, LocalDateTime startDate) {
+    // =========================================================
+    // INVOICE METRICS
+    // =========================================================
 
-        List<Object[]> rows = invoiceRepository.getInvoiceStatusCounts(shopId, startDate);
+    private InvoiceMetrics getInvoiceMetrics(UUID shopId) {
+
+        List<Object[]> rows =
+                invoiceRepository.getInvoiceStatusCounts(shopId);
 
         long paid = 0;
         long pending = 0;
@@ -97,92 +123,86 @@ public class DashboardServiceImpl implements DashboardService {
 
         for (Object[] row : rows) {
 
-            InvoiceStatus status = (InvoiceStatus) row[0];
-            long count = ((Number) row[1]).longValue();
+            InvoiceStatus status =
+                    (InvoiceStatus) row[0];
+
+            long count =
+                    ((Number) row[1]).longValue();
 
             switch (status) {
+
                 case PAID -> paid = count;
+
                 case PENDING -> pending = count;
-                case PARTIALLY_PAID -> partiallyPaid = count;
+
+                case PARTIALLY_PAID ->
+                        partiallyPaid = count;
+
                 case OVERDUE -> overdue = count;
             }
         }
 
+        long total =
+                paid
+                        + pending
+                        + partiallyPaid
+                        + overdue;
+
         return new InvoiceMetrics(
-                paid + pending + partiallyPaid + overdue,
+                total,
                 paid,
                 pending,
                 partiallyPaid,
-                overdue);
+                overdue
+        );
     }
 
-    private double calculateRevenueTrend(UUID shopId) {
-
-        LocalDateTime endDate = LocalDateTime.now();
-
-        LocalDateTime currentStart = endDate.minusDays(DASHBOARD_DAYS);
-
-        LocalDateTime previousStart = currentStart.minusDays(DASHBOARD_DAYS);
-
-        BigDecimal currentRevenue = defaultZero(
-                invoiceRepository.getRevenueBetween(
-                        shopId,
-                        currentStart,
-                        endDate));
-
-        BigDecimal previousRevenue = defaultZero(
-                invoiceRepository.getRevenueBetween(
-                        shopId,
-                        previousStart,
-                        currentStart));
-
-        if (previousRevenue.compareTo(BigDecimal.ZERO) <= 0) {
-            return currentRevenue.compareTo(BigDecimal.ZERO) > 0 ? 100.0 : 0.0;
-        }
-
-        return currentRevenue
-                .subtract(previousRevenue)
-                .multiply(BigDecimal.valueOf(100))
-                .divide(previousRevenue, 2, RoundingMode.HALF_UP)
-                .doubleValue();
-    }
+    // =========================================================
+    // MONTHLY REVENUE
+    // =========================================================
 
     private Map<String, BigDecimal> getMonthlyRevenue(
-            UUID shopId,
-            LocalDateTime startDate) {
+            UUID shopId) {
 
-        List<Object[]> rows = invoiceRepository.getMonthlyRevenue(shopId, startDate);
+        List<Object[]> rows =
+                invoiceRepository.getMonthlyRevenue(shopId);
 
-        Map<String, BigDecimal> revenue = new LinkedHashMap<>();
+        Map<String, BigDecimal> revenue =
+                new LinkedHashMap<>();
 
         for (Object[] row : rows) {
 
-            revenue.put(
-                    (String) row[0],
-                    defaultZero((BigDecimal) row[1]));
+            String month = (String) row[0];
+
+            BigDecimal amount =
+                    defaultZero((BigDecimal) row[1]);
+
+            revenue.put(month, amount);
         }
 
         return revenue;
     }
 
-    private LocalDateTime getStartDate(int days) {
-
-        return LocalDate.now()
-                .minusDays(days)
-                .atStartOfDay();
-    }
+    // =========================================================
+    // NULL SAFETY
+    // =========================================================
 
     private BigDecimal defaultZero(BigDecimal value) {
 
-        return value == null ? BigDecimal.ZERO : value;
+        return value == null
+                ? BigDecimal.ZERO
+                : value;
     }
 
-    // ===================== RECORDS =======================
+    // =========================================================
+    // RECORDS
+    // =========================================================
 
     private record RevenueMetrics(
             BigDecimal totalRevenue,
             BigDecimal totalPending,
-            BigDecimal totalOverdue) {
+            BigDecimal totalOverdue
+    ) {
     }
 
     private record InvoiceMetrics(
@@ -190,6 +210,7 @@ public class DashboardServiceImpl implements DashboardService {
             long paidInvoices,
             long pendingInvoices,
             long partiallyPaidInvoices,
-            long overdueInvoices) {
+            long overdueInvoices
+    ) {
     }
 }

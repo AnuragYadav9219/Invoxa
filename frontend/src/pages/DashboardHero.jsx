@@ -32,6 +32,8 @@ export default function DashboardHero({ stats }) {
     return "Good Evening";
   }, []);
 
+  console.log(stats)
+
   const today = formatDate(new Date());
 
   return (
